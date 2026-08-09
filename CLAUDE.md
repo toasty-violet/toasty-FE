@@ -65,6 +65,16 @@
 
 강력한 성공 기준은 독립적으로 반복 작업을 할 수 있게 해줍니다. 약한 기준("작동하게 만들기")은 지속적인 확인을 필요로 합니다.
 
+## 폴더 구조
+
+Next.js App Router 기반이며 `src/` 아래에 소스 코드를 둡니다. `@/*`는 `src/*`를 가리키는 절대경로 alias입니다.
+
+- `src/app/`: 라우트 세그먼트(`page.tsx`, `layout.tsx`) 및 전역 스타일(`globals.css`)
+- `src/components/`: 여러 페이지에서 쓰는 공통 UI 컴포넌트
+- `src/lib/`: API 클라이언트 등 공통 유틸/설정
+- `src/providers/`: React Context/Provider
+- 기능이 늘어나면 `src/hooks/`, `src/types/`를 같은 방식으로 추가하고, 페이지 전용 코드는 해당 라우트 폴더 내부에 `_components/`(Next.js private folder)로 둡니다.
+
 ---
 
 **이 지침이 효과적으로 작동하고 있다는 신호:** diff에서 불필요한 변경이 줄어들고, 과도한 복잡화로 인한 재작성이 줄어들며, 실수가 발생한 후가 아니라 구현 전에 명확화 질문이 나오는 것입니다.
