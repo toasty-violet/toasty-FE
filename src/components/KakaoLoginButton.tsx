@@ -1,6 +1,7 @@
 "use client";
 
 import { getKakaoAuthUrl } from "@/lib/kakao";
+import KakaoIcon from "@/assets/kakao-icon.svg";
 
 export function KakaoLoginButton() {
   const handleClick = () => {
@@ -11,9 +12,10 @@ export function KakaoLoginButton() {
     <button
       type="button"
       onClick={handleClick}
-      className="rounded-full bg-white px-6 py-2.5 text-sm font-medium text-black transition-colors hover:bg-zinc-100"
+      className="text-fg-neutral-solid flex h-fit w-[35rem] items-center justify-center gap-[0.8rem] rounded-[1.2rem] bg-[#FEE500] px-[2rem] py-[1.6rem] text-sm font-medium transition-colors hover:bg-[#FEE500F0]"
     >
-      로그인
+      <KakaoIcon className="size-[2.4rem]" />
+      Kakao로 시작하기
     </button>
   );
 }
