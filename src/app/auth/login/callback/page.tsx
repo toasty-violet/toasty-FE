@@ -1,0 +1,61 @@
+"use client";
+
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuthStore } from "@/store/auth-store";
+import { loginWithKakao } from "@/lib/auth";
+
+//카카오 로그인 시 콜백 페이지
+/* 카카오 로그인 버튼 클릭시 카카오 인증페이지로 이동합니다.
+ * 카카오 인증에 성공하면 해당 페이지로 응답과 함께 리다이렉트 됩니다.
+ * toasty 백엔드 서버로 카카오 토큰을 전송합니다.
+ */
+function KakaoCallbackContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const code = searchParams.get("code");
+  const [error, setError] = useState<string | null>(
+    code ? null : "카카오 인가 코드가 없습니다.",
+  );
+  const requestedRef = useRef(false);
+
+  useEffect(() => {
+    if (!code || requestedRef.current) {
+      return;
+    }
+    requestedRef.current = true;
+
+    loginWithKakao(code)
+      .then((response) => {
+        if (!response.success || !response.data) {
+          setError(response.error?.message ?? "로그인에 실패했습니다.");
+          return;
+        }
+
+        setAccessToken(response.data.accessToken);
+        router.replace("/");
+      })
+      .catch(() => {
+        setError("로그인 중 오류가 발생했습니다.");
+      });
+  }, [code, setAccessToken, router]);
+
+  if (error) {
+    return <p className="p-4 text-center text-sm text-red-500">{error}</p>;
+  }
+
+  return (
+    <p className="p-4 text-center text-sm text-zinc-500">
+      로그인 처리 중입니다...
+    </p>
+  );
+}
+
+export default function KakaoCallbackPage() {
+  return (
+    <Suspense>
+      <KakaoCallbackContent />
+    </Suspense>
+  );
+}
