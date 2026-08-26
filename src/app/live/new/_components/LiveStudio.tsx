@@ -19,10 +19,7 @@ export function LiveStudio() {
 
   return (
     <div className="flex flex-col">
-      <BroadcastPanel
-        live={created.live}
-        credential={created.broadcastCredential}
-      />
+      <BroadcastPanel live={created.live} />
       <Link
         href={`/live/${created.live.publicId}`}
         className="px-5 pb-5 text-sm underline underline-offset-4"
