@@ -11,7 +11,10 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "copy:ivs-assets": "mkdir -p public/ivs && cp node_modules/amazon-ivs-player/dist/assets/amazon-ivs-wasmworker.min.js node_modules/amazon-ivs-player/dist/assets/amazon-ivs-wasmworker.min.wasm public/ivs/",
+    "predev": "npm run copy:ivs-assets",
+    "prebuild": "npm run copy:ivs-assets"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",

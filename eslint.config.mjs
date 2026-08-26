@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    // IVS Player wasm 에셋 복사본 (minified)
+    "public/**",
   ]),
 ]);
 
