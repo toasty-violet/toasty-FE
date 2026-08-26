@@ -161,15 +161,11 @@ export const handlers = [
     return ok<BroadcastCredential>(issueCredential(live.liveId));
   }),
 
-  // 실제 서버처럼 이 호출이 READY → LIVE 전이를 일으킨다.
+  // 실제 서버는 IVS 가 송출을 받고 있을 때만 LIVE 로 전이시킨다.
+  // 목에는 송출하는 쪽이 없으므로 저장된 상태를 그대로 돌려준다.
   http.get(`${BASE_URL}/lives/:liveId/stream-status`, ({ params }) => {
     const live = findByLiveId(Number(params.liveId));
     if (!live) return notFound();
-
-    if (live.status === "READY") {
-      live.status = "LIVE";
-      live.startedAt = new Date().toISOString();
-    }
 
     return ok<LiveStreamStatus>({
       status: live.status,
@@ -178,7 +174,7 @@ export const handlers = [
     });
   }),
 
-  // 저장된 상태만 읽는다. 전이는 stream-status 쪽에서만 일어난다.
+  // 실제 서버와 같게 저장된 상태만 읽는다.
   http.get(`${BASE_URL}/lives/public/:publicId/playback`, ({ params }) => {
     const live = lives.get(String(params.publicId));
     if (!live) return notFound();
