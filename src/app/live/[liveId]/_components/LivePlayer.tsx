@@ -14,10 +14,16 @@ export function LivePlayer({ playbackUrl }: { playbackUrl: string }) {
   useEffect(() => {
     let cancelled = false;
     let player: MediaPlayer | undefined;
+    let retryTimer: number | undefined;
 
     async function setup() {
-      const { create, isPlayerSupported, ErrorType, PlayerEventType } =
-        await import("amazon-ivs-player");
+      const {
+        create,
+        isPlayerSupported,
+        ErrorType,
+        PlayerEventType,
+        PlayerState,
+      } = await import("amazon-ivs-player");
 
       if (!isPlayerSupported) {
         setMessage("이 브라우저는 재생을 지원하지 않습니다.");
@@ -38,16 +44,17 @@ export function LivePlayer({ playbackUrl }: { playbackUrl: string }) {
       }
 
       player.addEventListener(PlayerEventType.ERROR, (error) => {
-        // 라이브 상태는 아직 READY 로 고정이라, 방송 전에는 재생 URL이 404 를 준다.
-        setMessage(
-          error.type === ErrorType.NOT_AVAILABLE
-            ? "아직 방송이 시작되지 않았습니다."
-            : `재생할 수 없습니다. ${error.message}`,
-        );
+        // 라이브 상태는 아직 READY 로 고정이라 방송 시작 시점을 알 수 없다.
+        // 방송 전 재생 URL은 404 를 주므로, 세그먼트가 생길 때까지 다시 시도한다.
+        if (error.type === ErrorType.NOT_AVAILABLE) {
+          setMessage("아직 방송이 시작되지 않았습니다. 기다리는 중…");
+          retryTimer = window.setTimeout(() => player?.load(playbackUrl), 5000);
+          return;
+        }
+        setMessage(`재생할 수 없습니다. ${error.message}`);
       });
-      player.addEventListener(PlayerEventType.INITIALIZED, () =>
-        setMessage(null),
-      );
+      // 재생이 시작되면 대기 안내를 지운다.
+      player.addEventListener(PlayerState.PLAYING, () => setMessage(null));
 
       // 소리가 있는 자동재생은 브라우저가 막으므로 음소거로 시작한다.
       player.setMuted(true);
@@ -59,6 +66,7 @@ export function LivePlayer({ playbackUrl }: { playbackUrl: string }) {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimer);
       player?.pause();
       player?.delete();
     };
