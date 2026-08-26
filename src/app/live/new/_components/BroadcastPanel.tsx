@@ -25,9 +25,15 @@ export function BroadcastPanel({
     let client: AmazonIVSBroadcastClient | undefined;
     const streams: MediaStream[] = [];
 
+    const releaseStreams = () =>
+      streams.forEach((stream) =>
+        stream.getTracks().forEach((track) => track.stop()),
+      );
+
     async function setup() {
       const IVSBroadcastClient = (await import("amazon-ivs-web-broadcast"))
         .default;
+      if (cancelled) return;
 
       if (!IVSBroadcastClient.isSupported()) {
         setStatus("unavailable");
@@ -36,14 +42,21 @@ export function BroadcastPanel({
       }
 
       // 카메라와 마이크는 따로 요청한다. SDK가 각각을 별도 입력으로 받는다.
+      // 얻는 즉시 streams 에 넣어야 중간에 정리가 지나가도 트랙을 놓치지 않는다.
       const videoStream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 720 }, height: { ideal: 1280 } },
       });
+      streams.push(videoStream);
       const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      streams.push(videoStream, audioStream);
-      if (cancelled) return;
+      streams.push(audioStream);
+
+      // 정리가 이미 지나갔다면 여기서 직접 끈다.
+      if (cancelled) {
+        releaseStreams();
+        return;
+      }
 
       client = IVSBroadcastClient.create({
         streamConfig: IVSBroadcastClient.BASIC_PORTRAIT,
@@ -66,6 +79,12 @@ export function BroadcastPanel({
         (error) => setMessage(error.message),
       );
 
+      if (cancelled) {
+        client.delete();
+        releaseStreams();
+        return;
+      }
+
       clientRef.current = client;
       setStatus("ready");
     }
@@ -85,9 +104,7 @@ export function BroadcastPanel({
       clientRef.current = null;
       client?.detachPreview();
       client?.delete();
-      streams.forEach((stream) =>
-        stream.getTracks().forEach((track) => track.stop()),
-      );
+      releaseStreams();
     };
   }, [credential.ingestEndpoint]);
 
