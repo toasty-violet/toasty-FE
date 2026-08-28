@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { MswProvider } from "@/providers/msw-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col items-center bg-zinc-100 dark:bg-black">
         <div className="mx-auto flex min-h-full w-full max-w-120 flex-1 flex-col bg-white dark:bg-zinc-950">
-          <QueryProvider>{children}</QueryProvider>
+          <MswProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </MswProvider>
         </div>
       </body>
     </html>
