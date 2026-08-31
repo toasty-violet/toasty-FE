@@ -1,5 +1,5 @@
-import { apiClient } from "@/lib/api-client";
-import type { KakaoLoginResponse, RefreshResponse } from "@/types/auth";
+import { apiClient, requestRefresh } from "@/lib/api-client";
+import type { KakaoLoginResponse, LogoutResponse } from "@/types/auth";
 
 //카카오 로그인 요청
 export async function loginWithKakao(code: string) {
@@ -12,12 +12,10 @@ export async function loginWithKakao(code: string) {
 
 //로그아웃 요청 (refreshToken 쿠키 만료 처리)
 export async function logout() {
-  await apiClient.post("/logout");
-}
-
-//refreshToken 쿠키로 accessToken 재발급 요청
-export async function refreshAccessToken() {
-  const { data } = await apiClient.post<RefreshResponse>("/refresh");
+  const { data } = await apiClient.post<LogoutResponse>("/logout");
 
   return data;
 }
+
+//refreshToken 쿠키로 accessToken 재발급 요청 (인터셉터와 같은 Promise를 공유)
+export { requestRefresh as refreshAccessToken };
