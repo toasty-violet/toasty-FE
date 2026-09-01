@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ApiRequestError } from "@/lib/api-error";
-import { createLive } from "@/lib/live-api";
+import { createLive } from "@/app/live/_lib/live-api";
 import { LIVE_ERROR_CODE } from "@/types/live";
 import type { LiveCreateResponse } from "@/types/live";
 
