@@ -21,11 +21,13 @@ function buildLive(liveId: number, title: string, description?: string): Live {
   };
 }
 
-// 새 탭에서도 시청 화면을 열 수 있도록 하나는 미리 둔다.
-const lives = new Map<number, Live>([
-  [1, buildLive(1, "목 라이브", "시청 화면 확인용")],
-]);
-let nextLiveId = 2;
+// 공개 조회는 publicId 로만 받으므로 목도 publicId 를 키로 쓴다.
+const lives = new Map<string, Live>();
+let nextLiveId = 1;
+
+// 새 탭에서도 시청 화면을 열 수 있도록 하나는 미리 둔다. 주소는 /live/mock-1 이다.
+const seeded = buildLive(nextLiveId++, "목 라이브", "시청 화면 확인용");
+lives.set(seeded.publicId, seeded);
 
 export const handlers = [
   http.post(`${BASE_URL}/lives`, async ({ request }) => {
@@ -50,7 +52,7 @@ export const handlers = [
     }
 
     const live = buildLive(nextLiveId++, title, description);
-    lives.set(live.liveId, live);
+    lives.set(live.publicId, live);
 
     return ok<LiveCreateResponse>({
       live,
@@ -66,8 +68,8 @@ export const handlers = [
     () => new HttpResponse(null, { status: 404 }),
   ),
 
-  http.get(`${BASE_URL}/lives/:liveId`, ({ params }) => {
-    const live = lives.get(Number(params.liveId));
+  http.get(`${BASE_URL}/lives/public/:publicId`, ({ params }) => {
+    const live = lives.get(String(params.publicId));
     if (!live) {
       return fail(404, "LIVE_NOT_FOUND", "라이브를 찾을 수 없습니다.");
     }

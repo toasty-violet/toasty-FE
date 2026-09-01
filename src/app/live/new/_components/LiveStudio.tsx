@@ -24,7 +24,7 @@ export function LiveStudio() {
         credential={created.broadcastCredential}
       />
       <Link
-        href={`/live/${created.live.liveId}`}
+        href={`/live/${created.live.publicId}`}
         className="px-5 pb-5 text-sm underline underline-offset-4"
       >
         시청 화면 열기

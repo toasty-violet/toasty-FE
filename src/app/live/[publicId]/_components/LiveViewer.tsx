@@ -6,14 +6,14 @@ import { ApiRequestError } from "@/lib/api-error";
 import { getLive } from "@/lib/live-api";
 import { LIVE_ERROR_CODE } from "@/types/live";
 
-export function LiveViewer({ liveId }: { liveId: number }) {
+export function LiveViewer({ publicId }: { publicId: string }) {
   const {
     data: live,
     isPending,
     error,
   } = useQuery({
-    queryKey: ["live", liveId],
-    queryFn: () => getLive(liveId),
+    queryKey: ["live", publicId],
+    queryFn: () => getLive(publicId),
   });
 
   if (isPending) {
