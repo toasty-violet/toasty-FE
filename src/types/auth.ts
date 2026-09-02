@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@/types/api";
+import type { ApiSuccess } from "@/types/api";
 
 // 로그인 후 받은 유저 데이터
 export interface UserData {
@@ -7,7 +7,7 @@ export interface UserData {
 }
 
 // 카카오 로그인 API 응답
-export type KakaoLoginResponse = ApiResponse<UserData>;
+export type KakaoLoginResponse = ApiSuccess<UserData>;
 
 // accessToken 재발급 데이터
 export interface RefreshData {
@@ -15,7 +15,7 @@ export interface RefreshData {
 }
 
 // accessToken 재발급 API 응답
-export type RefreshResponse = ApiResponse<RefreshData>;
+export type RefreshResponse = ApiSuccess<RefreshData>;
 
 // 로그아웃 API 응답
-export type LogoutResponse = ApiResponse<string>;
+export type LogoutResponse = ApiSuccess<string>;

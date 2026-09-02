@@ -65,9 +65,6 @@ export function requestRefresh() {
     refreshPromise = refreshClient
       .post<RefreshResponse>("/refresh")
       .then(({ data }) => {
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message ?? "토큰 재발급에 실패했습니다.");
-        }
         const { accessToken } = data.data;
         // 대기 중인 요청이 깨어나기 전에 갱신해야 한다
         useAuthStore.getState().setAccessToken(accessToken);
