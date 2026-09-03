@@ -1,5 +1,10 @@
+import { RouteGuard } from "@/components/RouteGuard";
 import { LiveStudio } from "./_components/LiveStudio";
 
 export default function NewLivePage() {
-  return <LiveStudio />;
+  return (
+    <RouteGuard require="SELLER">
+      <LiveStudio />
+    </RouteGuard>
+  );
 }

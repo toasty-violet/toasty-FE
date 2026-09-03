@@ -1,5 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/auth-store";
+import { useUserStore } from "@/store/user-store";
 import { ApiRequestError } from "@/lib/api-error";
 import type { ApiFailure } from "@/types/api";
 import type { RefreshResponse } from "@/types/auth";
@@ -51,7 +52,9 @@ let isLoggingOut = false;
 function forceLogout() {
   if (isLoggingOut) return;
   isLoggingOut = true;
+  // lib/auth.ts의 clearSession과 같은 일을 한다. auth.ts가 이 파일을 import하므로 순환을 피해 직접 비운다
   useAuthStore.getState().clearAuth();
+  useUserStore.getState().clearUser();
   // axios 인터셉터는 React 렌더링/훅 바깥이라 useRouter/redirect를 쓸 수 없어 전체 페이지 이동으로 처리
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.assign("/login");

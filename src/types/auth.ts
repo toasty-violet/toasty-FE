@@ -1,13 +1,12 @@
 import type { ApiSuccess } from "@/types/api";
 
-// 로그인 후 받은 유저 데이터
-export interface UserData {
-  isOnboardingCompleted: boolean;
+// 로그인 후 받은 토큰 데이터
+export interface LoginData {
   accessToken: string;
 }
 
 // 카카오 로그인 API 응답
-export type KakaoLoginResponse = ApiSuccess<UserData>;
+export type KakaoLoginResponse = ApiSuccess<LoginData>;
 
 // accessToken 재발급 데이터
 export interface RefreshData {
