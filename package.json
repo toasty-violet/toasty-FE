@@ -12,10 +12,15 @@
     "tokens": "node scripts/generate-tokens.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "copy:ivs-assets": "mkdir -p public/ivs && cp node_modules/amazon-ivs-player/dist/assets/amazon-ivs-wasmworker.min.js node_modules/amazon-ivs-player/dist/assets/amazon-ivs-wasmworker.min.wasm public/ivs/",
+    "predev": "npm run copy:ivs-assets",
+    "prebuild": "npm run copy:ivs-assets"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
+    "amazon-ivs-player": "^1.55.0",
+    "amazon-ivs-web-broadcast": "^1.38.1",
     "axios": "^1.19.0",
     "next": "16.3.0",
     "react": "19.2.8",
@@ -37,10 +42,16 @@
     "eslint-config-next": "16.3.0",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
+    "msw": "^2.15.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

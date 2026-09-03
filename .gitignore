@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
 
 # next.js
 /.next/
@@ -43,3 +45,6 @@ next-env.d.ts
 
 # claude
 .claude/settings.json
+
+# IVS Player wasm 에셋 (predev·prebuild 에서 node_modules 로부터 복사)
+/public/ivs

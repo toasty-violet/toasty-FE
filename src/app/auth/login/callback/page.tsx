@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import { loginWithKakao } from "@/lib/auth";
+import { ApiRequestError } from "@/lib/api-error";
 
 //카카오 로그인 시 콜백 페이지
 /* 카카오 로그인 버튼 클릭시 카카오 인증페이지로 이동합니다.
@@ -28,16 +29,16 @@ function KakaoCallbackContent() {
 
     loginWithKakao(code)
       .then((response) => {
-        if (!response.success || !response.data) {
-          setError(response.error?.message ?? "로그인에 실패했습니다.");
-          return;
-        }
-
         setAccessToken(response.data.accessToken);
         router.replace("/");
       })
-      .catch(() => {
-        setError("로그인 중 오류가 발생했습니다.");
+      .catch((error: unknown) => {
+        // 실패 응답은 인터셉터가 ApiRequestError 로 바꿔 던지므로 서버 문구를 여기서 쓴다
+        setError(
+          error instanceof ApiRequestError
+            ? error.message
+            : "로그인 중 오류가 발생했습니다.",
+        );
       });
   }, [code, setAccessToken, router]);
 

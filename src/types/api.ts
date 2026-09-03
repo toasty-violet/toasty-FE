@@ -1,19 +1,22 @@
-// 응답 실패 시 필드별 에러
-export interface ApiErrorField {
+export interface ApiFieldError {
   field: string;
   message: string;
 }
 
-// 응답 실패 시 에러 정보
-export interface ApiError {
+export interface ApiErrorBody {
   code: string;
   message: string;
-  fields: ApiErrorField[];
+  /** COMMON_INVALID_INPUT 일 때만 내려온다. */
+  fields?: ApiFieldError[];
 }
 
-// 공통 API 응답 형식
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T | null;
-  error: ApiError | null;
+export interface ApiSuccess<T> {
+  success: true;
+  data: T;
+}
+
+/** 실패 응답은 인터셉터가 ApiRequestError 로 바꿔 던지므로 호출부까지 오지 않는다. */
+export interface ApiFailure {
+  success: false;
+  error: ApiErrorBody;
 }

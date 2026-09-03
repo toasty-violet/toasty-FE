@@ -1,5 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/auth-store";
+import { ApiRequestError } from "@/lib/api-error";
+import type { ApiFailure } from "@/types/api";
 import type { RefreshResponse } from "@/types/auth";
 
 // http 요청시 axios가 자동으로 토큰 정보 주입
@@ -23,6 +25,14 @@ apiClient.interceptors.request.use((config: RetryableRequestConfig) => {
     config.headers.Authorization = `Bearer ${accessToken}`;
     config._tokenUsed = accessToken;
   }
+
+  // 라이브 API는 아직 인증이 없어 X-Seller-Id로 셀러를 식별한다.
+  // 서버가 JWT로 셀러를 알게 되면 이 두 줄만 지우면 된다.
+  const sellerId = process.env.NEXT_PUBLIC_SELLER_ID;
+  if (sellerId) {
+    config.headers["X-Seller-Id"] = sellerId;
+  }
+
   return config;
 });
 
@@ -55,9 +65,6 @@ export function requestRefresh() {
     refreshPromise = refreshClient
       .post<RefreshResponse>("/refresh")
       .then(({ data }) => {
-        if (!data.success || !data.data) {
-          throw new Error(data.error?.message ?? "토큰 재발급에 실패했습니다.");
-        }
         const { accessToken } = data.data;
         // 대기 중인 요청이 깨어나기 전에 갱신해야 한다
         useAuthStore.getState().setAccessToken(accessToken);
@@ -70,6 +77,23 @@ export function requestRefresh() {
       });
   }
   return refreshPromise;
+}
+
+// 실패 응답의 공통 껍데기를 ApiRequestError로 바꿔, 호출부가 error.code로 분기할 수 있게 한다.
+// 401 재발급 분기를 먼저 태운 뒤 최종 reject 경로에서만 부른다.
+// 먼저 바꾸면 error.config·error.response가 사라져 재시도가 동작하지 않는다.
+function toApiRequestError(error: AxiosError) {
+  const response = error.response;
+  const body = response?.data as ApiFailure | undefined;
+  if (response && body?.success === false) {
+    return new ApiRequestError(
+      body.error.code,
+      body.error.message,
+      response.status,
+      body.error.fields,
+    );
+  }
+  return error;
 }
 
 apiClient.interceptors.response.use(
@@ -88,7 +112,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry ||
       isAuthEndpoint
     ) {
-      return Promise.reject(error);
+      return Promise.reject(toApiRequestError(error));
     }
 
     originalRequest._retry = true;
