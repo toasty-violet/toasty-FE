@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "copy:ivs-assets": "mkdir -p public/ivs && cp node_modules/amazon-ivs-player/dist/assets/amazon-ivs-wasmworker.min.js node_modules/amazon-ivs-player/dist/assets/amazon-ivs-wasmworker.min.wasm public/ivs/",
+    "copy:ivs-assets": "node scripts/copy-ivs-assets.mjs",
     "predev": "npm run copy:ivs-assets",
     "prebuild": "npm run copy:ivs-assets"
   },
