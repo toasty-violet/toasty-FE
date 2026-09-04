@@ -57,7 +57,7 @@ test("role 이 null 이면 홈에서 /onboarding 로 이동한다", async ({ pag
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "역할 선택 페이지 (/onboarding)" }),
+    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
   ).toBeVisible();
 });
 
@@ -71,7 +71,7 @@ test("role 키가 없으면 홈에서 /onboarding 로 이동한다", async ({ pa
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "역할 선택 페이지 (/onboarding)" }),
+    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
   ).toBeVisible();
 });
 
