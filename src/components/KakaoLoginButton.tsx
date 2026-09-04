@@ -1,7 +1,7 @@
 "use client";
 
 import { getKakaoAuthUrl } from "@/lib/kakao";
-import KakaoIcon from "@/assets/kakao-icon.svg";
+import KakaoIcon from "@/assets/KakaoIcon.svg";
 
 export function KakaoLoginButton() {
   const handleClick = () => {
