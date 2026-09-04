@@ -14,10 +14,13 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
 
   // 셀러 전용 API 라 진입 권한 확인을 겸한다. 남의 라이브면 서버가 403 을 준다.
   // liveId 는 공개 조회 응답에서만 나오므로 그 뒤에 부른다.
+  // BroadcastPanel 의 폴링과 키를 나눈다. 캐시를 공유하면 폴링이 받아온 ENDED 가
+  // 이쪽에 흘러들어 방송 중에 Panel 이 사라진다. 권한 확인이라 캐시도 타지 않는다.
   const streamStatus = useQuery({
-    queryKey: ["live-stream-status", live.data?.liveId],
+    queryKey: ["live-stream-status", live.data?.liveId, "entry"],
     queryFn: () => getLiveStreamStatus(live.data!.liveId),
     enabled: live.data !== undefined,
+    staleTime: 0,
   });
 
   if (live.isPending || streamStatus.isPending) {
