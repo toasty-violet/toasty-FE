@@ -57,10 +57,10 @@ export function RoleSelectForm() {
               type="button"
               aria-pressed={role === option}
               onClick={() => setRole(option)}
-              className={`rounded-12 flex flex-1 flex-col items-center justify-center gap-8 px-16 py-20 transition-colors ${
-                role === option //역할을 선택하면 선택한 역할에 오버레이
-                  ? "bg-bg-brand-weak ring-stroke-brand-solid ring-1 ring-inset"
-                  : "bg-bg-neutral-weak hover:bg-bg-neutral-weak-pressed"
+              className={`rounded-12 bg-bg-neutral-weak flex flex-1 flex-col items-center justify-center gap-8 border-2 px-16 py-20 transition-colors ${
+                role === option //역할을 선택하면 선택한 역할에 브랜드 테두리
+                  ? "border-stroke-brand"
+                  : "hover:bg-bg-neutral-weak-pressed border-transparent"
               }`}
             >
               <Icon className="size-40" />
