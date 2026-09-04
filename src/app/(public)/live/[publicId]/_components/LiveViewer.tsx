@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { LivePlayer } from "./LivePlayer";
 import { ApiRequestError } from "@/lib/api-error";
-import { getLive } from "@/app/live/_lib/live-api";
+import { getLive } from "@/lib/live-api";
 import { LIVE_ERROR_CODE } from "@/types/live";
 
 export function LiveViewer({ publicId }: { publicId: string }) {

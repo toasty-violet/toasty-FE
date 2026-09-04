@@ -73,6 +73,56 @@ describe("RouteGuard", () => {
     expect(replaceMock).toHaveBeenCalledWith("/");
   });
 
+  // /me 같은 CUSTOMER 전용 화면에 셀러가 들어오면 홈을 거치지 않고 바로 제 화면으로 보낸다
+  it("SELLER 가 CUSTOMER 전용 화면에 오면 /shop 으로 바로 보낸다", () => {
+    setState("authed", { role: "SELLER", nickname: "셀러" });
+    render(
+      <RouteGuard require="CUSTOMER">
+        <p>마이페이지</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("마이페이지")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/shop");
+  });
+
+  it("비로그인이 CUSTOMER 전용 화면에 오면 /login 으로 보낸다", () => {
+    setState("guest", null);
+    render(
+      <RouteGuard require="CUSTOMER">
+        <p>마이페이지</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("마이페이지")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/login");
+  });
+
+  it("CUSTOMER 는 CUSTOMER 전용 화면을 볼 수 있다", () => {
+    setState("authed", { role: "CUSTOMER", nickname: "구매자" });
+    render(
+      <RouteGuard require="CUSTOMER">
+        <p>마이페이지</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.getByText("마이페이지")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  // 역할 미선택 유저가 권한 화면에 오면 홈이 아니라 역할 선택으로 보낸다
+  it("역할 미선택 유저는 /onboarding 으로 보낸다", () => {
+    setState("authed", { nickname: "신규" });
+    render(
+      <RouteGuard require="SELLER">
+        <p>스튜디오</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("스튜디오")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding");
+  });
+
   it("비로그인이면 로그인 페이지로 보낸다", () => {
     setState("guest", null);
     render(
@@ -83,5 +133,94 @@ describe("RouteGuard", () => {
 
     expect(screen.queryByText("스튜디오")).not.toBeInTheDocument();
     expect(replaceMock).toHaveBeenCalledWith("/login");
+  });
+
+  // 로그인 화면은 반대로 비로그인이어야 통과한다
+  it("guest 는 비로그인 유저에게 children 을 보여준다", () => {
+    setState("guest", null);
+    render(
+      <RouteGuard require="guest">
+        <p>로그인 화면</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.getByText("로그인 화면")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  // 로그인한 채로 /login 에 오면 /login 으로 되돌리는 무한 루프가 나면 안 된다
+  it("guest 는 이미 로그인한 유저를 제 역할의 화면으로 보낸다", () => {
+    setState("authed", { role: "SELLER", nickname: "셀러" });
+    render(
+      <RouteGuard require="guest">
+        <p>로그인 화면</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("로그인 화면")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/shop");
+  });
+
+  it("guest 는 CUSTOMER 를 홈으로 보낸다", () => {
+    setState("authed", { role: "CUSTOMER", nickname: "구매자" });
+    render(
+      <RouteGuard require="guest">
+        <p>로그인 화면</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("로그인 화면")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/");
+  });
+
+  // require="authed" 는 역할을 따지지 않고 로그인 여부만 본다
+  it("authed 는 역할이 무엇이든 children 을 보여준다", () => {
+    setState("authed", { role: "CUSTOMER", nickname: "구매자" });
+    render(
+      <RouteGuard require="authed">
+        <p>보호 화면</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.getByText("보호 화면")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("authed 라도 비로그인이면 로그인 페이지로 보낸다", () => {
+    setState("guest", null);
+    render(
+      <RouteGuard require="authed">
+        <p>보호 화면</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("보호 화면")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/login");
+  });
+
+  // 역할 미선택 유저는 role 키 자체가 없어 undefined 로 들어온다
+  it("onboarding 은 역할 미선택 유저에게 children 을 보여준다", () => {
+    setState("authed", { nickname: "신규" });
+    render(
+      <RouteGuard require="onboarding">
+        <p>역할 선택</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.getByText("역할 선택")).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  // 이미 역할을 고른 사람이 /onboarding 에 다시 오면 제 역할의 화면으로 되돌려보낸다
+  it("onboarding 은 이미 역할이 있는 유저를 제 화면으로 보낸다", () => {
+    setState("authed", { role: "SELLER", nickname: "셀러" });
+    render(
+      <RouteGuard require="onboarding">
+        <p>역할 선택</p>
+      </RouteGuard>,
+    );
+
+    expect(screen.queryByText("역할 선택")).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/shop");
   });
 });
