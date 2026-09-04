@@ -47,8 +47,9 @@ const FONT_WEIGHT_MAP = {
 function px(n) {
   return `${n}px`;
 }
+// globals.css의 html { font-size: 62.5% } 기준(1rem = 10px)
 function pxToRem(n) {
-  return `${n / 16}rem`;
+  return `${n / 10}rem`;
 }
 function percentToUnitless(percent) {
   return String(parseFloat(percent) / 100);
@@ -59,7 +60,15 @@ function percentToEm(percent) {
 
 // ---- Colors (Primitive + Semantic) ----
 const colorVars = [];
-for (const group of ["gray", "brand", "blue", "red", "green", "yellow", "purple"]) {
+for (const group of [
+  "gray",
+  "brand",
+  "blue",
+  "red",
+  "green",
+  "yellow",
+  "purple",
+]) {
   for (const [shade, node] of Object.entries(merged[group])) {
     colorVars.push([`--color-${group}-${shade}`, resolveLeaf(node)]);
   }
@@ -89,22 +98,42 @@ for (const [name, node] of Object.entries(merged.spacing)) {
 }
 
 // ---- Font family ----
+// next/font/local이 layout.tsx에서 --font-pretendard-local로 실제 패밀리를 주입합니다.
 const fontVars = [];
-for (const [name, node] of Object.entries(merged.fontFamilies)) {
-  fontVars.push([`--font-${name}`, `"${resolveLeaf(node)}", sans-serif`]);
+for (const [name] of Object.entries(merged.fontFamilies)) {
+  fontVars.push([`--font-${name}`, `var(--font-${name}-local), sans-serif`]);
 }
 
 // ---- Typography utilities ----
-const TYPOGRAPHY_GROUPS = ["Heading", "Title", "Subtitle", "Body", "Caption", "Label"];
+const TYPOGRAPHY_GROUPS = [
+  "Heading",
+  "Title",
+  "Subtitle",
+  "Body",
+  "Caption",
+  "Label",
+];
 const typographyStyles = [];
 for (const group of TYPOGRAPHY_GROUPS) {
   for (const [name, node] of Object.entries(merged[group])) {
     const v = node.value;
-    const fontFamilyName = v.fontFamily.slice(1, -1).split(".")[1];
-    const weightName = resolveLeaf(traverse(v.fontWeight.slice(1, -1).split(".")));
-    const fontSizePx = resolveLeaf(traverse(v.fontSize.slice(1, -1).split(".")));
-    const lineHeightPct = resolveLeaf(traverse(v.lineHeight.slice(1, -1).split(".")));
-    const letterSpacingPct = resolveLeaf(traverse(v.letterSpacing.slice(1, -1).split(".")));
+    const fontFamilyName = v.fontFamily
+      .slice(1, -1)
+      .split(".")
+      .pop()
+      .toLowerCase();
+    const weightName = resolveLeaf(
+      traverse(v.fontWeight.slice(1, -1).split(".")),
+    );
+    const fontSizePx = resolveLeaf(
+      traverse(v.fontSize.slice(1, -1).split(".")),
+    );
+    const lineHeightPct = resolveLeaf(
+      traverse(v.lineHeight.slice(1, -1).split(".")),
+    );
+    const letterSpacingPct = resolveLeaf(
+      traverse(v.letterSpacing.slice(1, -1).split(".")),
+    );
 
     typographyStyles.push({
       name,
@@ -123,13 +152,23 @@ lines.push("/* 자동 생성 파일입니다. 직접 수정하지 마세요. */"
 lines.push("/* 소스: tokens.json — 재생성: npm run tokens */");
 lines.push("");
 lines.push(":root {");
-for (const [name, value] of [...colorVars, ...radiusVars, ...spacingVars, ...fontVars]) {
+for (const [name, value] of [
+  ...colorVars,
+  ...radiusVars,
+  ...spacingVars,
+  ...fontVars,
+]) {
   lines.push(`  ${name}: ${value};`);
 }
 lines.push("}");
 lines.push("");
 lines.push("@theme inline {");
-for (const [name] of [...colorVars, ...radiusVars, ...spacingVars, ...fontVars]) {
+for (const [name] of [
+  ...colorVars,
+  ...radiusVars,
+  ...spacingVars,
+  ...fontVars,
+]) {
   lines.push(`  ${name}: var(${name});`);
 }
 lines.push("}");
