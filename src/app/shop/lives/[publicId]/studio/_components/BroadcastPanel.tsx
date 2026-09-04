@@ -16,13 +16,7 @@ type Status =
 
 const STREAM_STATUS_POLL_MS = 4000;
 
-export function BroadcastPanel({
-  live,
-  credential,
-}: {
-  live: Live;
-  credential: BroadcastCredential;
-}) {
+export function BroadcastPanel({ live }: { live: Live }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
   const [status, setStatus] = useState<Status>("preparing");
@@ -68,7 +62,6 @@ export function BroadcastPanel({
 
       client = IVSBroadcastClient.create({
         streamConfig: IVSBroadcastClient.BASIC_PORTRAIT,
-        ingestEndpoint: credential.ingestEndpoint,
       });
 
       if (canvasRef.current) {
@@ -113,7 +106,7 @@ export function BroadcastPanel({
       client?.delete();
       releaseStreams();
     };
-  }, [credential.ingestEndpoint]);
+  }, []);
 
   const { data: streamStatus } = useQuery({
     queryKey: ["live-stream-status", live.liveId],
