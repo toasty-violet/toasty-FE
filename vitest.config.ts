@@ -11,8 +11,13 @@ export default defineConfig({
     exclude: ["node_modules", ".next", "e2e"],
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: [
+      // svg는 @svgr/webpack 대신 스텁 컴포넌트로 해석한다. (test/svg-stub.tsx 참고)
+      {
+        find: /^.*\.svg$/,
+        replacement: path.resolve(__dirname, "./test/svg-stub.tsx"),
+      },
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+    ],
   },
 });

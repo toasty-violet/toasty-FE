@@ -1,5 +1,12 @@
 import { http, HttpResponse } from "msw";
-import type { Live, LiveCreateResponse } from "@/types/live";
+import type {
+  BroadcastCredential,
+  Live,
+  LiveCreateResponse,
+  LivePlayback,
+  LiveStatus,
+  LiveStreamStatus,
+} from "@/types/live";
 import type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -9,16 +16,26 @@ const ok = <T>(data: T) => HttpResponse.json({ success: true, data });
 const fail = (status: number, code: string, message: string) =>
   HttpResponse.json({ success: false, error: { code, message } }, { status });
 
-function buildLive(liveId: number, title: string, description?: string): Live {
+const notFound = () =>
+  fail(404, "LIVE_NOT_FOUND", "라이브를 찾을 수 없습니다.");
+
+function buildLive(
+  liveId: number,
+  title: string,
+  description?: string,
+  status: LiveStatus = "READY",
+): Live {
   return {
     liveId,
     publicId: `mock-${liveId}`,
     sellerId: 7,
     title,
     description,
-    status: "READY",
+    status,
     playbackUrl: `/mock-playback/${liveId}.m3u8`,
     createdAt: new Date().toISOString(),
+    startedAt: status === "READY" ? undefined : new Date().toISOString(),
+    endedAt: status === "ENDED" ? new Date().toISOString() : undefined,
   };
 }
 
@@ -26,9 +43,28 @@ function buildLive(liveId: number, title: string, description?: string): Live {
 const lives = new Map<string, Live>();
 let nextLiveId = 1;
 
-// 새 탭에서도 시청 화면을 열 수 있도록 하나는 미리 둔다. 주소는 /live/mock-1 이다.
-const seeded = buildLive(nextLiveId++, "목 라이브", "시청 화면 확인용");
-lives.set(seeded.publicId, seeded);
+function seed(title: string, description: string, status: LiveStatus) {
+  const live = buildLive(nextLiveId++, title, description, status);
+  lives.set(live.publicId, live);
+}
+
+// 송출 화면은 SDK 가 가짜 엔드포인트에 붙지 못해 LIVE 로 넘어가지 못한다.
+// 시청 화면의 세 상태를 눌러볼 수 있도록 상태별로 하나씩 미리 둔다.
+seed("목 라이브", "방송 시작 전 대기 화면", "READY"); // /live/mock-1
+seed("방송 중인 목 라이브", "재생 시도 화면", "LIVE"); // /live/mock-2
+seed("종료된 목 라이브", "방송 종료 화면", "ENDED"); // /live/mock-3
+
+function findByLiveId(liveId: number) {
+  return [...lives.values()].find((live) => live.liveId === liveId);
+}
+
+function issueCredential(liveId: number): BroadcastCredential {
+  return {
+    ingestEndpoint: "mock.global-contribute.live-video.net",
+    // 재발급마다 값이 바뀌는 것을 확인할 수 있게 호출 시각을 붙인다.
+    streamKey: `sk_mock_${liveId}_${Date.now()}`,
+  };
+}
 
 // 목 로그인 시나리오는 주소의 쿼리로 바꾼다.
 // ?mockRole=CUSTOMER | none 으로 역할을, ?mockAuth=guest 로 비로그인 상태를 확인할 수 있다.
@@ -98,10 +134,7 @@ export const handlers = [
 
     return ok<LiveCreateResponse>({
       live,
-      broadcastCredential: {
-        ingestEndpoint: "mock.global-contribute.live-video.net",
-        streamKey: "sk_mock_streamkey",
-      },
+      broadcastCredential: issueCredential(live.liveId),
     });
   }),
 
@@ -112,9 +145,60 @@ export const handlers = [
 
   http.get(`${BASE_URL}/lives/public/:publicId`, ({ params }) => {
     const live = lives.get(String(params.publicId));
-    if (!live) {
-      return fail(404, "LIVE_NOT_FOUND", "라이브를 찾을 수 없습니다.");
+    return live ? ok(live) : notFound();
+  }),
+
+  http.post(`${BASE_URL}/lives/:liveId/broadcast-credentials`, ({ params }) => {
+    const live = findByLiveId(Number(params.liveId));
+    if (!live) return notFound();
+    if (live.status === "ENDED") {
+      return fail(
+        409,
+        "LIVE_ALREADY_ENDED",
+        "종료된 라이브는 재발급할 수 없습니다.",
+      );
     }
+    return ok<BroadcastCredential>(issueCredential(live.liveId));
+  }),
+
+  // 실제 서버처럼 이 호출이 READY → LIVE 전이를 일으킨다.
+  http.get(`${BASE_URL}/lives/:liveId/stream-status`, ({ params }) => {
+    const live = findByLiveId(Number(params.liveId));
+    if (!live) return notFound();
+
+    if (live.status === "READY") {
+      live.status = "LIVE";
+      live.startedAt = new Date().toISOString();
+    }
+
+    return ok<LiveStreamStatus>({
+      status: live.status,
+      broadcasting: live.status === "LIVE",
+      startedAt: live.startedAt,
+    });
+  }),
+
+  // 저장된 상태만 읽는다. 전이는 stream-status 쪽에서만 일어난다.
+  http.get(`${BASE_URL}/lives/public/:publicId/playback`, ({ params }) => {
+    const live = lives.get(String(params.publicId));
+    if (!live) return notFound();
+
+    return ok<LivePlayback>({
+      playbackUrl: live.playbackUrl,
+      status: live.status,
+    });
+  }),
+
+  // 이미 종료된 라이브에 다시 요청해도 200 인 멱등 처리다.
+  http.post(`${BASE_URL}/lives/:liveId/end`, ({ params }) => {
+    const live = findByLiveId(Number(params.liveId));
+    if (!live) return notFound();
+
+    if (live.status !== "ENDED") {
+      live.status = "ENDED";
+      live.endedAt = new Date().toISOString();
+    }
+
     return ok(live);
   }),
 ];

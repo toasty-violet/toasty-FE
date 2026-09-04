@@ -1,13 +1,14 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiSuccess } from "@/types/api";
-import type { Live, LiveCreateRequest, LiveCreateResponse } from "@/types/live";
+import type {
+  BroadcastCredential,
+  Live,
+  LiveCreateRequest,
+  LiveCreateResponse,
+  LivePlayback,
+  LiveStreamStatus,
+} from "@/types/live";
 
-/**
- * 라이브를 만들고 IVS 채널을 발급받는다.
- *
- * 응답의 broadcastCredential.streamKey는 서버가 저장하지 않아 이 응답에서만 받을 수 있다.
- * 호출부는 이 값을 메모리 밖으로 내보내지 않는다.
- */
 export async function createLive(
   request: LiveCreateRequest,
 ): Promise<LiveCreateResponse> {
@@ -25,6 +26,41 @@ export async function createLive(
 export async function getLive(publicId: string): Promise<Live> {
   const { data } = await apiClient.get<ApiSuccess<Live>>(
     `/lives/public/${publicId}`,
+  );
+  return data.data;
+}
+
+/** 이전 키가 즉시 무효가 되므로 송출 중에 부르면 방송이 끊긴다. */
+export async function reissueBroadcastCredential(
+  liveId: number,
+): Promise<BroadcastCredential> {
+  const { data } = await apiClient.post<ApiSuccess<BroadcastCredential>>(
+    `/lives/${liveId}/broadcast-credentials`,
+  );
+  return data.data;
+}
+
+/** 이 호출이 READY → LIVE 전이를 일으킨다. 셀러 화면에서만 폴링한다. */
+export async function getLiveStreamStatus(
+  liveId: number,
+): Promise<LiveStreamStatus> {
+  const { data } = await apiClient.get<ApiSuccess<LiveStreamStatus>>(
+    `/lives/${liveId}/stream-status`,
+  );
+  return data.data;
+}
+
+/** 시청자 대기 화면은 stream-status 대신 반드시 이쪽을 폴링한다 (IVS 쿼터). */
+export async function getLivePlayback(publicId: string): Promise<LivePlayback> {
+  const { data } = await apiClient.get<ApiSuccess<LivePlayback>>(
+    `/lives/public/${publicId}/playback`,
+  );
+  return data.data;
+}
+
+export async function endLive(liveId: number): Promise<Live> {
+  const { data } = await apiClient.post<ApiSuccess<Live>>(
+    `/lives/${liveId}/end`,
   );
   return data.data;
 }

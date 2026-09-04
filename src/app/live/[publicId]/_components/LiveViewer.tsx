@@ -3,8 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { LivePlayer } from "./LivePlayer";
 import { ApiRequestError } from "@/lib/api-error";
-import { getLive } from "@/app/live/_lib/live-api";
+import { getLive, getLivePlayback } from "@/app/live/_lib/live-api";
 import { LIVE_ERROR_CODE } from "@/types/live";
+
+const PLAYBACK_POLL_MS = 4000;
 
 export function LiveViewer({ publicId }: { publicId: string }) {
   const {
@@ -14,6 +16,13 @@ export function LiveViewer({ publicId }: { publicId: string }) {
   } = useQuery({
     queryKey: ["live", publicId],
     queryFn: () => getLive(publicId),
+  });
+
+  const { data: playback } = useQuery({
+    queryKey: ["live-playback", publicId],
+    queryFn: () => getLivePlayback(publicId),
+    refetchInterval: (query) =>
+      query.state.data?.status === "ENDED" ? false : PLAYBACK_POLL_MS,
   });
 
   if (isPending) {
@@ -43,7 +52,16 @@ export function LiveViewer({ publicId }: { publicId: string }) {
           </p>
         )}
       </div>
-      <LivePlayer playbackUrl={live.playbackUrl} />
+
+      {playback?.status === "LIVE" ? (
+        <LivePlayer playbackUrl={playback.playbackUrl} />
+      ) : (
+        <div className="flex aspect-[9/16] w-full items-center justify-center rounded-xl bg-zinc-900 text-sm text-zinc-400">
+          {playback?.status === "ENDED"
+            ? "방송이 종료되었습니다"
+            : "아직 방송이 시작되지 않았습니다"}
+        </div>
+      )}
     </div>
   );
 }
