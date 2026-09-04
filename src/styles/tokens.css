@@ -142,73 +142,73 @@
   --color-stroke-warning-solid: #9b7821;
   --color-stroke-informative-solid: #217cf9;
   --color-stroke-brand: #fc8367;
-  --radius-2: 0.125rem;
-  --radius-4: 0.25rem;
-  --radius-6: 0.375rem;
-  --radius-8: 0.5rem;
-  --radius-10: 0.625rem;
-  --radius-12: 0.75rem;
-  --radius-14: 0.875rem;
-  --radius-16: 1rem;
-  --radius-20: 1.25rem;
-  --radius-24: 1.5rem;
-  --radius-r0-5: 0.125rem;
-  --radius-r1: 0.25rem;
-  --radius-r1-5: 0.375rem;
-  --radius-r2: 0.5rem;
-  --radius-r2-5: 0.625rem;
-  --radius-r3: 0.75rem;
-  --radius-r3-5: 0.875rem;
-  --radius-r4: 1rem;
-  --radius-r5: 1.25rem;
-  --radius-r6: 1.5rem;
-  --radius-full: 624.9375rem;
-  --spacing-2: 0.125rem;
-  --spacing-4: 0.25rem;
-  --spacing-5: 0.3125rem;
-  --spacing-6: 0.375rem;
-  --spacing-8: 0.5rem;
-  --spacing-10: 0.625rem;
-  --spacing-12: 0.75rem;
-  --spacing-14: 0.875rem;
-  --spacing-16: 1rem;
-  --spacing-18: 1.125rem;
-  --spacing-20: 1.25rem;
-  --spacing-24: 1.5rem;
-  --spacing-28: 1.75rem;
-  --spacing-32: 2rem;
-  --spacing-36: 2.25rem;
-  --spacing-40: 2.5rem;
-  --spacing-48: 3rem;
-  --spacing-52: 3.25rem;
-  --spacing-56: 3.5rem;
-  --spacing-64: 4rem;
-  --spacing-x0-5: 0.125rem;
-  --spacing-x1: 0.25rem;
-  --spacing-x1-5: 0.375rem;
-  --spacing-x2: 0.5rem;
-  --spacing-x2-5: 0.625rem;
-  --spacing-x3: 0.75rem;
-  --spacing-x3-5: 0.875rem;
-  --spacing-x4: 1rem;
-  --spacing-x4-5: 1.125rem;
-  --spacing-x5: 1.25rem;
-  --spacing-x6: 1.5rem;
-  --spacing-x7: 1.75rem;
-  --spacing-x8: 2rem;
-  --spacing-x9: 2.25rem;
-  --spacing-x10: 2.5rem;
-  --spacing-x12: 3rem;
-  --spacing-x13: 3.25rem;
-  --spacing-x14: 3.5rem;
-  --spacing-x16: 4rem;
-  --spacing-global-gutter: 1rem;
-  --spacing-component-default: 0.75rem;
-  --spacing-nav-to-title: 1.25rem;
-  --spacing-screen-bottom: 3.5rem;
-  --spacing-between-text: 0.375rem;
-  --spacing-between-chips: 0.5rem;
-  --font-pretendard: "Pretendard", sans-serif;
+  --radius-2: 0.2rem;
+  --radius-4: 0.4rem;
+  --radius-6: 0.6rem;
+  --radius-8: 0.8rem;
+  --radius-10: 1rem;
+  --radius-12: 1.2rem;
+  --radius-14: 1.4rem;
+  --radius-16: 1.6rem;
+  --radius-20: 2rem;
+  --radius-24: 2.4rem;
+  --radius-r0-5: 0.2rem;
+  --radius-r1: 0.4rem;
+  --radius-r1-5: 0.6rem;
+  --radius-r2: 0.8rem;
+  --radius-r2-5: 1rem;
+  --radius-r3: 1.2rem;
+  --radius-r3-5: 1.4rem;
+  --radius-r4: 1.6rem;
+  --radius-r5: 2rem;
+  --radius-r6: 2.4rem;
+  --radius-full: 999.9rem;
+  --spacing-2: 0.2rem;
+  --spacing-4: 0.4rem;
+  --spacing-5: 0.5rem;
+  --spacing-6: 0.6rem;
+  --spacing-8: 0.8rem;
+  --spacing-10: 1rem;
+  --spacing-12: 1.2rem;
+  --spacing-14: 1.4rem;
+  --spacing-16: 1.6rem;
+  --spacing-18: 1.8rem;
+  --spacing-20: 2rem;
+  --spacing-24: 2.4rem;
+  --spacing-28: 2.8rem;
+  --spacing-32: 3.2rem;
+  --spacing-36: 3.6rem;
+  --spacing-40: 4rem;
+  --spacing-48: 4.8rem;
+  --spacing-52: 5.2rem;
+  --spacing-56: 5.6rem;
+  --spacing-64: 6.4rem;
+  --spacing-x0-5: 0.2rem;
+  --spacing-x1: 0.4rem;
+  --spacing-x1-5: 0.6rem;
+  --spacing-x2: 0.8rem;
+  --spacing-x2-5: 1rem;
+  --spacing-x3: 1.2rem;
+  --spacing-x3-5: 1.4rem;
+  --spacing-x4: 1.6rem;
+  --spacing-x4-5: 1.8rem;
+  --spacing-x5: 2rem;
+  --spacing-x6: 2.4rem;
+  --spacing-x7: 2.8rem;
+  --spacing-x8: 3.2rem;
+  --spacing-x9: 3.6rem;
+  --spacing-x10: 4rem;
+  --spacing-x12: 4.8rem;
+  --spacing-x13: 5.2rem;
+  --spacing-x14: 5.6rem;
+  --spacing-x16: 6.4rem;
+  --spacing-global-gutter: 1.6rem;
+  --spacing-component-default: 1.2rem;
+  --spacing-nav-to-title: 2rem;
+  --spacing-screen-bottom: 5.6rem;
+  --spacing-between-text: 0.6rem;
+  --spacing-between-chips: 0.8rem;
+  --font-pretendard: var(--font-pretendard-local), sans-serif;
 }
 
 @theme inline {
@@ -424,7 +424,7 @@
 @utility text-h1 {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 3rem;
+  font-size: 4.8rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
@@ -432,7 +432,7 @@
 @utility text-h2 {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 2.625rem;
+  font-size: 4.2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
@@ -440,7 +440,7 @@
 @utility text-h3 {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 2.125rem;
+  font-size: 3.4rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
@@ -448,167 +448,167 @@
 @utility text-h4 {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 2.4rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-t1-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 2.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t1-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: 2.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t1-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1.5rem;
+  font-size: 2.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t1-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1.5rem;
+  font-size: 2.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t2-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t2-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: 2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t2-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1.25rem;
+  font-size: 2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t2-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1.25rem;
+  font-size: 2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t3-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t3-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t3-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-t3-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st1-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st1-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st1-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st1-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st2-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st2-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st2-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-st2-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
@@ -616,7 +616,7 @@
 @utility text-b-l1-bold {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.6;
   letter-spacing: 0em;
 }
@@ -624,7 +624,7 @@
 @utility text-b-l1-medium {
   font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.6;
   letter-spacing: 0em;
 }
@@ -632,7 +632,7 @@
 @utility text-b-l1-regular {
   font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.6;
   letter-spacing: 0em;
 }
@@ -640,7 +640,7 @@
 @utility text-b-l2-bold {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.6;
   letter-spacing: 0em;
 }
@@ -648,7 +648,7 @@
 @utility text-b-l2-medium {
   font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.6;
   letter-spacing: 0em;
 }
@@ -656,7 +656,7 @@
 @utility text-b-l2-regular {
   font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.6;
   letter-spacing: 0em;
 }
@@ -664,7 +664,7 @@
 @utility text-b-m1-bold {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
@@ -672,7 +672,7 @@
 @utility text-b-m1-medium {
   font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
@@ -680,7 +680,7 @@
 @utility text-b-m1-regular {
   font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
@@ -688,7 +688,7 @@
 @utility text-b-m2-bold {
   font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
@@ -696,7 +696,7 @@
 @utility text-b-m2-medium {
   font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
@@ -704,439 +704,439 @@
 @utility text-b-m2-regular {
   font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-b1-reading-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b1-reading-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b1-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b1-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b2-reading-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b2-reading-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b2-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b2-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b3-reading-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b3-reading-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b3-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b3-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b4-reading-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b4-reading-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b4-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b4-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b5-reading-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b5-reading-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.6;
   letter-spacing: -0.02em;
 }
 
 @utility text-b5-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-b5-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
 @utility text-c1-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-c1-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-c1-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-c2-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-c2-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-c2-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   letter-spacing: 0em;
 }
 
 @utility text-l1-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l1-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l1-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l2-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l2-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l2-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l3-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l3-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l3-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l4-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l4-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l4-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l5-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l5-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l5-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l6-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.6875rem;
+  font-size: 1.1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l6-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.6875rem;
+  font-size: 1.1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l6-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.6875rem;
+  font-size: 1.1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l1-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.6rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l2-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l3-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l4-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 @utility text-l5-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l6-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.6875rem;
+  font-size: 1.1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l7-bold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 700;
-  font-size: 0.625rem;
+  font-size: 1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l7-semibold {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 600;
-  font-size: 0.625rem;
+  font-size: 1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l7-medium {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 500;
-  font-size: 0.625rem;
+  font-size: 1rem;
   line-height: 1;
   letter-spacing: 0em;
 }
 
 @utility text-l7-regular {
-  font-family: var(--font-Pretendard);
+  font-family: var(--font-pretendard);
   font-weight: 400;
-  font-size: 0.625rem;
+  font-size: 1rem;
   line-height: 1;
   letter-spacing: 0em;
 }

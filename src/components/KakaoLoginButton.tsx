@@ -9,13 +9,15 @@ export function KakaoLoginButton() {
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="text-fg-neutral-solid flex h-fit w-[35rem] items-center justify-center gap-[0.8rem] rounded-[1.2rem] bg-[#FEE500] px-[2rem] py-[1.6rem] text-sm font-medium transition-colors hover:bg-[#FEE500F0]"
-    >
-      <KakaoIcon className="size-[2.4rem]" />
-      Kakao로 시작하기
-    </button>
+    <div className="flex h-fit w-full flex-col gap-12 px-20 pt-10 pb-20">
+      <button
+        type="button"
+        onClick={handleClick}
+        className="text-l1-semibold text-fg-neutral-solid rounded-12 flex h-[5.6rem] w-full items-center justify-center gap-6 bg-[#FEE500] px-24 transition-colors hover:bg-[#FEE500F0]"
+      >
+        <KakaoIcon className="size-[2.2rem]" />
+        Kakao로 시작하기
+      </button>
+    </div>
   );
 }
