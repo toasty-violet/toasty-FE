@@ -2,17 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
-import { logout } from "@/lib/auth";
+import { clearSession, logout } from "@/lib/auth";
 
 export function LoginButton() {
   const router = useRouter();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
 
   //로그인 상태면 로그아웃, 아니면 로그인 페이지로 이동
   const handleClick = () => {
     if (isLoggedIn) {
-      logout().finally(() => clearAuth());
+      logout().finally(() => clearSession());
       return;
     }
 

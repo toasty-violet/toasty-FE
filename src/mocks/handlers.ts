@@ -1,5 +1,6 @@
 import { http, HttpResponse } from "msw";
 import type { Live, LiveCreateResponse } from "@/types/live";
+import type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
@@ -29,7 +30,48 @@ let nextLiveId = 1;
 const seeded = buildLive(nextLiveId++, "목 라이브", "시청 화면 확인용");
 lives.set(seeded.publicId, seeded);
 
+// 목 로그인 시나리오는 주소의 쿼리로 바꾼다.
+// ?mockRole=CUSTOMER | none 으로 역할을, ?mockAuth=guest 로 비로그인 상태를 확인할 수 있다.
+// 리다이렉트로 쿼리가 사라져도 시나리오가 유지되도록 첫 진입 값을 기억한다.
+let scenario: { role: User["role"]; isGuest: boolean } | undefined;
+
+function mockScenario() {
+  if (!scenario) {
+    const mockRole = new URLSearchParams(window.location.search).get(
+      "mockRole",
+    );
+    scenario = {
+      // none 은 아직 역할을 고르지 않은 유저다. 서버는 이때 role 키를 아예 빼고 준다
+      role:
+        mockRole === "CUSTOMER"
+          ? "CUSTOMER"
+          : mockRole === "none"
+            ? undefined
+            : "SELLER",
+      isGuest:
+        new URLSearchParams(window.location.search).get("mockAuth") === "guest",
+    };
+  }
+  return scenario;
+}
+
 export const handlers = [
+  http.get(`${BASE_URL}/login/kakao`, () =>
+    ok({ accessToken: "mock-access-token" }),
+  ),
+
+  http.post(`${BASE_URL}/refresh`, () =>
+    mockScenario().isGuest
+      ? fail(401, "AUTH_REFRESH_TOKEN_EXPIRED", "다시 로그인해 주세요.")
+      : ok({ accessToken: "mock-access-token" }),
+  ),
+
+  http.post(`${BASE_URL}/logout`, () => ok("로그아웃되었습니다.")),
+
+  http.get(`${BASE_URL}/users/me`, () =>
+    ok<User>({ role: mockScenario().role, nickname: "user_a3f9c2e81b04" }),
+  ),
+
   http.post(`${BASE_URL}/lives`, async ({ request }) => {
     const { title, description } = (await request.json()) as {
       title: string;
