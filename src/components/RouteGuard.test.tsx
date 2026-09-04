@@ -111,7 +111,7 @@ describe("RouteGuard", () => {
   });
 
   // 역할 미선택 유저가 권한 화면에 오면 홈이 아니라 역할 선택으로 보낸다
-  it("역할 미선택 유저는 /select-role 로 보낸다", () => {
+  it("역할 미선택 유저는 /onboarding 으로 보낸다", () => {
     setState("authed", { nickname: "신규" });
     render(
       <RouteGuard require="SELLER">
@@ -120,7 +120,7 @@ describe("RouteGuard", () => {
     );
 
     expect(screen.queryByText("스튜디오")).not.toBeInTheDocument();
-    expect(replaceMock).toHaveBeenCalledWith("/select-role");
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding");
   });
 
   it("비로그인이면 로그인 페이지로 보낸다", () => {
@@ -211,7 +211,7 @@ describe("RouteGuard", () => {
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
-  // 이미 역할을 고른 사람이 /select-role 에 다시 오면 제 역할의 화면으로 되돌려보낸다
+  // 이미 역할을 고른 사람이 /onboarding 에 다시 오면 제 역할의 화면으로 되돌려보낸다
   it("onboarding 은 이미 역할이 있는 유저를 제 화면으로 보낸다", () => {
     setState("authed", { role: "SELLER", nickname: "셀러" });
     render(

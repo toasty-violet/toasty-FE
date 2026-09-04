@@ -8,7 +8,7 @@ export function homePathFor(user: User | null) {
   }
   // 역할 미선택 유저는 role 키 자체가 없어 undefined 로 들어온다
   if (user && !user.role) {
-    return "/select-role";
+    return "/onboarding";
   }
   return "/";
 }

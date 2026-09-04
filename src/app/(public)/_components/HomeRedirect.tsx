@@ -7,7 +7,7 @@ import { useUserStore } from "@/store/user-store";
 import { homePathFor } from "@/lib/routes";
 
 //홈에 도착한 유저를 역할에 맞는 화면으로 보낸다.
-//SELLER 는 /shop, 역할 미선택은 /select-role, CUSTOMER 와 비로그인은 홈에 머문다.
+//SELLER 는 /shop, 역할 미선택은 /onboarding, CUSTOMER 와 비로그인은 홈에 머문다.
 export function HomeRedirect() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
