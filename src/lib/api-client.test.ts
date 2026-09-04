@@ -133,6 +133,21 @@ describe("토큰 재발급 직렬화", () => {
     expect(window.location.assign).not.toHaveBeenCalled();
   });
 
+  // 성공한 Promise를 계속 재사용하면 두 번째 만료부터 옛 토큰만 돌려줘 무한 401에 빠진다
+  it("성공한 재발급 이후의 401도 다시 /refresh를 시도한다", async () => {
+    const { requestRefresh } = await loadClient();
+    postMock.mockResolvedValueOnce({
+      data: { success: true, data: { accessToken: "first" }, error: null },
+    });
+    await expect(requestRefresh()).resolves.toBe("first");
+
+    postMock.mockResolvedValueOnce({
+      data: { success: true, data: { accessToken: "second" }, error: null },
+    });
+    await expect(requestRefresh()).resolves.toBe("second");
+    expect(postMock).toHaveBeenCalledTimes(2);
+  });
+
   it("실패한 재발급 이후의 401은 다시 /refresh를 시도할 수 있다", async () => {
     const { requestRefresh } = await loadClient();
     postMock.mockRejectedValueOnce(new Error("일시 실패"));

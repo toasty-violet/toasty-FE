@@ -65,7 +65,7 @@ let refreshPromise: Promise<string> | null = null;
 // 동시에 들어온 401이 /refresh를 중복 호출하지 않도록 하나의 Promise를 공유한다
 export function requestRefresh() {
   if (!refreshPromise) {
-    refreshPromise = refreshClient
+    const pending: Promise<string> = refreshClient
       .post<RefreshResponse>("/refresh")
       .then(({ data }) => {
         const { accessToken } = data.data;
@@ -73,11 +73,14 @@ export function requestRefresh() {
         useAuthStore.getState().setAccessToken(accessToken);
         return accessToken;
       })
-      .catch((error) => {
-        // 실패한 경우에만 해제해 다음 401이 재시도할 수 있게 한다
-        refreshPromise = null;
-        throw error;
+      .finally(() => {
+        // 성공이든 실패든 해제해야 다음 만료 때 다시 재발급할 수 있다.
+        // 이 사이 새 요청이 다음 Promise를 걸어뒀다면 그건 건드리지 않는다
+        if (refreshPromise === pending) {
+          refreshPromise = null;
+        }
       });
+    refreshPromise = pending;
   }
   return refreshPromise;
 }

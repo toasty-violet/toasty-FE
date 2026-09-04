@@ -1,5 +1,4 @@
-import { Header } from "@/components/Header";
-import { LoginButton } from "@/components/LoginButton";
+import { Header } from "@/components/headers/Header";
 import { CustomerNav } from "@/components/navigations/CustomerNav";
 import { HomeRedirect } from "./_components/HomeRedirect";
 
@@ -13,9 +12,7 @@ export default function Home() {
         rightHref="/search"
         rightLabel="검색"
       />
-      <main className="flex flex-1 flex-col items-center justify-center">
-        <LoginButton />
-      </main>
+      <main className="flex flex-1 flex-col" />
       <CustomerNav />
     </div>
   );
