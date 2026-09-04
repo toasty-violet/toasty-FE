@@ -12,6 +12,9 @@ const pretendard = localFont({
 
 const preview: Preview = {
   parameters: {
+    nextjs: {
+      appDirectory: true,
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
