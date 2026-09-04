@@ -13,7 +13,12 @@ import StoreBlank from "./assets/StoreBlank.svg";
 import StoreFilled from "./assets/StoreFilled.svg";
 
 const NAV_ITEMS = [
-  { href: "/live", label: "라이브", icon: LiveBlank, activeIcon: LiveFilled },
+  {
+    href: "/shop/lives",
+    label: "라이브",
+    icon: LiveBlank,
+    activeIcon: LiveFilled,
+  },
   {
     href: "/shop/products",
     label: "상품",
