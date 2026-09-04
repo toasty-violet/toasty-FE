@@ -1,5 +1,5 @@
-import { BottomBar } from "@/components/BottomBar";
 import { LoginButton } from "@/components/LoginButton";
+import { CustomerNav } from "@/components/navigations/CustomerNav";
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
       <main className="flex flex-1 flex-col items-center justify-center">
         <LoginButton />
       </main>
-      <BottomBar />
+      <CustomerNav />
     </div>
   );
 }
