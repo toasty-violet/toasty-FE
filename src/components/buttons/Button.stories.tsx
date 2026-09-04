@@ -20,7 +20,7 @@ const meta = {
       control: "inline-radio",
       options: ["primary", "secondary", "assistive"],
     },
-    size: { control: "inline-radio", options: ["lg", "md", "sm"] },
+    size: { control: "inline-radio", options: ["lg", "md", "sm", "xs"] },
     disabled: { control: "boolean" },
     type: { control: "inline-radio", options: ["button", "submit"] },
   },
@@ -44,7 +44,7 @@ export const Disabled: Story = {
 };
 
 const COLORS = ["primary", "secondary", "assistive"] as const;
-const SIZES = ["lg", "md", "sm"] as const;
+const SIZES = ["lg", "md", "sm", "xs"] as const;
 
 /** Solid 전체 조합. 같은 크기 기준으로 위가 일반, 아래가 disabled 상태입니다. */
 export const SolidMatrix: Story = {

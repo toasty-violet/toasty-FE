@@ -1,6 +1,6 @@
 type ButtonVariant = "solid" | "outlined";
 type ButtonColor = "primary" | "secondary" | "assistive";
-type ButtonSize = "lg" | "md" | "sm";
+type ButtonSize = "lg" | "md" | "sm" | "xs";
 
 type ButtonProps = {
   label: string;
@@ -15,7 +15,8 @@ type ButtonProps = {
 const sizeStyles: Record<ButtonSize, string> = {
   lg: "text-l1-semibold h-56 gap-6 rounded-12 px-24",
   md: "text-l4-semibold h-[4.4rem] gap-4 rounded-10 px-20",
-  sm: "text-l5-semibold h-32 gap-4 rounded-8 px-12",
+  sm: "text-l5-semibold h-36 gap-4 rounded-8 px-16",
+  xs: "text-l5-semibold h-32 gap-4 rounded-8 px-12",
 };
 
 const solidStyles: Record<ButtonColor, string> = {
