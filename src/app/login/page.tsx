@@ -1,5 +1,5 @@
 import Logo from "@/assets/Logo.svg";
-import { KakaoLoginButton } from "@/components/KakaoLoginButton";
+import { KakaoLoginButton } from "@/components/buttons/KakaoLoginButton";
 
 export default function LoginPage() {
   return (
