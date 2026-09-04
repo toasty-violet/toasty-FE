@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ApiRequestError } from "@/lib/api-error";
 import { createLive } from "@/app/live/_lib/live-api";
-import { describeLiveError } from "@/lib/live-error";
+import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { LiveCreateResponse } from "@/types/live";
 
 export function LiveCreateForm({

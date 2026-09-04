@@ -51,9 +51,7 @@ export async function getLiveStreamStatus(
 }
 
 /** 시청자 대기 화면은 stream-status 대신 반드시 이쪽을 폴링한다 (IVS 쿼터). */
-export async function getLivePlayback(
-  publicId: string,
-): Promise<LivePlayback> {
+export async function getLivePlayback(publicId: string): Promise<LivePlayback> {
   const { data } = await apiClient.get<ApiSuccess<LivePlayback>>(
     `/lives/public/${publicId}/playback`,
   );

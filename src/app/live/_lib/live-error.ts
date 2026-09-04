@@ -1,4 +1,4 @@
-import { ApiRequestError } from "./api-error";
+import { ApiRequestError } from "@/lib/api-error";
 import { LIVE_ERROR_CODE } from "@/types/live";
 
 export function describeLiveError(error: unknown): {

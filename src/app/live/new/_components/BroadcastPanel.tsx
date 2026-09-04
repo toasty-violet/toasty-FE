@@ -8,7 +8,7 @@ import {
   getLiveStreamStatus,
   reissueBroadcastCredential,
 } from "@/app/live/_lib/live-api";
-import { describeLiveError } from "@/lib/live-error";
+import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { BroadcastCredential, Live } from "@/types/live";
 
 type Status =
@@ -50,7 +50,8 @@ export function BroadcastPanel({
         return;
       }
 
-      // 얻는 즉시 넣어야 중간에 정리가 지나가도 트랙을 놓치지 않는다.
+      // 카메라와 마이크는 따로 요청한다. SDK가 각각을 별도 입력으로 받는다.
+      // 얻는 즉시 streams 에 넣어야 중간에 정리가 지나가도 트랙을 놓치지 않는다.
       const videoStream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 720 }, height: { ideal: 1280 } },
       });
