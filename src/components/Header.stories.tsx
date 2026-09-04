@@ -1,10 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { fn } from "storybook/test";
 
 import { Header } from "./Header";
-import MoreIcon from "@/assets/More.svg";
-import SearchIcon from "@/assets/Search.svg";
-import ShareIcon from "@/assets/Share.svg";
 
 const meta = {
   title: "Components/Header",
@@ -14,13 +10,11 @@ const meta = {
   },
   args: {
     title: "화면 이름",
-    onRightClick: fn(),
   },
   argTypes: {
     title: { control: "text" },
     showBack: { control: "boolean" },
     rightLabel: { control: "text" },
-    rightIcon: { control: false },
   },
 } satisfies Meta<typeof Header>;
 
@@ -31,7 +25,8 @@ export const Default: Story = {};
 
 export const WithRightIcon: Story = {
   args: {
-    rightIcon: MoreIcon,
+    rightIconName: "more",
+    rightHref: "#",
     rightLabel: "더보기",
   },
 };
@@ -46,7 +41,8 @@ export const WithoutBack: Story = {
 export const LongTitle: Story = {
   args: {
     title: "아주 긴 화면 이름이 들어간 경우",
-    rightIcon: ShareIcon,
+    rightIconName: "share",
+    rightHref: "#",
     rightLabel: "공유하기",
   },
 };
@@ -55,9 +51,14 @@ export const LongTitle: Story = {
 export const RightIconVariants: Story = {
   render: (args) => (
     <div className="flex flex-col gap-8">
-      <Header {...args} rightIcon={MoreIcon} rightLabel="더보기" />
-      <Header {...args} rightIcon={SearchIcon} rightLabel="검색" />
-      <Header {...args} rightIcon={ShareIcon} rightLabel="공유하기" />
+      <Header {...args} rightIconName="more" rightHref="#" rightLabel="더보기" />
+      <Header {...args} rightIconName="search" rightHref="#" rightLabel="검색" />
+      <Header
+        {...args}
+        rightIconName="share"
+        rightHref="#"
+        rightLabel="공유하기"
+      />
     </div>
   ),
 };
