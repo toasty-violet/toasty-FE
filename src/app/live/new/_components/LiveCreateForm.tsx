@@ -4,33 +4,8 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ApiRequestError } from "@/lib/api-error";
 import { createLive } from "@/app/live/_lib/live-api";
-import { LIVE_ERROR_CODE } from "@/types/live";
+import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { LiveCreateResponse } from "@/types/live";
-
-/** 502는 재시도해도 같은 결과라 재시도를 권하지 않고, 503만 재시도를 유도한다. */
-function describeError(error: unknown): { message: string; canRetry: boolean } {
-  if (!(error instanceof ApiRequestError)) {
-    return {
-      message: "서버에 연결할 수 없습니다. 백엔드가 떠 있는지 확인해주세요.",
-      canRetry: true,
-    };
-  }
-
-  switch (error.code) {
-    case LIVE_ERROR_CODE.TEMPORARILY_UNAVAILABLE:
-      return {
-        message: `${error.message} 잠시 후 다시 시도해주세요.`,
-        canRetry: true,
-      };
-    case LIVE_ERROR_CODE.CHANNEL_CREATE_FAILED:
-      return {
-        message: `${error.message} 재시도해도 같은 결과라 백엔드에 알려야 합니다.`,
-        canRetry: false,
-      };
-    default:
-      return { message: error.message, canRetry: false };
-  }
-}
 
 export function LiveCreateForm({
   onCreated,
@@ -96,7 +71,7 @@ export function LiveCreateForm({
           role="alert"
           className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
         >
-          <p>{describeError(mutation.error).message}</p>
+          <p>{describeLiveError(mutation.error).message}</p>
           {fieldErrors && (
             <ul className="mt-1 list-inside list-disc">
               {fieldErrors.map((fieldError) => (
@@ -114,7 +89,7 @@ export function LiveCreateForm({
       >
         {mutation.isPending
           ? "라이브를 만드는 중…"
-          : mutation.error && describeError(mutation.error).canRetry
+          : mutation.error && describeLiveError(mutation.error).canRetry
             ? "다시 시도"
             : "라이브 만들기"}
       </button>

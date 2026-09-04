@@ -26,3 +26,21 @@ test("생성 후 시청 링크가 publicId 를 쓴다", async ({ page }) => {
     page.getByRole("heading", { name: "퍼블릭아이디 확인" }),
   ).toBeVisible();
 });
+
+test("방송 중인 라이브는 재생 화면을 보여준다", async ({ page }) => {
+  await page.goto("/live/mock-2");
+  await expect(
+    page.getByRole("heading", { name: "방송 중인 목 라이브" }),
+  ).toBeVisible();
+  await expect(page.locator("video")).toBeVisible();
+});
+
+test("종료된 라이브는 종료 안내를 보여준다", async ({ page }) => {
+  await page.goto("/live/mock-3");
+  await expect(page.getByText("방송이 종료되었습니다")).toBeVisible();
+});
+
+test("대기 중인 라이브는 시작 전 안내를 보여준다", async ({ page }) => {
+  await page.goto("/live/mock-1");
+  await expect(page.getByText("아직 방송이 시작되지 않았습니다")).toBeVisible();
+});

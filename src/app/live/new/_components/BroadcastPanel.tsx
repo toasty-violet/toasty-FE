@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AmazonIVSBroadcastClient } from "amazon-ivs-web-broadcast";
+import {
+  endLive,
+  getLiveStreamStatus,
+  reissueBroadcastCredential,
+} from "@/app/live/_lib/live-api";
+import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { BroadcastCredential, Live } from "@/types/live";
 
-type Status = "preparing" | "ready" | "starting" | "live" | "unavailable";
+type Status =
+  "preparing" | "ready" | "starting" | "live" | "ended" | "unavailable";
+
+const STREAM_STATUS_POLL_MS = 4000;
 
 export function BroadcastPanel({
   live,
@@ -16,10 +26,9 @@ export function BroadcastPanel({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
   const [status, setStatus] = useState<Status>("preparing");
-  const [connection, setConnection] = useState<string>("");
+  const [connection, setConnection] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
-  // SDK는 self·WebRTC에 의존하는 브라우저 전용이라 서버에서 import 되면 안 된다.
   useEffect(() => {
     let cancelled = false;
     let client: AmazonIVSBroadcastClient | undefined;
@@ -52,7 +61,6 @@ export function BroadcastPanel({
       });
       streams.push(audioStream);
 
-      // 정리가 이미 지나갔다면 여기서 직접 끈다.
       if (cancelled) {
         releaseStreams();
         return;
@@ -68,7 +76,6 @@ export function BroadcastPanel({
       }
       await client.addVideoInputDevice(videoStream, "camera", { index: 0 });
       await client.addAudioInputDevice(audioStream, "mic");
-      if (cancelled) return;
 
       client.emitter.on(
         IVSBroadcastClient.BroadcastClientEvents.CONNECTION_STATE_CHANGE,
@@ -108,7 +115,21 @@ export function BroadcastPanel({
     };
   }, [credential.ingestEndpoint]);
 
-  // 새로고침하면 streamKey가 사라져 라이브를 다시 만들어야 한다.
+  const { data: streamStatus } = useQuery({
+    queryKey: ["live-stream-status", live.liveId],
+    queryFn: () => getLiveStreamStatus(live.liveId),
+    enabled: status === "live",
+    refetchInterval: STREAM_STATUS_POLL_MS,
+  });
+
+  const endMutation = useMutation({
+    mutationFn: () => endLive(live.liveId),
+    onSuccess: () => {
+      clientRef.current?.stopBroadcast();
+      setStatus("ended");
+    },
+  });
+
   useEffect(() => {
     if (status !== "live") return;
     const warn = (event: BeforeUnloadEvent) => event.preventDefault();
@@ -122,9 +143,19 @@ export function BroadcastPanel({
 
     setStatus("starting");
     setMessage(null);
+
+    let fresh: BroadcastCredential;
+    try {
+      fresh = await reissueBroadcastCredential(live.liveId);
+    } catch (error: unknown) {
+      setStatus("ready");
+      setMessage(describeLiveError(error).message);
+      return;
+    }
+
     // 실패를 reject 대신 resolve 로 돌려주는 경우가 있어 반환값도 확인한다.
     const failure = await client
-      .startBroadcast(credential.streamKey)
+      .startBroadcast(fresh.streamKey, fresh.ingestEndpoint)
       .catch((error: unknown) => error);
 
     if (failure instanceof Error) {
@@ -133,11 +164,6 @@ export function BroadcastPanel({
       return;
     }
     setStatus("live");
-  }
-
-  function stopBroadcast() {
-    clientRef.current?.stopBroadcast();
-    setStatus("ready");
   }
 
   return (
@@ -161,7 +187,9 @@ export function BroadcastPanel({
           {status === "preparing" && "카메라를 준비하는 중…"}
           {status === "ready" && "준비됨"}
           {status === "starting" && "연결하는 중…"}
-          {status === "live" && "송출 중"}
+          {status === "live" &&
+            (streamStatus?.broadcasting ? "방송 중" : "서버 확인 대기")}
+          {status === "ended" && "방송이 종료되었습니다"}
           {status === "unavailable" && "송출할 수 없음"}
         </span>
         {connection && (
@@ -169,22 +197,23 @@ export function BroadcastPanel({
         )}
       </div>
 
-      {message && (
+      {(message || endMutation.error) && (
         <p
           role="alert"
           className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
         >
-          {message}
+          {message ?? describeLiveError(endMutation.error).message}
         </p>
       )}
 
       {status === "live" ? (
         <button
           type="button"
-          onClick={stopBroadcast}
-          className="rounded-lg bg-red-600 py-3 text-sm font-medium text-white"
+          onClick={() => endMutation.mutate()}
+          disabled={endMutation.isPending}
+          className="rounded-lg bg-red-600 py-3 text-sm font-medium text-white disabled:opacity-40"
         >
-          송출 중지
+          {endMutation.isPending ? "종료하는 중…" : "방송 종료"}
         </button>
       ) : (
         <button
@@ -196,10 +225,6 @@ export function BroadcastPanel({
           송출 시작
         </button>
       )}
-
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-        새로고침하면 송출 정보가 사라져 라이브를 다시 만들어야 합니다.
-      </p>
     </div>
   );
 }
