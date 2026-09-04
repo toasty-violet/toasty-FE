@@ -11,7 +11,7 @@ export default function NewLivePage() {
     <RouteGuard require="SELLER">
       <LiveCreateForm
         onCreated={(created) =>
-          router.push(`/live/${created.live.publicId}/studio`)
+          router.push(`/shop/lives/${created.live.publicId}/studio`)
         }
       />
     </RouteGuard>
