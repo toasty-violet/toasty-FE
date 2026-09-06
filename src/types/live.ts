@@ -7,6 +7,8 @@ export interface Live {
   title: string;
   description?: string;
   status: LiveStatus;
+  /** 방송 예정 시각. 이 시각에 자동으로 시작되지는 않는다. */
+  scheduledAt: string;
   playbackUrl: string;
   createdAt: string;
   startedAt?: string;
@@ -24,9 +26,33 @@ export interface LiveCreateResponse {
   broadcastCredential: BroadcastCredential;
 }
 
+/** 라이브에 편성할 상품. imageObjectKey 는 업로드 주소 발급에서 받은 값이다. */
+export interface LiveProductInput {
+  name: string;
+  price: number;
+  stockQuantity: number;
+  description?: string;
+  imageObjectKey: string;
+}
+
 export interface LiveCreateRequest {
   title: string;
   description?: string;
+  scheduledAt: string;
+  products: LiveProductInput[];
+}
+
+export interface ProductImageUploadFile {
+  contentType: string;
+  contentLength: number;
+}
+
+export interface ProductImageUpload {
+  /** 라이브 생성 요청에 그대로 넣는다. */
+  objectKey: string;
+  /** 이 주소로 사진 본문만 PUT 한다. */
+  uploadUrl: string;
+  expiresIn: number;
 }
 
 export interface LiveStreamStatus {
