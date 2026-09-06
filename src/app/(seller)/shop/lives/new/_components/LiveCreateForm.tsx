@@ -16,7 +16,7 @@ import type { LiveCreateResponse } from "@/types/live";
 import { LeaveConfirmModal } from "./LeaveConfirmModal";
 import { LiveScheduleField } from "./LiveScheduleField";
 import { ProductSetupForm } from "./ProductSetupForm";
-import { uploadDraftProducts } from "./upload-draft-products";
+import { toProductInputs, uploadDraftProducts } from "./upload-draft-products";
 import type { DraftProduct } from "./draft-product";
 
 const TITLE_MAX = 20;
@@ -49,7 +49,8 @@ export function LiveCreateForm({
   const [step, setStep] = useState<"info" | "products">("info");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [scheduledAt, setScheduledAt] = useState(defaultScheduledAt);
+  const [initialScheduledAt] = useState(defaultScheduledAt);
+  const [scheduledAt, setScheduledAt] = useState(initialScheduledAt);
   const [products, setProducts] = useState<DraftProduct[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
@@ -67,11 +68,13 @@ export function LiveCreateForm({
   const mutation = useMutation({
     mutationFn: async () => {
       const uploaded = await uploadDraftProducts(products);
+      // 저장이 실패해도 올린 사진은 남겨, 다시 시도할 때 또 올리지 않는다.
+      setProducts(uploaded);
       return createLive({
         title: title.trim(),
         description: description.trim() || undefined,
         scheduledAt: toLocalIso(scheduledAt),
-        products: uploaded,
+        products: toProductInputs(uploaded),
       });
     },
     onSuccess: onCreated,
@@ -80,25 +83,33 @@ export function LiveCreateForm({
   const pickFiles = (picked: FileList | null) => {
     if (!picked?.length) return;
 
+    // 문제 있는 파일만 걸러내고, 나머지는 그대로 담는다.
     const files = [...picked];
-    if (files.some((file) => !ACCEPTED_TYPES.includes(file.type))) {
-      setFileError("사진은 jpeg, png, webp만 올릴 수 있습니다.");
-      return;
-    }
-    if (files.some((file) => file.size > MAX_FILE_BYTES)) {
-      setFileError("사진은 10MB를 넘을 수 없습니다.");
-      return;
-    }
-    if (products.length + files.length > MAX_PRODUCTS) {
-      setFileError(`상품은 ${MAX_PRODUCTS}개까지 등록할 수 있습니다.`);
-      return;
-    }
+    const wrongType = files.filter(
+      (file) => !ACCEPTED_TYPES.includes(file.type),
+    );
+    const tooBig = files.filter(
+      (file) =>
+        ACCEPTED_TYPES.includes(file.type) && file.size > MAX_FILE_BYTES,
+    );
+    const room = MAX_PRODUCTS - products.length;
+    const usable = files
+      .filter((file) => !wrongType.includes(file) && !tooBig.includes(file))
+      .slice(0, Math.max(room, 0));
 
-    setFileError(null);
+    const reasons = [
+      wrongType.length && `${wrongType.length}장은 jpeg·png·webp가 아니라`,
+      tooBig.length && `${tooBig.length}장은 10MB를 넘어서`,
+      files.length - wrongType.length - tooBig.length > usable.length &&
+        `상품은 ${MAX_PRODUCTS}개까지만 등록할 수 있어`,
+    ].filter(Boolean);
+
+    setFileError(reasons.length ? `${reasons.join(", ")} 제외했습니다.` : null);
+    if (usable.length === 0) return;
     mutation.reset();
     setProducts([
       ...products,
-      ...files.map((file) => {
+      ...usable.map((file) => {
         const previewUrl = URL.createObjectURL(file);
         previewUrls.current.push(previewUrl);
         return {
@@ -151,7 +162,8 @@ export function LiveCreateForm({
   const isDirty =
     title.trim().length > 0 ||
     description.trim().length > 0 ||
-    products.length > 0;
+    products.length > 0 ||
+    scheduledAt.getTime() !== initialScheduledAt.getTime();
 
   const canSubmit =
     title.trim().length > 0 &&

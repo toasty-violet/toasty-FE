@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/buttons/Button";
 
 export function LeaveConfirmModal({
@@ -14,12 +14,40 @@ export function LeaveConfirmModal({
   onSave: () => void;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+    const opener = document.activeElement as HTMLElement | null;
+    const focusables = () => [
+      ...(dialogRef.current?.querySelectorAll<HTMLElement>(
+        "button:not([disabled])",
+      ) ?? []),
+    ];
+
+    focusables()[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      // 모달 밖으로 포커스가 새지 않게 양 끝을 이어 붙인다.
+      const items = focusables();
+      if (items.length === 0) return;
+      const edge = event.shiftKey ? items[0] : items[items.length - 1];
+      if (document.activeElement === edge) {
+        event.preventDefault();
+        (event.shiftKey ? items[items.length - 1] : items[0]).focus();
+      }
     };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      opener?.focus();
+    };
   }, [onClose]);
 
   return (
@@ -28,6 +56,7 @@ export function LeaveConfirmModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="leave-confirm-title"

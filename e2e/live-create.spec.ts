@@ -68,3 +68,40 @@ test("상품 설정에서 뒤로가기는 이전 단계로 돌아간다", async 
   await page.getByLabel("뒤로 가기").click();
   await expect(page.getByLabel("방송 제목")).toBeVisible();
 });
+
+test("규격에 안 맞는 사진만 걸러내고 나머지는 담는다", async ({ page }) => {
+  await page.goto("/shop/lives/new");
+  await page.getByLabel("방송 제목").fill("혼합 업로드");
+  await page.locator('input[type="file"]').setInputFiles([
+    photo("ok.png"),
+    {
+      name: "bad.gif",
+      mimeType: "image/gif",
+      buffer: Buffer.from(PNG, "base64"),
+    },
+  ]);
+
+  // 통과한 1장으로 상품 설정에 들어가고, 걸러낸 이유를 알려준다.
+  await expect(page.getByLabel("상품명")).toHaveCount(1);
+  await page.getByLabel("뒤로 가기").click();
+  await expect(page.getByText(/제외했습니다/)).toBeVisible();
+});
+
+test("날짜만 바꿔도 뒤로가기에서 물어본다", async ({ page }) => {
+  await page.goto("/shop/lives/new");
+  await page.getByLabel("날짜").fill("2027-01-01");
+  await page.getByLabel("뒤로 가기").click();
+
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("모달이 열리면 포커스가 모달 안으로 들어간다", async ({ page }) => {
+  await page.goto("/shop/lives/new");
+  await page.getByLabel("방송 제목").fill("포커스 확인");
+  await page.getByLabel("뒤로 가기").click();
+
+  const focused = await page.evaluate(
+    () => document.activeElement?.textContent,
+  );
+  expect(focused).toBe("저장 안 함");
+});

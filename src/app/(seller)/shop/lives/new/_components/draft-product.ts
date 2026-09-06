@@ -7,4 +7,6 @@ export interface DraftProduct {
   name: string;
   price: number;
   stockQuantity: number;
+  /** 사진을 올린 뒤 받은 값. 재시도에서 같은 사진을 또 올리지 않으려고 남긴다. */
+  imageObjectKey?: string;
 }
