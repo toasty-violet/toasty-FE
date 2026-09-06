@@ -17,6 +17,8 @@ export type InputFieldBaseProps = {
   maxLetter?: number;
   disabled?: boolean;
   name?: string;
+  /** 지우기 버튼 노출 여부. */
+  clearable?: boolean;
 };
 
 /** Input/Textarea가 공유하는, 실제 입력 요소에 그대로 넘기는 속성. */
@@ -69,6 +71,7 @@ export function InputField({
   maxLetter,
   disabled = false,
   name,
+  clearable = true,
   children,
   boxClassName,
   renderAffix,
@@ -84,7 +87,7 @@ export function InputField({
     : showSuccess
       ? successMessage
       : message;
-  const showClear = !disabled && value.length > 0;
+  const showClear = clearable && !disabled && value.length > 0;
 
   //조건에 맞지 않는 값일 경우 붉은 테두리
   const borderStyle = error

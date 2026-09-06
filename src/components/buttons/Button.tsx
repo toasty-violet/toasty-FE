@@ -10,6 +10,8 @@ type ButtonProps = {
   disabled?: boolean;
   onClick?: () => void;
   type?: "button" | "submit";
+  /** 폭 같은 배치 관련 스타일만 넘긴다. */
+  className?: string;
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -49,6 +51,7 @@ export function Button({
   disabled = false,
   onClick,
   type = "button",
+  className = "",
 }: ButtonProps) {
   const colorStyle =
     variant === "outlined"
@@ -64,7 +67,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center transition-colors ${sizeStyles[size]} ${colorStyle}`}
+      className={`flex items-center justify-center transition-colors ${sizeStyles[size]} ${colorStyle} ${className}`}
     >
       {label}
     </button>
