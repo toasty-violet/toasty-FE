@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import { useUserStore } from "@/store/user-store";
+import { homePathFor } from "@/lib/routes";
 
 //홈에 도착한 유저를 역할에 맞는 화면으로 보낸다.
 //SELLER 는 /shop, 역할 미선택은 /select-role, CUSTOMER 와 비로그인은 홈에 머문다.
@@ -19,13 +20,10 @@ export function HomeRedirect() {
     if (isPending || status !== "authed" || !user) {
       return;
     }
-    if (user.role === "SELLER") {
-      router.replace("/shop");
-      return;
-    }
-    // 역할 미선택 유저는 role 키 자체가 없어 undefined 로 들어온다
-    if (!user.role) {
-      router.replace("/select-role");
+    const target = homePathFor(user);
+    // CUSTOMER 는 홈이 제 화면이라 그대로 머문다
+    if (target !== "/") {
+      router.replace(target);
     }
   }, [isPending, status, user, router]);
 
