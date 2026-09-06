@@ -51,27 +51,27 @@ test("SELLER 는 홈에서 /shop 으로 이동한다", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("role 이 null 이면 홈에서 /select-role 로 이동한다", async ({ page }) => {
+test("role 이 null 이면 홈에서 /onboarding 로 이동한다", async ({ page }) => {
   await stub(page, { loggedIn: true, me: { role: null, nickname: "t" } });
   await page.goto("/");
 
-  await expect(page).toHaveURL(/\/select-role$/);
+  await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "역할 선택 페이지 (/select-role)" }),
+    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
   ).toBeVisible();
 });
 
 // 실제 응답은 {"success":true,"data":{"nickname":"user_0a8c9dbad596"}} 처럼 role 키가 아예 없다
-test("role 키가 없으면 홈에서 /select-role 로 이동한다", async ({ page }) => {
+test("role 키가 없으면 홈에서 /onboarding 로 이동한다", async ({ page }) => {
   await stub(page, {
     loggedIn: true,
     me: { nickname: "user_0a8c9dbad596" },
   });
   await page.goto("/");
 
-  await expect(page).toHaveURL(/\/select-role$/);
+  await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "역할 선택 페이지 (/select-role)" }),
+    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
   ).toBeVisible();
 });
 

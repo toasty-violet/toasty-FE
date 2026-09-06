@@ -1,3 +1,10 @@
 {
-  "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+  "css.validate": false,
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
 }
