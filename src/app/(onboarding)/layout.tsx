@@ -1,4 +1,4 @@
-import { RouteGuard } from "@/components/RouteGuard";
+import { RouteGuard } from "@/components/RouteGuards/RouteGuard";
 
 //로그인은 했지만 아직 역할을 고르지 않은 유저(role이 없느 사람)만 접속할 수 있다.
 export default function OnboardingLayout({ children }: LayoutProps<"/">) {
