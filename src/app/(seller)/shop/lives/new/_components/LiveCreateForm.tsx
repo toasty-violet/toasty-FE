@@ -233,7 +233,7 @@ export function LiveCreateForm({
             label={products.length > 0 ? "상품 수정" : "상품 등록"}
             color="secondary"
             size="md"
-            className="w-full"
+            fullWidth
             onClick={() =>
               products.length > 0
                 ? setStep("products")

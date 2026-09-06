@@ -72,21 +72,25 @@ export function LeaveConfirmModal({
         </h2>
 
         <div className="flex w-full gap-10">
-          <Button
-            label="저장 안 함"
-            variant="outlined"
-            color="assistive"
-            size="md"
-            className="flex-1"
-            onClick={onDiscard}
-          />
-          <Button
-            label="저장하기"
-            size="md"
-            className="flex-1"
-            disabled={!canSave}
-            onClick={onSave}
-          />
+          <div className="flex-1">
+            <Button
+              label="저장 안 함"
+              variant="outlined"
+              color="assistive"
+              size="md"
+              fullWidth
+              onClick={onDiscard}
+            />
+          </div>
+          <div className="flex-1">
+            <Button
+              label="저장하기"
+              size="md"
+              fullWidth
+              disabled={!canSave}
+              onClick={onSave}
+            />
+          </div>
         </div>
       </div>
     </div>
