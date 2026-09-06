@@ -11,3 +11,28 @@ export interface User {
 
 // 내 정보 조회 API 응답
 export type MeResponse = ApiSuccess<User>;
+
+// 닉네임 중복 조회 API 응답
+export type NicknameDuplicationResponse = ApiSuccess<{ duplicated: boolean }>;
+
+// 배송지. 카카오 우편번호에서 받은 값을 필드별로 나눠 보낸다.
+export interface CustomerAddress {
+  postalCode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  addressType: "R" | "J";
+  buildingName: string;
+  legalDong: string;
+  detailAddress: string;
+}
+
+// 구매자 온보딩에 보내는 기본 정보
+export interface CustomerOnboardingPayload {
+  name: string;
+  nickname: string;
+  phoneNumber: string;
+  address: CustomerAddress;
+}
+
+// 구매자 온보딩 API 응답
+export type CustomerOnboardingResponse = ApiSuccess<string>;
