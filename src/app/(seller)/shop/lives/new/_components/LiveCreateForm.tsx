@@ -1,98 +1,291 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { ApiRequestError } from "@/lib/api-error";
+
+import { Header } from "@/components/headers/Header";
+import { Input } from "@/components/inputs/Input";
+import { Textarea } from "@/components/inputs/Textarea";
+import { Button } from "@/components/buttons/Button";
+import { BottomButton } from "@/components/buttons/BottomButton";
 import { createLive } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { LiveCreateResponse } from "@/types/live";
+
+import { LeaveConfirmModal } from "./LeaveConfirmModal";
+import { LiveScheduleField } from "./LiveScheduleField";
+import { ProductSetupForm } from "./ProductSetupForm";
+import { uploadDraftProducts } from "./upload-draft-products";
+import type { DraftProduct } from "./draft-product";
+
+const TITLE_MAX = 20;
+const DESCRIPTION_MAX = 45;
+
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+// crypto.randomUUID 는 보안 컨텍스트에서만 동작한다. LAN 주소로 폰에서 열어
+// 확인하는 경우가 있어 없을 때를 대비한다.
+let sequence = 0;
+const nextDraftId = () =>
+  globalThis.crypto?.randomUUID?.() ?? `draft-${Date.now()}-${sequence++}`;
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const MAX_PRODUCTS = 20;
+
+// 방송 예정 시각 기본값은 다음 날 오후 8시다.
+function defaultScheduledAt() {
+  const at = new Date();
+  at.setDate(at.getDate() + 1);
+  at.setHours(20, 0, 0, 0);
+  return at;
+}
 
 export function LiveCreateForm({
   onCreated,
 }: {
   onCreated: (created: LiveCreateResponse) => void;
 }) {
+  const router = useRouter();
+  const [step, setStep] = useState<"info" | "products">("info");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [scheduledAt, setScheduledAt] = useState(defaultScheduledAt);
+  const [products, setProducts] = useState<DraftProduct[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const [askingLeave, setAskingLeave] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 만든 미리보기 주소를 모아뒀다가 화면을 떠날 때 한 번에 해제한다.
+  // 이미 해제된 주소를 다시 해제해도 아무 일도 일어나지 않는다.
+  const previewUrls = useRef<string[]>([]);
+  useEffect(
+    () => () => previewUrls.current.forEach((url) => URL.revokeObjectURL(url)),
+    [],
+  );
 
   const mutation = useMutation({
-    mutationFn: createLive,
+    mutationFn: async () => {
+      const uploaded = await uploadDraftProducts(products);
+      return createLive({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        scheduledAt: toLocalIso(scheduledAt),
+        products: uploaded,
+      });
+    },
     onSuccess: onCreated,
   });
 
-  const fieldErrors =
-    mutation.error instanceof ApiRequestError
-      ? mutation.error.fields
-      : undefined;
+  const pickFiles = (picked: FileList | null) => {
+    if (!picked?.length) return;
+
+    const files = [...picked];
+    if (files.some((file) => !ACCEPTED_TYPES.includes(file.type))) {
+      setFileError("사진은 jpeg, png, webp만 올릴 수 있습니다.");
+      return;
+    }
+    if (files.some((file) => file.size > MAX_FILE_BYTES)) {
+      setFileError("사진은 10MB를 넘을 수 없습니다.");
+      return;
+    }
+    if (products.length + files.length > MAX_PRODUCTS) {
+      setFileError(`상품은 ${MAX_PRODUCTS}개까지 등록할 수 있습니다.`);
+      return;
+    }
+
+    setFileError(null);
+    mutation.reset();
+    setProducts([
+      ...products,
+      ...files.map((file) => {
+        const previewUrl = URL.createObjectURL(file);
+        previewUrls.current.push(previewUrl);
+        return {
+          id: nextDraftId(),
+          file,
+          previewUrl,
+          name: "",
+          price: 0,
+          stockQuantity: 1,
+        };
+      }),
+    ]);
+    setStep("products");
+  };
+
+  // 지난 시각은 서버가 400 으로 막는다. 누르기 전에 알려준다.
+  const changeSchedule = (next: Date) => {
+    setScheduledAt(next);
+    setScheduleError(
+      next.getTime() > Date.now()
+        ? null
+        : "방송 예정 시각은 현재 이후여야 합니다.",
+    );
+  };
+
+  // 편집도 이 함수를 타므로 id 로 비교한다. 객체로 비교하면 이름만 바꿔도
+  // 새 객체가 되어, 아직 쓰는 중인 미리보기 주소를 해제해 버린다.
+  const changeProducts = (next: DraftProduct[]) => {
+    const nextIds = new Set(next.map((product) => product.id));
+    products
+      .filter((product) => !nextIds.has(product.id))
+      .forEach((product) => URL.revokeObjectURL(product.previewUrl));
+    setProducts(next);
+  };
+
+  if (step === "products") {
+    return (
+      <>
+        <Header title="신규 라이브" onBack={() => setStep("info")} />
+        <ProductSetupForm
+          products={products}
+          onChange={changeProducts}
+          onSubmit={() => setStep("info")}
+        />
+      </>
+    );
+  }
+
+  // 뒤로가기로 작성 중인 내용을 잃기 전에 물어본다.
+  const isDirty =
+    title.trim().length > 0 ||
+    description.trim().length > 0 ||
+    products.length > 0;
+
+  const canSubmit =
+    title.trim().length > 0 &&
+    products.length > 0 &&
+    !scheduleError &&
+    !mutation.isPending;
 
   return (
-    <form
-      className="flex flex-col gap-4 p-5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        mutation.mutate({
-          title: title.trim(),
-          description: description.trim() || undefined,
-        });
-      }}
-    >
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-sm font-medium">
-          제목
-        </label>
-        <input
-          id="title"
-          value={title}
-          maxLength={100}
-          required
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="빈티지 여름옷 라이브"
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
-        />
-      </div>
+    <>
+      <Header
+        title="신규 라이브"
+        onBack={() => (isDirty ? setAskingLeave(true) : router.back())}
+      />
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="description" className="text-sm font-medium">
-          설명
-        </label>
-        <textarea
-          id="description"
-          value={description}
-          maxLength={1000}
-          rows={3}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="여름 상품을 소개합니다"
-          className="resize-none rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
-        />
-      </div>
+      <div className="flex flex-1 flex-col overflow-y-auto">
+        <div className="flex flex-col gap-28 p-20">
+          <Input
+            title="방송 제목"
+            placeholder="방송 제목을 입력해 주세요."
+            value={title}
+            maxLetter={TITLE_MAX}
+            onChange={(next) => {
+              mutation.reset();
+              setTitle(next);
+            }}
+          />
+          <Textarea
+            title="방송 설명"
+            placeholder="방송 설명을 작성해 주세요."
+            value={description}
+            maxLetter={DESCRIPTION_MAX}
+            onChange={setDescription}
+          />
+        </div>
 
-      {mutation.error && (
-        <div
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
-        >
-          <p>{describeLiveError(mutation.error).message}</p>
-          {fieldErrors && (
-            <ul className="mt-1 list-inside list-disc">
-              {fieldErrors.map((fieldError) => (
-                <li key={fieldError.field}>{fieldError.message}</li>
+        <div className="bg-bg-layer-default-pressed h-8 w-full" />
+
+        <div className="flex flex-col gap-16 p-20">
+          <div className="flex flex-col gap-4">
+            <span className="text-l3-medium text-fg-neutral-solid">
+              판매 상품
+            </span>
+            <span className="text-c2-regular text-fg-neutral-secondary">
+              사진을 여러 장 선택하면, 상품 목록이 생성돼요.
+            </span>
+          </div>
+
+          {products.length > 0 && (
+            <ul className="-mx-20 flex gap-10 overflow-x-auto px-20">
+              {products.map((product) => (
+                <li
+                  key={product.id}
+                  className="rounded-8 size-[7.6rem] shrink-0 overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={product.previewUrl}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                </li>
               ))}
             </ul>
           )}
-        </div>
-      )}
 
-      <button
-        type="submit"
-        disabled={mutation.isPending || !title.trim()}
-        className="rounded-lg bg-zinc-900 py-3 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-zinc-900"
-      >
-        {mutation.isPending
-          ? "라이브를 만드는 중…"
-          : mutation.error && describeLiveError(mutation.error).canRetry
-            ? "다시 시도"
-            : "라이브 만들기"}
-      </button>
-    </form>
+          <Button
+            label={products.length > 0 ? "상품 수정" : "상품 등록"}
+            color="secondary"
+            size="md"
+            className="w-full"
+            onClick={() =>
+              products.length > 0
+                ? setStep("products")
+                : fileInputRef.current?.click()
+            }
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_TYPES.join(",")}
+            multiple
+            hidden
+            onChange={(event) => {
+              pickFiles(event.target.files);
+              event.target.value = "";
+            }}
+          />
+
+          {(fileError || mutation.error) && (
+            <p role="alert" className="text-c1-medium text-fg-critical">
+              {fileError ?? describeLiveError(mutation.error).message}
+            </p>
+          )}
+        </div>
+
+        <div className="bg-bg-layer-default-pressed h-8 w-full" />
+
+        <LiveScheduleField
+          scheduledAt={scheduledAt}
+          onChange={changeSchedule}
+        />
+        {scheduleError && (
+          <p role="alert" className="text-c1-medium text-fg-critical px-20">
+            {scheduleError}
+          </p>
+        )}
+      </div>
+
+      <BottomButton
+        label={mutation.isPending ? "저장하는 중…" : "저장하기"}
+        disabled={!canSubmit}
+        onClick={() => mutation.mutate()}
+      />
+
+      {askingLeave && (
+        <LeaveConfirmModal
+          canSave={canSubmit}
+          onDiscard={() => router.back()}
+          onSave={() => {
+            setAskingLeave(false);
+            mutation.mutate();
+          }}
+          onClose={() => setAskingLeave(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// 서버는 LocalDateTime 을 받는다. toISOString 을 쓰면 UTC 로 밀린다.
+function toLocalIso(at: Date) {
+  const pad = (value: number) => `${value}`.padStart(2, "0");
+  return (
+    `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}` +
+    `T${pad(at.getHours())}:${pad(at.getMinutes())}:00`
   );
 }
