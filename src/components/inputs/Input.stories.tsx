@@ -24,7 +24,9 @@ const meta = {
     placeholder: { control: "text" },
     message: { control: "text" },
     errorMessage: { control: "text" },
+    successMessage: { control: "text" },
     error: { control: "boolean" },
+    success: { control: "boolean" },
     maxLetter: { control: "number" },
     disabled: { control: "boolean" },
     blurOnSubmit: { control: "boolean" },
@@ -74,6 +76,17 @@ export const Error: Story = {
     value: "입력값",
     error: true,
     errorMessage: "에러 텍스트 입력",
+  },
+  render: (args) => <ControlledInput {...args} />,
+};
+
+export const Success: Story = {
+  args: {
+    title: "닉네임",
+    value: "토스티",
+    maxLetter: 20,
+    success: true,
+    successMessage: "사용 가능한 닉네임이에요.",
   },
   render: (args) => <ControlledInput {...args} />,
 };
