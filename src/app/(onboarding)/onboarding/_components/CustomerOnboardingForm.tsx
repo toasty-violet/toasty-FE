@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 
 import { BottomButton } from "@/components/buttons/BottomButton";
 import { Input } from "@/components/inputs/Input";
 import { PostalInput, type PostalValue } from "@/components/inputs/PostalInput";
 import { useNicknameCheck } from "@/hooks/use-nickname-check";
-import { submitCustomerOnboarding } from "@/lib/user";
-import { useUserStore } from "@/store/user-store";
+import {
+  loadOnboardingDraft,
+  saveOnboardingDraft,
+} from "@/app/(onboarding)/onboarding/_lib/onboarding-draft";
 
 const EMPTY_POSTAL: PostalValue = {
   postalCode: "",
@@ -30,11 +31,14 @@ const onlyDigits = (value: string) => value.replace(/[^0-9]/g, "");
 //구매자가 기본 정보(이름, 닉네임, 연락처, 배송지)를 입력하는 온보딩 컴포넌트
 export function CustomerOnboardingForm() {
   const router = useRouter();
-  const setUser = useUserStore((state) => state.setUser);
-  const [name, setName] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [phone, setPhone] = useState("");
-  const [postal, setPostal] = useState<PostalValue>(EMPTY_POSTAL);
+  // 결제 등록 화면에서 되돌아온 경우 앞서 입력한 값으로 시작한다.
+  const [initial] = useState(loadOnboardingDraft);
+  const [name, setName] = useState(initial?.name ?? "");
+  const [nickname, setNickname] = useState(initial?.nickname ?? "");
+  const [phone, setPhone] = useState(initial?.phoneNumber ?? "");
+  const [postal, setPostal] = useState<PostalValue>(
+    initial?.address ?? EMPTY_POSTAL,
+  );
 
   // 입력을 시작하기 전까지는 에러를 띄우지 않는다.
   const nameError = name !== "" && !NAME_PATTERN.test(name);
@@ -43,15 +47,6 @@ export function CustomerOnboardingForm() {
   // 닉네임은 형식 검증에 더해 중복 조회까지 통과해야 한다.
   const { verified: nicknameVerified, ...nicknameState } =
     useNicknameCheck(nickname);
-
-  const mutation = useMutation({
-    mutationFn: submitCustomerOnboarding,
-    onSuccess: () => {
-      // 역할이 정해졌으므로 store 를 갱신해야 완료 화면의 가드를 통과한다.
-      setUser({ role: "CUSTOMER", nickname });
-      router.replace("/onboarding/customer/complete");
-    },
-  });
 
   // 우편번호 검색을 마쳐야 배송지가 확정된다.
   const canSubmit =
@@ -105,10 +100,11 @@ export function CustomerOnboardingForm() {
       </div>
 
       <BottomButton
-        label={mutation.isPending ? "등록 중…" : "다음"}
-        disabled={!canSubmit || mutation.isPending}
+        label="다음"
+        disabled={!canSubmit}
         onClick={() => {
-          mutation.mutate({
+          // 온보딩은 결제 등록까지 마쳐야 제출하므로, 여기서는 보관만 한다.
+          saveOnboardingDraft({
             name,
             nickname,
             phoneNumber: phone,
@@ -118,6 +114,7 @@ export function CustomerOnboardingForm() {
               addressType: postal.addressType as "R" | "J",
             },
           });
+          router.push("/onboarding/customer/payment-register");
         }}
       />
     </>

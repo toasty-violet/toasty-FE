@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
+    "@tosspayments/tosspayments-sdk": "2.7.1",
     "amazon-ivs-player": "^1.55.0",
     "amazon-ivs-web-broadcast": "^1.38.1",
     "axios": "^1.19.0",
@@ -31,6 +32,10 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-onboarding": "^10.6.0",
+    "@storybook/nextjs": "^10.6.0",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.0",
@@ -43,19 +48,15 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-storybook": "^10.6.0",
     "jsdom": "^29.1.1",
     "msw": "^2.15.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "storybook": "^10.6.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.10",
-    "storybook": "^10.6.0",
-    "@storybook/nextjs": "^10.6.0",
-    "@storybook/addon-a11y": "^10.6.0",
-    "@storybook/addon-docs": "^10.6.0",
-    "@storybook/addon-onboarding": "^10.6.0",
-    "eslint-plugin-storybook": "^10.6.0"
+    "vitest": "^4.1.10"
   },
   "msw": {
     "workerDirectory": [
