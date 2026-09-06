@@ -27,13 +27,6 @@ apiClient.interceptors.request.use((config: RetryableRequestConfig) => {
     config._tokenUsed = accessToken;
   }
 
-  // 라이브 API는 아직 인증이 없어 X-Seller-Id로 셀러를 식별한다.
-  // 서버가 JWT로 셀러를 알게 되면 이 두 줄만 지우면 된다.
-  const sellerId = process.env.NEXT_PUBLIC_SELLER_ID;
-  if (sellerId) {
-    config.headers["X-Seller-Id"] = sellerId;
-  }
-
   return config;
 });
 
