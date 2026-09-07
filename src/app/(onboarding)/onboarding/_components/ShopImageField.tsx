@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 
 import { uploadShopImage } from "@/lib/upload";
 
 import CameraIcon from "./assets/Camera.svg";
-import StoreImageDefault from "./assets/StoreImageDefault.svg";
+import ShopImageDefault from "./assets/ShopImageDefault.svg";
 
-type StoreImageFieldProps = {
+type ShopImageFieldProps = {
   onChange: (objectKey: string) => void;
 };
 
 //스토어 사진을 골라 S3 에 올리고, 제출에 쓸 objectKey 를 상위로 넘기는 컴포넌트
-export function StoreImageField({ onChange }: StoreImageFieldProps) {
+export function ShopImageField({ onChange }: ShopImageFieldProps) {
   // 서버에는 objectKey 만 오가므로, 화면에 띄울 그림은 고른 파일에서 직접 만든다.
   const [previewUrl, setPreviewUrl] = useState("");
 
@@ -33,14 +34,18 @@ export function StoreImageField({ onChange }: StoreImageFieldProps) {
   return (
     <div className="flex w-full flex-col items-center gap-8">
       <label className="relative block size-[10rem] cursor-pointer">
-        <span className="border-stroke-neutral-weak block size-full overflow-hidden rounded-full border">
+        <span className="border-stroke-neutral-weak relative block size-full overflow-hidden rounded-full border">
           {previewUrl === "" ? (
-            <StoreImageDefault className="size-full" />
+            <ShopImageDefault className="size-full" />
           ) : (
-            <img
+            <Image
               src={previewUrl}
               alt="스토어 사진"
-              className="size-full object-cover"
+              fill
+              sizes="10rem"
+              // blob URL 은 브라우저 메모리에만 있어 서버가 최적화할 수 없다.
+              unoptimized
+              className="object-cover"
             />
           )}
         </span>

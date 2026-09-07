@@ -12,8 +12,8 @@ import {
   readSellerDraft,
   saveSellerDraft,
   type SellerOnboardingDraft,
-} from "../../_lib/seller-onboarding-draft";
-import { StoreImageField } from "./StoreImageField";
+} from "../_lib/seller-onboarding-draft";
+import { ShopImageField } from "./ShopImageField";
 
 //셀러가 스토어 사진·이름·소개를 입력하는 온보딩 첫 단계 컴포넌트
 export function SellerInfoForm() {
@@ -37,16 +37,16 @@ export function SellerInfoForm() {
     router.push("/onboarding/seller/info-2");
   };
 
-  const canSubmit = shopNameVerified;
+  // 사진·이름·소개가 모두 필수다. 사진은 업로드를 마쳐야 objectKey 가 채워진다.
+  const canSubmit =
+    draft.shopImageObjectKey !== "" &&
+    shopNameVerified &&
+    draft.description.trim() !== "";
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-28 px-20 pt-20 pb-56">
-        <h1 className="text-t1-bold text-fg-neutral-solid whitespace-pre-line">
-          {"구매자에게 보여질\n스토어 정보를 등록해 주세요"}
-        </h1>
-
-        <StoreImageField
+      <div className="flex flex-1 flex-col gap-28 px-20 pb-56">
+        <ShopImageField
           onChange={(shopImageObjectKey) => update({ shopImageObjectKey })}
         />
 

@@ -5,14 +5,23 @@ const STORAGE_KEY = "seller-onboarding-draft";
 export type SellerOnboardingDraft = {
   shopName: string;
   description: string;
-  /** 샵 이미지 사진의 S3 객체 키. */
-  shopImageObjectKey: string;
+  shopImageObjectKey: string; //샵 이미지 사진의 S3 객체 키
+  representativeName: string;
+  representativePhone: string;
+  businessNumber: string; //선택값
+  bank: string; // KAKAO_BANK 같은 은행 코드
+  accountNumber: string;
 };
 
 export const EMPTY_DRAFT: SellerOnboardingDraft = {
   shopName: "",
   description: "",
   shopImageObjectKey: "",
+  representativeName: "",
+  representativePhone: "",
+  businessNumber: "",
+  bank: "",
+  accountNumber: "",
 };
 
 export function readSellerDraft(): SellerOnboardingDraft {
@@ -25,6 +34,11 @@ export function readSellerDraft(): SellerOnboardingDraft {
       shopName: stored.shopName ?? "",
       description: stored.description ?? "",
       shopImageObjectKey: stored.shopImageObjectKey ?? "",
+      representativeName: stored.representativeName ?? "",
+      representativePhone: stored.representativePhone ?? "",
+      businessNumber: stored.businessNumber ?? "",
+      bank: stored.bank ?? "",
+      accountNumber: stored.accountNumber ?? "",
     };
   } catch {
     // 사용자가 직접 건드릴 수 있는 값이라 깨진 JSON 을 만나도 빈 값으로 이어간다.
@@ -37,4 +51,9 @@ export function saveSellerDraft(draft: Partial<SellerOnboardingDraft>) {
     STORAGE_KEY,
     JSON.stringify({ ...readSellerDraft(), ...draft }),
   );
+}
+
+//입점 신청을 마치면 더 쓸 일이 없으므로 초안을 비운다
+export function clearSellerDraft() {
+  window.localStorage.removeItem(STORAGE_KEY);
 }
