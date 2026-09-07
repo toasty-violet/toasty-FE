@@ -1,5 +1,6 @@
 // info-1 과 info-2 는 별개의 라우트라 입력값이 메모리에 남지 않는다.
-// 오보딩 완료 폼을 한 번에 제출하기 위해 로컬 스토리지에 폼 정보를 저장한다.
+// 온보딩 완료 폼을 한 번에 제출하기 위해 세션 스토리지에 폼 정보를 저장한다.
+// 대표자명·계좌번호 같은 개인정보라, 탭을 닫으면 함께 사라지는 쪽을 쓴다.
 const STORAGE_KEY = "seller-onboarding-draft";
 
 export type SellerOnboardingDraft = {
@@ -25,7 +26,7 @@ export const EMPTY_DRAFT: SellerOnboardingDraft = {
 };
 
 export function readSellerDraft(): SellerOnboardingDraft {
-  const raw = window.localStorage.getItem(STORAGE_KEY);
+  const raw = sessionStorage.getItem(STORAGE_KEY);
   if (!raw) return EMPTY_DRAFT;
 
   try {
@@ -47,7 +48,7 @@ export function readSellerDraft(): SellerOnboardingDraft {
 }
 
 export function saveSellerDraft(draft: Partial<SellerOnboardingDraft>) {
-  window.localStorage.setItem(
+  sessionStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({ ...readSellerDraft(), ...draft }),
   );
@@ -55,5 +56,5 @@ export function saveSellerDraft(draft: Partial<SellerOnboardingDraft>) {
 
 //입점 신청을 마치면 더 쓸 일이 없으므로 초안을 비운다
 export function clearSellerDraft() {
-  window.localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
 }

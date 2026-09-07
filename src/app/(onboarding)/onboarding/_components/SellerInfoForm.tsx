@@ -19,7 +19,7 @@ import { ShopImageField } from "./ShopImageField";
 export function SellerInfoForm() {
   const router = useRouter();
   // RouteGuard 가 판정을 마친 뒤에야 마운트되는 클라이언트 전용 화면이라
-  // 첫 렌더에서 바로 localStorage 를 읽어도 서버 렌더와 어긋나지 않는다.
+  // 첫 렌더에서 바로 sessionStorage 를 읽어도 서버 렌더와 어긋나지 않는다.
   const [draft, setDraft] = useState<SellerOnboardingDraft>(readSellerDraft);
 
   // 스토어 이름이 곧 판매자의 닉네임이라 같은 중복 조회를 쓴다.
