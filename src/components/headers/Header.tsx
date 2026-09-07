@@ -26,6 +26,8 @@ type HeaderProps = {
   rightHref?: string;
   /** 우측 버튼의 접근성 레이블. */
   rightLabel?: string;
+  /** 뒤로가기를 가로챈다. 없으면 바로 이전 화면으로 간다. */
+  onBack?: () => void;
 };
 
 export function Header({
@@ -34,6 +36,7 @@ export function Header({
   rightIconName,
   rightHref,
   rightLabel,
+  onBack,
 }: HeaderProps) {
   const router = useRouter();
   const RightIcon = rightIconName && RIGHT_ICONS[rightIconName];
@@ -43,7 +46,7 @@ export function Header({
       {showBack && (
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => (onBack ? onBack() : router.back())}
           aria-label="뒤로 가기"
           className="absolute top-1/2 left-20 -translate-y-1/2"
         >
