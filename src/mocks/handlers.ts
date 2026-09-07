@@ -6,7 +6,10 @@ import type {
   LivePlayback,
   LiveStatus,
   LiveStreamStatus,
+  ProductImageUpload,
+  ProductImageUploadFile,
 } from "@/types/live";
+import type { ShopImageUploadUrl } from "@/types/upload";
 import type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -21,11 +24,19 @@ const notFound = () =>
 
 const TAKEN_NICKNAMES = ["토스티", "toasty", "admin"];
 
+function tomorrowEvening() {
+  const at = new Date();
+  at.setDate(at.getDate() + 1);
+  at.setHours(20, 0, 0, 0);
+  return at.toISOString();
+}
+
 function buildLive(
   liveId: number,
   title: string,
   description?: string,
   status: LiveStatus = "READY",
+  scheduledAt: string = tomorrowEvening(),
 ): Live {
   return {
     liveId,
@@ -34,6 +45,7 @@ function buildLive(
     title,
     description,
     status,
+    scheduledAt,
     playbackUrl: `/mock-playback/${liveId}.m3u8`,
     createdAt: new Date().toISOString(),
     startedAt: status === "READY" ? undefined : new Date().toISOString(),
@@ -117,6 +129,17 @@ export const handlers = [
     return ok({ duplicated: TAKEN_NICKNAMES.includes(nickname) });
   }),
 
+  // 목에는 S3 가 없으므로 발급만 흉내 내고, PUT 은 아래에서 그대로 성공시킨다.
+  http.post(`${BASE_URL}/sellers/shop-image/upload-url`, () =>
+    ok<ShopImageUploadUrl>({
+      objectKey: `sellers/images/7/mock-shop-image.jpg`,
+      uploadUrl: `${BASE_URL}/mock-upload`,
+      expiresIn: 300,
+    }),
+  ),
+
+  http.put(`${BASE_URL}/mock-upload`, () => new HttpResponse(null)),
+
   // 실제 서버처럼 역할을 확정해, 완료 화면에서 새로고침해도 가드에 걸리지 않게 한다.
   http.put(`${BASE_URL}/users/onboarding/customer`, () => {
     mockScenario().role = "CUSTOMER";
@@ -124,11 +147,64 @@ export const handlers = [
     return ok("구매자 정보가 등록되었습니다.");
   }),
 
+  http.put(`${BASE_URL}/users/onboarding/seller`, () => {
+    mockScenario().role = "SELLER";
+
+    return ok("입점 신청이 완료되었습니다.");
+  }),
+
+  // 사진 본문은 목이 받지 않는다. uploadUrl 은 아래 PUT 핸들러가 200 만 돌려준다.
+  http.post(
+    `${BASE_URL}/seller/products/images/upload-url`,
+    async ({ request }) => {
+      const { files } = (await request.json()) as {
+        files: ProductImageUploadFile[];
+      };
+
+      // 서버와 같게 한 번에 20 장까지만 받는다.
+      if (files.length > 20) {
+        return fail(
+          400,
+          "COMMON_INVALID_INPUT",
+          "사진은 한 번에 20장까지 올릴 수 있습니다.",
+        );
+      }
+
+      return ok<{ uploads: ProductImageUpload[] }>({
+        uploads: files.map((_, index) => ({
+          objectKey: `products/pending/mock-${Date.now()}-${index}.jpg`,
+          uploadUrl: `/mock-upload/${Date.now()}-${index}`,
+          expiresIn: 300,
+        })),
+      });
+    },
+  ),
+
+  http.put("/mock-upload/:key", () => new HttpResponse(null, { status: 200 })),
+
   http.post(`${BASE_URL}/lives`, async ({ request }) => {
-    const { title, description } = (await request.json()) as {
-      title: string;
-      description?: string;
-    };
+    const { title, description, scheduledAt, products } =
+      (await request.json()) as {
+        title: string;
+        description?: string;
+        scheduledAt: string;
+        products: unknown[];
+      };
+
+    if (!products?.length) {
+      return fail(
+        400,
+        "COMMON_INVALID_INPUT",
+        "판매할 상품을 한 개 이상 등록해주세요.",
+      );
+    }
+    if (new Date(scheduledAt) <= new Date()) {
+      return fail(
+        400,
+        "COMMON_INVALID_INPUT",
+        "방송 예정 시각은 현재 이후여야 합니다.",
+      );
+    }
 
     if (title.includes("502")) {
       return fail(
@@ -145,7 +221,13 @@ export const handlers = [
       );
     }
 
-    const live = buildLive(nextLiveId++, title, description);
+    const live = buildLive(
+      nextLiveId++,
+      title,
+      description,
+      "READY",
+      scheduledAt,
+    );
     lives.set(live.publicId, live);
 
     return ok<LiveCreateResponse>({

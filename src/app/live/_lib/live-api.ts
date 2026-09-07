@@ -7,6 +7,8 @@ import type {
   LiveCreateResponse,
   LivePlayback,
   LiveStreamStatus,
+  ProductImageUpload,
+  ProductImageUploadFile,
 } from "@/types/live";
 
 export async function createLive(
@@ -63,4 +65,31 @@ export async function endLive(liveId: number): Promise<Live> {
     `/lives/${liveId}/end`,
   );
   return data.data;
+}
+
+/** 사진은 서버를 거치지 않고 S3 로 직접 올린다. 여기서는 올릴 주소만 받는다. */
+export async function issueProductImageUploadUrls(
+  files: ProductImageUploadFile[],
+): Promise<ProductImageUpload[]> {
+  const { data } = await apiClient.post<
+    ApiSuccess<{ uploads: ProductImageUpload[] }>
+  >("/seller/products/images/upload-url", { files });
+  return data.data.uploads;
+}
+
+/**
+ * 발급받은 주소로 사진 본문만 올린다.
+ * presigned URL 이라 서명에 없는 헤더가 붙으면 403 이 난다.
+ * apiClient 를 쓰면 Authorization 이 S3 로 나가므로 fetch 를 직접 쓴다.
+ */
+export async function uploadProductImage(uploadUrl: string, file: File) {
+  const response = await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: { "Content-Type": file.type },
+  });
+
+  if (!response.ok) {
+    throw new Error(`사진을 올리지 못했습니다. (${response.status})`);
+  }
 }

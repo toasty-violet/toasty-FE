@@ -12,7 +12,6 @@ import {
 import { fetchPayerIdSession } from "@/lib/payment";
 import { loadPoint3Widgets, requestPoint3Payment } from "@/lib/point3";
 import { submitCustomerOnboarding } from "@/lib/user";
-import { useUserStore } from "@/store/user-store";
 
 const ORDER_NAME = "toasty 계좌 등록";
 
@@ -25,7 +24,6 @@ const ORDER_NAME = "toasty 계좌 등록";
 export function PaymentRegisterButton() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const setUser = useUserStore((state) => state.setUser);
   const [error, setError] = useState("");
 
   // 등록 실패로 돌아온 경우 point3 가 code/message 를 실어 보낸다.
@@ -35,11 +33,11 @@ export function PaymentRegisterButton() {
 
   const onboarding = useMutation({
     mutationFn: submitCustomerOnboarding,
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       // 개인정보를 남기지 않도록 제출 직후 비운다.
       clearOnboardingDraft();
-      // 역할이 정해졌으므로 store 를 갱신해야 완료 화면의 가드를 통과한다.
-      setUser({ role: "CUSTOMER", nickname: variables.nickname });
+      // role 을 여기서 바꾸면 아직 (onboarding) 안이라 그 가드가 먼저 반응해
+      // 완료 화면 대신 제 역할의 홈으로 밀어낸다. 갱신은 도착한 화면에 맡긴다.
       router.replace("/onboarding/customer/complete");
     },
     onError: () => {

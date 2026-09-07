@@ -10,6 +10,8 @@ type ButtonProps = {
   disabled?: boolean;
   onClick?: () => void;
   type?: "button" | "submit";
+  /** 부모 폭을 채운다. */
+  fullWidth?: boolean;
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -49,6 +51,7 @@ export function Button({
   disabled = false,
   onClick,
   type = "button",
+  fullWidth = false,
 }: ButtonProps) {
   const colorStyle =
     variant === "outlined"
@@ -64,7 +67,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center transition-colors ${sizeStyles[size]} ${colorStyle}`}
+      className={`flex items-center justify-center transition-colors ${sizeStyles[size]} ${colorStyle} ${fullWidth ? "w-full" : ""}`}
     >
       {label}
     </button>
