@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Input } from "./Input";
 import { Textarea } from "./Textarea";
@@ -101,6 +101,70 @@ describe("Input", () => {
 
     expect(screen.getByText("에러 문구")).toBeInTheDocument();
     expect(screen.queryByText("성공 문구")).toBeNull();
+  });
+
+  it("엔터를 누르면 onSubmit에 현재 값을 넘긴다", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<InputHarness onSubmit={onSubmit} />);
+    const field = screen.getByLabelText("주제");
+
+    await user.type(field, "안녕{Enter}");
+
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("안녕");
+    expect(field).toHaveValue("안녕");
+  });
+
+  it("blurOnSubmit이면 엔터로 포커스가 풀린다", async () => {
+    const user = userEvent.setup();
+    render(<InputHarness blurOnSubmit />);
+    const field = screen.getByLabelText("주제");
+
+    await user.type(field, "안녕");
+    expect(field).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+
+    expect(field).not.toHaveFocus();
+    expect(field).toHaveValue("안녕");
+  });
+
+  it("한글 조합 중의 엔터는 무시한다", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<InputHarness onSubmit={onSubmit} blurOnSubmit />);
+    const field = screen.getByLabelText("주제");
+
+    await user.click(field);
+
+    // IME 조합 확정용 엔터는 isComposing이 true로 들어온다.
+    // 읽기 전용 getter라 defineProperty로 덮어써야 한다.
+    const event = new KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(event, "isComposing", { value: true });
+    field.dispatchEvent(event);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(field).toHaveFocus();
+  });
+
+  it("onSubmit도 blurOnSubmit도 없으면 엔터를 가로채지 않는다", async () => {
+    const user = userEvent.setup();
+    const onFormSubmit = vi.fn((event: React.FormEvent) =>
+      event.preventDefault(),
+    );
+    render(
+      <form onSubmit={onFormSubmit}>
+        <InputHarness />
+      </form>,
+    );
+
+    await user.type(screen.getByLabelText("주제"), "안녕{Enter}");
+
+    expect(onFormSubmit).toHaveBeenCalledOnce();
   });
 
   it("input 고유 속성을 전달한다", () => {
