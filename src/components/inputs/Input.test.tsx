@@ -76,6 +76,33 @@ describe("Input", () => {
     );
   });
 
+  it("success일 때 successMessage를 대신 보여준다", () => {
+    render(
+      <InputHarness success message="가이드" successMessage="성공 문구" />,
+    );
+
+    expect(screen.getByText("성공 문구")).toBeInTheDocument();
+    expect(screen.queryByText("가이드")).toBeNull();
+    expect(screen.getByLabelText("주제")).toHaveAttribute(
+      "aria-invalid",
+      "false",
+    );
+  });
+
+  it("error와 success가 함께 오면 error를 우선한다", () => {
+    render(
+      <InputHarness
+        error
+        success
+        errorMessage="에러 문구"
+        successMessage="성공 문구"
+      />,
+    );
+
+    expect(screen.getByText("에러 문구")).toBeInTheDocument();
+    expect(screen.queryByText("성공 문구")).toBeNull();
+  });
+
   it("input 고유 속성을 전달한다", () => {
     render(
       <InputHarness type="email" inputMode="email" autoComplete="email" />,
@@ -127,6 +154,15 @@ describe("Textarea", () => {
     render(<TextareaHarness error message="가이드" errorMessage="에러 문구" />);
 
     expect(screen.getByText("에러 문구")).toBeInTheDocument();
+    expect(screen.queryByText("가이드")).toBeNull();
+  });
+
+  it("success일 때 successMessage를 대신 보여준다", () => {
+    render(
+      <TextareaHarness success message="가이드" successMessage="성공 문구" />,
+    );
+
+    expect(screen.getByText("성공 문구")).toBeInTheDocument();
     expect(screen.queryByText("가이드")).toBeNull();
   });
 });

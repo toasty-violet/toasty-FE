@@ -11,3 +11,6 @@ export interface User {
 
 // 내 정보 조회 API 응답
 export type MeResponse = ApiSuccess<User>;
+
+// 닉네임 중복 조회 API 응답
+export type NicknameDuplicationResponse = ApiSuccess<{ duplicated: boolean }>;

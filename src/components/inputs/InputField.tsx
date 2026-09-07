@@ -11,7 +11,9 @@ export type InputFieldBaseProps = {
   placeholder?: string;
   message?: string;
   errorMessage?: string;
+  successMessage?: string;
   error?: boolean;
+  success?: boolean;
   maxLetter?: number;
   disabled?: boolean;
   name?: string;
@@ -61,7 +63,9 @@ export function InputField({
   placeholder = "텍스트를 입력해 주세요.",
   message,
   errorMessage,
+  successMessage,
   error = false,
+  success = false,
   maxLetter,
   disabled = false,
   name,
@@ -73,7 +77,13 @@ export function InputField({
   const id = useId();
   const [focused, setFocused] = useState(false);
 
-  const description = error ? errorMessage : message;
+  // error가 success보다 우선한다. 둘 다 켜지면 경고를 가리지 않는다.
+  const showSuccess = success && !error;
+  const description = error
+    ? errorMessage
+    : showSuccess
+      ? successMessage
+      : message;
   const showClear = !disabled && value.length > 0;
 
   //조건에 맞지 않는 값일 경우 붉은 테두리
@@ -147,7 +157,13 @@ export function InputField({
       {description && (
         <p
           id={`${id}-description`}
-          className={`text-c1-medium ${error ? "text-fg-critical" : "text-fg-neutral-placeholder"}`}
+          className={`text-c1-medium ${
+            error
+              ? "text-fg-critical"
+              : showSuccess
+                ? "text-fg-informative"
+                : "text-fg-neutral-placeholder"
+          }`}
         >
           {description}
         </p>

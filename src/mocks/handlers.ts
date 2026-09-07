@@ -7,6 +7,7 @@ import type {
   LiveStatus,
   LiveStreamStatus,
 } from "@/types/live";
+import type { ShopImageUploadUrl } from "@/types/upload";
 import type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -18,6 +19,8 @@ const fail = (status: number, code: string, message: string) =>
 
 const notFound = () =>
   fail(404, "LIVE_NOT_FOUND", "라이브를 찾을 수 없습니다.");
+
+const TAKEN_NICKNAMES = ["토스티", "toasty", "admin"];
 
 function buildLive(
   liveId: number,
@@ -107,6 +110,24 @@ export const handlers = [
   http.get(`${BASE_URL}/users/me`, () =>
     ok<User>({ role: mockScenario().role, nickname: "user_a3f9c2e81b04" }),
   ),
+
+  // 중복 화면을 눌러볼 수 있도록 정해둔 닉네임만 이미 쓰인 것으로 다룬다.
+  http.get(`${BASE_URL}/search-nickname`, ({ request }) => {
+    const nickname = new URL(request.url).searchParams.get("nickname") ?? "";
+
+    return ok({ duplicated: TAKEN_NICKNAMES.includes(nickname) });
+  }),
+
+  // 목에는 S3 가 없으므로 발급만 흉내 내고, PUT 은 아래에서 그대로 성공시킨다.
+  http.post(`${BASE_URL}/sellers/shop-image/upload-url`, () =>
+    ok<ShopImageUploadUrl>({
+      objectKey: `sellers/images/7/mock-shop-image.jpg`,
+      uploadUrl: `${BASE_URL}/mock-upload`,
+      expiresIn: 300,
+    }),
+  ),
+
+  http.put(`${BASE_URL}/mock-upload`, () => new HttpResponse(null)),
 
   http.post(`${BASE_URL}/lives`, async ({ request }) => {
     const { title, description } = (await request.json()) as {
