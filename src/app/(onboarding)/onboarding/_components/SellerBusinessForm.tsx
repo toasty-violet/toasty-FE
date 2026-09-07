@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
@@ -10,6 +10,7 @@ import { submitSellerOnboarding } from "@/lib/user";
 
 import {
   clearSellerDraft,
+  hasSellerInfoStep,
   readSellerDraft,
   saveSellerDraft,
   type SellerOnboardingDraft,
@@ -27,6 +28,14 @@ export function SellerBusinessForm() {
   // RouteGuard 가 판정을 마친 뒤에야 마운트되는 클라이언트 전용 화면이라
   // 첫 렌더에서 바로 sessionStorage 를 읽어도 서버 렌더와 어긋나지 않는다.
   const [draft, setDraft] = useState<SellerOnboardingDraft>(readSellerDraft);
+
+  // 1단계를 건너뛰고 들어온 경우 되돌려보낸다.
+  // 제출은 두 단계의 입력을 함께 보내므로 스토어 정보 없이는 진행할 수 없다.
+  const infoStepDone = hasSellerInfoStep(draft);
+  useEffect(() => {
+    if (infoStepDone) return;
+    router.replace("/onboarding/seller/info-1");
+  }, [infoStepDone, router]);
 
   const update = (patch: Partial<SellerOnboardingDraft>) =>
     setDraft((prev) => ({ ...prev, ...patch }));

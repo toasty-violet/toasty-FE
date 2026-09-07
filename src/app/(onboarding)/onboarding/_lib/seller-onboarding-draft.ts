@@ -54,6 +54,20 @@ export function saveSellerDraft(draft: Partial<SellerOnboardingDraft>) {
   );
 }
 
+/**
+ * info-1 에서 받는 필수값이 모두 채워졌는지.
+ *
+ * info-1 의 통과 조건이자 info-2 의 진입 조건이라, 두 화면이 같은 판정을
+ * 쓰도록 여기에 둔다. 사진은 업로드를 마쳐야 objectKey 가 채워진다.
+ */
+export function hasSellerInfoStep(draft: SellerOnboardingDraft) {
+  return (
+    draft.shopImageObjectKey !== "" &&
+    draft.shopName !== "" &&
+    draft.description.trim() !== ""
+  );
+}
+
 //입점 신청을 마치면 더 쓸 일이 없으므로 초안을 비운다
 export function clearSellerDraft() {
   sessionStorage.removeItem(STORAGE_KEY);

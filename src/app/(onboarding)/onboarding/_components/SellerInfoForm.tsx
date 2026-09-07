@@ -9,6 +9,7 @@ import { Textarea } from "@/components/inputs/Textarea";
 import { useNicknameCheck } from "@/hooks/use-nickname-check";
 
 import {
+  hasSellerInfoStep,
   readSellerDraft,
   saveSellerDraft,
   type SellerOnboardingDraft,
@@ -37,11 +38,8 @@ export function SellerInfoForm() {
     router.push("/onboarding/seller/info-2");
   };
 
-  // 사진·이름·소개가 모두 필수다. 사진은 업로드를 마쳐야 objectKey 가 채워진다.
-  const canSubmit =
-    draft.shopImageObjectKey !== "" &&
-    shopNameVerified &&
-    draft.description.trim() !== "";
+  // 사진·이름·소개가 모두 필수인 데 더해, 이름은 중복 조회까지 통과해야 한다.
+  const canSubmit = hasSellerInfoStep(draft) && shopNameVerified;
 
   return (
     <>
