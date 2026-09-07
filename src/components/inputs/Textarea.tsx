@@ -39,7 +39,8 @@ export function Textarea({
       boxClassName="flex-col justify-center px-16 py-14"
       focusField={() => textareaRef.current?.focus()}
       renderAffix={({ clearButton, counter }) => (
-        <div className="flex w-full items-center justify-end gap-8">
+        // 지우기 버튼이 나타나도 상자 높이가 흔들리지 않게 줄 높이를 고정한다.
+        <div className="flex h-24 w-full items-center justify-end gap-8">
           {clearButton}
           {counter}
         </div>
