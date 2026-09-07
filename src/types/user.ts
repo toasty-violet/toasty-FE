@@ -31,3 +31,25 @@ export interface SellerOnboardingRequest {
 
 // 셀러 입점 신청 API 응답. data 는 안내 문구라 화면에서 쓰지 않는다
 export type SellerOnboardingResponse = ApiSuccess<string>;
+
+// 배송지. 카카오 우편번호에서 받은 값을 필드별로 나눠 보낸다.
+export interface CustomerAddress {
+  postalCode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  addressType: "R" | "J";
+  buildingName: string;
+  legalDong: string;
+  detailAddress: string;
+}
+
+// 구매자 온보딩에 보내는 기본 정보
+export interface CustomerOnboardingPayload {
+  name: string;
+  nickname: string;
+  phoneNumber: string;
+  address: CustomerAddress;
+}
+
+// 구매자 온보딩 API 응답
+export type CustomerOnboardingResponse = ApiSuccess<string>;

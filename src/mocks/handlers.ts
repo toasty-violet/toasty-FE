@@ -129,6 +129,19 @@ export const handlers = [
 
   http.put(`${BASE_URL}/mock-upload`, () => new HttpResponse(null)),
 
+  // 실제 서버처럼 역할을 확정해, 완료 화면에서 새로고침해도 가드에 걸리지 않게 한다.
+  http.put(`${BASE_URL}/users/onboarding/customer`, () => {
+    mockScenario().role = "CUSTOMER";
+
+    return ok("구매자 정보가 등록되었습니다.");
+  }),
+
+  http.put(`${BASE_URL}/users/onboarding/seller`, () => {
+    mockScenario().role = "SELLER";
+
+    return ok("입점 신청이 완료되었습니다.");
+  }),
+
   http.post(`${BASE_URL}/lives`, async ({ request }) => {
     const { title, description } = (await request.json()) as {
       title: string;

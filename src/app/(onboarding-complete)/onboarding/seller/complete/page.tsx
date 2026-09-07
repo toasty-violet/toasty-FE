@@ -1,47 +1,11 @@
-"use client";
+import { OnboardingComplete } from "../../../_components/OnboardingComplete";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-import CheckRoundIcon from "@/assets/CheckRound.svg";
-import { BottomButton } from "@/components/buttons/BottomButton";
-import { Header } from "@/components/headers/Header";
-import { fetchMe } from "@/lib/user";
-import { useUserStore } from "@/store/user-store";
-
-//셀러 입점 신청을 마쳤음을 알리는 화면
 export default function OnboardingSellerCompletePage() {
-  const router = useRouter();
-  const setUser = useUserStore((state) => state.setUser);
-
-  // 입점으로 role 이 바뀌었으므로 새로 받아 둔다.
-  // 온보딩 화면에서 미리 갱신하면 그쪽 가드가 먼저 반응해 여기까지 오지 못한다.
-  useEffect(() => {
-    fetchMe().then(setUser);
-  }, [setUser]);
-
   return (
-    <>
-      {/* 이 그룹은 레이아웃이 헤더를 그리지 않으므로 페이지가 직접 얹는다. */}
-      <Header />
-
-      <main className="flex flex-1 flex-col">
-        <div className="flex flex-1 flex-col items-center justify-center gap-28 p-20">
-          {/* 원형 배경과 체크 표시가 아이콘 하나에 함께 들어 있다. */}
-          <CheckRoundIcon className="size-[7.2rem]" />
-
-          <div className="flex w-full flex-col items-center gap-8 text-center">
-            <h1 className="text-t2-bold text-fg-neutral-solid">
-              입점이 완료되었습니다!
-            </h1>
-            <p className="text-b1-reading-medium text-fg-neutral-primary">
-              이제 나만의 라이브를 시작해보세요.
-            </p>
-          </div>
-        </div>
-
-        <BottomButton label="확인" onClick={() => router.replace("/shop")} />
-      </main>
-    </>
+    <OnboardingComplete
+      title="입점이 완료되었습니다!"
+      description="이제 나만의 라이브를 시작해보세요."
+      homePath="/shop"
+    />
   );
 }

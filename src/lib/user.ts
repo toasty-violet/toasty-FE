@@ -1,5 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type {
+  CustomerOnboardingPayload,
+  CustomerOnboardingResponse,
   MeResponse,
   NicknameDuplicationResponse,
   SellerOnboardingRequest,
@@ -21,6 +23,18 @@ export async function fetchNicknameDuplicated(nickname: string) {
   );
 
   return data.data.duplicated;
+}
+
+//구매자 온보딩. 닉네임은 가입 시 자동 생성되므로 등록이 아니라 수정이다.
+export async function submitCustomerOnboarding(
+  payload: CustomerOnboardingPayload,
+) {
+  const { data } = await apiClient.put<CustomerOnboardingResponse>(
+    "/users/onboarding/customer",
+    payload,
+  );
+
+  return data.data;
 }
 
 //셀러 입점 신청. 성공하면 유저의 role 이 SELLER 로 바뀐다
