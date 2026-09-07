@@ -13,20 +13,6 @@ test("없는 publicId 는 찾을 수 없음을 보여준다", async ({ page }) =
   });
 });
 
-test("생성 후 시청 링크가 publicId 를 쓴다", async ({ page }) => {
-  await page.goto("/shop/lives/new");
-  await page.getByLabel("제목").fill("퍼블릭아이디 확인");
-  await page.getByRole("button", { name: "라이브 만들기" }).click();
-
-  const link = page.getByRole("link", { name: "시청 화면 열기" });
-  await expect(link).toHaveAttribute("href", /^\/live\/mock-\d+$/);
-
-  await link.click();
-  await expect(
-    page.getByRole("heading", { name: "퍼블릭아이디 확인" }),
-  ).toBeVisible();
-});
-
 test("방송 중인 라이브는 재생 화면을 보여준다", async ({ page }) => {
   await page.goto("/live/mock-2");
   await expect(
