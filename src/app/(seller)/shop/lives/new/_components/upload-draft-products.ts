@@ -5,6 +5,15 @@ import {
 import type { LiveProductInput } from "@/types/live";
 import type { DraftProduct } from "./draft-product";
 
+// 발급 API 는 한 번에 20 장까지 받는다. 상품 상한(50)보다 낮아 나눠 부른다.
+const UPLOAD_URL_BATCH = 20;
+
+function chunk<T>(items: T[], size: number) {
+  return Array.from({ length: Math.ceil(items.length / size) }, (_, index) =>
+    items.slice(index * size, (index + 1) * size),
+  );
+}
+
 /**
  * 아직 안 올린 사진만 S3 에 올리고, 받은 objectKey 를 붙인 목록을 돌려준다.
  * 저장이 실패해 다시 시도할 때 같은 사진을 또 올리지 않게 하려는 것이다.
@@ -17,12 +26,17 @@ export async function uploadDraftProducts(
     return products;
   }
 
-  const uploads = await issueProductImageUploadUrls(
-    pending.map(({ file }) => ({
-      contentType: file.type,
-      contentLength: file.size,
-    })),
+  const batches = await Promise.all(
+    chunk(pending, UPLOAD_URL_BATCH).map((batch) =>
+      issueProductImageUploadUrls(
+        batch.map(({ file }) => ({
+          contentType: file.type,
+          contentLength: file.size,
+        })),
+      ),
+    ),
   );
+  const uploads = batches.flat();
 
   await Promise.all(
     uploads.map((upload, index) =>

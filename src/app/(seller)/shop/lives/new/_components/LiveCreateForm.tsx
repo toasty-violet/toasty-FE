@@ -30,7 +30,7 @@ let sequence = 0;
 const nextDraftId = () =>
   globalThis.crypto?.randomUUID?.() ?? `draft-${Date.now()}-${sequence++}`;
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const MAX_PRODUCTS = 20;
+const MAX_PRODUCTS = 50;
 
 // 방송 예정 시각 기본값은 다음 날 오후 8시다.
 function defaultScheduledAt() {

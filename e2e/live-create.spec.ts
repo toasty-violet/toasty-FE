@@ -105,3 +105,24 @@ test("모달이 열리면 포커스가 모달 안으로 들어간다", async ({ 
   );
   expect(focused).toBe("저장 안 함");
 });
+
+test("사진이 20장을 넘어도 발급 요청을 나눠 보낸다", async ({ page }) => {
+  await page.goto("/shop/lives/new");
+  await page.getByLabel("방송 제목").fill("대량 등록");
+  await page
+    .locator('input[type="file"]')
+    .setInputFiles(
+      Array.from({ length: 21 }, (_, index) => photo(`p${index}.png`)),
+    );
+
+  await expect(page.getByLabel("상품명")).toHaveCount(21);
+  for (let index = 0; index < 21; index += 1) {
+    await page.getByLabel("상품명").nth(index).fill(`상품 ${index}`);
+    await page.getByLabel("가격(원)").nth(index).fill("1000");
+  }
+  await page.getByRole("button", { name: "등록하기 (21)" }).click();
+
+  // 발급 API 는 20 장까지라, 나눠 부르지 않으면 여기서 400 이 난다.
+  await page.getByRole("button", { name: "저장하기" }).click();
+  await expect(page).toHaveURL(/\/shop\/lives\/mock-\d+\/studio$/);
+});

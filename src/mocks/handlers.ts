@@ -127,6 +127,15 @@ export const handlers = [
         files: ProductImageUploadFile[];
       };
 
+      // 서버와 같게 한 번에 20 장까지만 받는다.
+      if (files.length > 20) {
+        return fail(
+          400,
+          "COMMON_INVALID_INPUT",
+          "사진은 한 번에 20장까지 올릴 수 있습니다.",
+        );
+      }
+
       return ok<{ uploads: ProductImageUpload[] }>({
         uploads: files.map((_, index) => ({
           objectKey: `products/pending/mock-${Date.now()}-${index}.jpg`,
