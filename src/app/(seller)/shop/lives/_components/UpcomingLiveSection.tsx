@@ -120,18 +120,20 @@ export function UpcomingLiveSection({
     <section className="flex w-full flex-col gap-14">
       <h2 className="text-st1-bold text-fg-neutral-solid">예정된 라이브</h2>
 
-      <ul className="flex w-full flex-col gap-12">
-        {lives.map((live) => (
-          <UpcomingLiveCard
-            key={live.liveId}
-            live={live}
-            onCopyLink={() => onCopyLink(live)}
-            onStart={() => onStart(live)}
-            onMore={() => onMore(live)}
-          />
-        ))}
+      <div className="flex w-full flex-col gap-12">
+        <ul className="flex w-full flex-col gap-12">
+          {lives.map((live) => (
+            <UpcomingLiveCard
+              key={live.liveId}
+              live={live}
+              onCopyLink={() => onCopyLink(live)}
+              onStart={() => onStart(live)}
+              onMore={() => onMore(live)}
+            />
+          ))}
+        </ul>
         <CreateLiveButton onClick={onCreate} />
-      </ul>
+      </div>
     </section>
   );
 }

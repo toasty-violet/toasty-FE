@@ -28,6 +28,8 @@ export function SellerLiveTab() {
   const goStudio = (live: SellerScheduledLive) =>
     router.push(`/shop/lives/${live.publicId}/studio`);
 
+  const broadcasting = data?.broadcasting;
+
   return (
     <div className="bg-bg-neutral-weak flex flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-28 overflow-y-auto px-20 pt-20 pb-56">
@@ -46,17 +48,13 @@ export function SellerLiveTab() {
         {data && (
           <>
             {/* 방송 중이 아니면 카드를 통째로 숨긴다. */}
-            {data.broadcasting && (
+            {broadcasting && (
               <LiveNowCard
-                live={data.broadcasting}
-                onWatch={() =>
-                  router.push(`/live/${data.broadcasting!.publicId}`)
-                }
-                onCopyLink={() => copyLink(data.broadcasting!.publicId)}
+                live={broadcasting}
+                onWatch={() => router.push(`/live/${broadcasting.publicId}`)}
+                onCopyLink={() => copyLink(broadcasting.publicId)}
                 onEdit={() =>
-                  router.push(
-                    `/shop/lives/${data.broadcasting!.publicId}/studio`,
-                  )
+                  router.push(`/shop/lives/${broadcasting.publicId}/studio`)
                 }
               />
             )}

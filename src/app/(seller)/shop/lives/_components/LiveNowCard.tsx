@@ -1,10 +1,11 @@
 "use client";
 
+import { Button } from "@/components/buttons/Button";
 import EditIcon from "@/assets/Edit.svg";
 import LinkIcon from "@/assets/Link.svg";
 import type { SellerBroadcastingLive } from "@/types/live";
 
-import { CardButton, IconCardButton } from "./CardButton";
+import { IconCardButton } from "./CardButton";
 
 export function LiveNowCard({
   live,
@@ -31,7 +32,13 @@ export function LiveNowCard({
       </div>
 
       <div className="flex w-full items-center gap-8">
-        <CardButton label="방송 보기" onClick={onWatch} />
+        <Button
+          label="방송 보기"
+          color="assistive"
+          size="sm"
+          fullWidth
+          onClick={onWatch}
+        />
         <IconCardButton
           label="링크 복사"
           icon={LinkIcon}
