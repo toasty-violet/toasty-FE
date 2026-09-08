@@ -11,7 +11,7 @@ import { Button } from "@/components/buttons/Button";
 import { BottomButton } from "@/components/buttons/BottomButton";
 import { createLive } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
-import type { LiveCreateResponse } from "@/types/live";
+import type { LiveWithProducts } from "@/types/live";
 
 import { LeaveConfirmModal } from "./LeaveConfirmModal";
 import { LiveScheduleField } from "./LiveScheduleField";
@@ -43,7 +43,7 @@ function defaultScheduledAt() {
 export function LiveCreateForm({
   onCreated,
 }: {
-  onCreated: (created: LiveCreateResponse) => void;
+  onCreated: (created: LiveWithProducts) => void;
 }) {
   const router = useRouter();
   const [step, setStep] = useState<"info" | "products">("info");

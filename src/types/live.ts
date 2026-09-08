@@ -21,9 +21,25 @@ export interface BroadcastCredential {
   streamKey: string;
 }
 
-export interface LiveCreateResponse {
+export type LiveProductStatus = "SCHEDULED" | "ACTIVE" | "CLOSED";
+
+/** 편성된 상품. 사진은 주소로 오고, 수정에는 objectKey 를 보낸다. */
+export interface LiveProduct {
+  productId: number;
+  /** 편성 번호. 방송 중 고정·구매에서 쓴다. */
+  liveProductId: number;
+  name: string;
+  price: number;
+  stockQuantity: number;
+  imageUrl: string;
+  displayOrder: number;
+  status: LiveProductStatus;
+}
+
+/** 라이브 생성과 상세 조회가 같은 형태를 쓴다. 송출정보는 담기지 않는다. */
+export interface LiveWithProducts {
   live: Live;
-  broadcastCredential: BroadcastCredential;
+  products: LiveProduct[];
 }
 
 /** 라이브에 편성할 상품. imageObjectKey 는 업로드 주소 발급에서 받은 값이다. */
@@ -40,6 +56,24 @@ export interface LiveCreateRequest {
   description?: string;
   scheduledAt: string;
   products: LiveProductInput[];
+}
+
+/** 보내지 않은 항목은 그대로 둔다. 상품은 전체 목록을 통째로 보낸다. */
+export interface LiveUpdateRequest {
+  title?: string;
+  description?: string;
+  scheduledAt?: string;
+  products?: LiveProductUpsert[];
+}
+
+/** 기존 상품은 productId 를 그대로 두고, 새 상품은 뺀다. */
+export interface LiveProductUpsert {
+  productId?: number;
+  name: string;
+  price: number;
+  stockQuantity: number;
+  /** 사진을 바꾸지 않으면 보내지 않는다. 새 상품이면 필수다. */
+  imageObjectKey?: string;
 }
 
 export interface ProductImageUploadFile {
