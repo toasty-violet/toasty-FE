@@ -79,3 +79,36 @@ export const LIVE_ERROR_CODE = {
   BROADCAST_STOP_FAILED: "LIVE_BROADCAST_STOP_FAILED",
   STREAM_KEY_DELETE_FAILED: "LIVE_STREAM_KEY_DELETE_FAILED",
 } as const;
+
+/** 셀러 라이브탭 한 화면. 세 필드가 화면의 세 구역에 대응한다. */
+export interface SellerLiveTab {
+  /** 주문·시청자 집계가 생기기 전까지 서버가 항상 null 을 준다. */
+  latestStat: SellerLiveStat | null;
+  /** 지금 방송 중인 라이브. 없으면 null. */
+  broadcasting: SellerBroadcastingLive | null;
+  /** 방송 예정 시각 오름차순. */
+  scheduled: SellerScheduledLive[];
+}
+
+export interface SellerLiveStat {
+  viewerCount: number;
+  orderCount: number;
+  salesAmount: number;
+}
+
+export interface SellerBroadcastingLive {
+  liveId: number;
+  publicId: string;
+  title: string;
+  playbackUrl: string;
+  /** 판매율(%). 주문 집계가 없어 당분간 0 이다. */
+  sellThroughRate: number;
+}
+
+export interface SellerScheduledLive {
+  liveId: number;
+  publicId: string;
+  title: string;
+  scheduledAt: string;
+  productCount: number;
+}

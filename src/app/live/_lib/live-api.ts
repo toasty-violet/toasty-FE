@@ -9,6 +9,7 @@ import type {
   LiveStreamStatus,
   ProductImageUpload,
   ProductImageUploadFile,
+  SellerLiveTab,
 } from "@/types/live";
 
 export async function createLive(
@@ -92,4 +93,10 @@ export async function uploadProductImage(uploadUrl: string, file: File) {
   if (!response.ok) {
     throw new Error(`사진을 올리지 못했습니다. (${response.status})`);
   }
+}
+
+/** 셀러 라이브탭 한 화면을 채운다. 방송 중·최신 현황·예정 목록을 함께 준다. */
+export async function getSellerLiveTab(): Promise<SellerLiveTab> {
+  const { data } = await apiClient.get<ApiSuccess<SellerLiveTab>>("/lives/me");
+  return data.data;
 }
