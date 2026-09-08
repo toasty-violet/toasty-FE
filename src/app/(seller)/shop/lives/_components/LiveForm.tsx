@@ -205,15 +205,32 @@ export function LiveForm({
 
   const screenTitle = editing ? "라이브 수정" : "신규 라이브";
 
+  // 상품 단계에서도 사진을 더 고를 수 있어야 해서 단계 분기 바깥에 둔다.
+  const filePicker = (
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept={ACCEPTED_TYPES.join(",")}
+      multiple
+      hidden
+      onChange={(event) => {
+        pickFiles(event.target.files);
+        event.target.value = "";
+      }}
+    />
+  );
+
   if (step === "products") {
     return (
       <>
-        <Header title={screenTitle} onBack={() => setStep("info")} />
+        <Header title="판매 상품" onBack={() => setStep("info")} />
         <ProductSetupForm
           products={products}
           onChange={changeProducts}
+          onAdd={() => fileInputRef.current?.click()}
           onSubmit={() => setStep("info")}
         />
+        {filePicker}
       </>
     );
   }
@@ -302,17 +319,7 @@ export function LiveForm({
                 : fileInputRef.current?.click()
             }
           />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ACCEPTED_TYPES.join(",")}
-            multiple
-            hidden
-            onChange={(event) => {
-              pickFiles(event.target.files);
-              event.target.value = "";
-            }}
-          />
+          {filePicker}
 
           {(fileError || mutation.error) && (
             <p role="alert" className="text-c1-medium text-fg-critical">
