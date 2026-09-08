@@ -8,6 +8,7 @@ import type {
   LiveStreamStatus,
   ProductImageUpload,
   ProductImageUploadFile,
+  SellerLiveTab,
 } from "@/types/live";
 import type { User } from "@/types/user";
 
@@ -66,6 +67,12 @@ function seed(title: string, description: string, status: LiveStatus) {
 seed("목 라이브", "방송 시작 전 대기 화면", "READY"); // /live/mock-1
 seed("방송 중인 목 라이브", "재생 시도 화면", "LIVE"); // /live/mock-2
 seed("종료된 목 라이브", "방송 종료 화면", "ENDED"); // /live/mock-3
+
+// 편성 상품 수는 아직 목이 들고 있지 않아 시드에만 값을 둔다.
+const productCounts = new Map<number, number>([
+  [1, 3],
+  [2, 5],
+]);
 
 function findByLiveId(liveId: number) {
   return [...lives.values()].find((live) => live.liveId === liveId);
@@ -222,6 +229,49 @@ export const handlers = [
     "/mock-playback/:file",
     () => new HttpResponse(null, { status: 404 }),
   ),
+
+  // 화면의 세 구역을 그대로 채운다. 방송 중은 셀러당 하나뿐이다.
+  // ?mockLiveTab= 으로 조합을 바꿔 볼 수 있다.
+  //   empty     아무것도 없음
+  //   scheduled 방송 중 없이 예정만
+  //   stat      집계만 (서버가 집계를 주기 시작했을 때의 모습)
+  http.get(`${BASE_URL}/lives/me`, () => {
+    const tab = new URLSearchParams(window.location.search).get("mockLiveTab");
+    const mine =
+      tab === "empty" || tab === "stat"
+        ? []
+        : [...lives.values()].filter(
+            (live) => tab !== "scheduled" || live.status !== "LIVE",
+          );
+
+    return ok<SellerLiveTab>({
+      // 주문·시청자 집계가 아직 없어 서버는 항상 null 을 준다.
+      latestStat:
+        tab === "stat"
+          ? { viewerCount: 32, orderCount: 12, salesAmount: 348000 }
+          : null,
+      broadcasting:
+        mine
+          .filter((live) => live.status === "LIVE")
+          .map((live) => ({
+            liveId: live.liveId,
+            publicId: live.publicId,
+            title: live.title,
+            playbackUrl: live.playbackUrl,
+            sellThroughRate: 0,
+          }))[0] ?? null,
+      scheduled: mine
+        .filter((live) => live.status === "READY")
+        .map((live) => ({
+          liveId: live.liveId,
+          publicId: live.publicId,
+          title: live.title,
+          scheduledAt: live.scheduledAt,
+          productCount: productCounts.get(live.liveId) ?? 0,
+        }))
+        .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt)),
+    });
+  }),
 
   http.get(`${BASE_URL}/lives/public/:publicId`, ({ params }) => {
     const live = lives.get(String(params.publicId));
