@@ -25,7 +25,7 @@ const solidStyles: Record<ButtonColor, string> = {
   primary: "bg-bg-brand-solid text-fg-neutral-inverted",
   secondary: "bg-bg-neutral-strong text-fg-neutral-inverted",
   assistive: "bg-bg-neutral-weak text-fg-neutral-primary",
-  critical: "bg-bg-critical-solid text-fg-critical-contrast",
+  critical: "bg-bg-critical-solid text-fg-neutral-inverted",
 };
 
 const solidDisabledStyles: Record<ButtonColor, string> = {
