@@ -9,6 +9,8 @@ type BottomSheetProps = {
   open: boolean;
   onClose: () => void;
   title: string;
+  /** 디자인에 제목이 없는 시트용. 이름은 남겨 두고 화면에서만 감춘다. */
+  hideTitle?: boolean;
   children: ReactNode;
 };
 
@@ -21,6 +23,7 @@ export function BottomSheet({
   open,
   onClose,
   title,
+  hideTitle = false,
   children,
 }: BottomSheetProps) {
   const titleId = useId();
@@ -57,7 +60,11 @@ export function BottomSheet({
 
         <h2
           id={titleId}
-          className="text-t3-bold text-fg-neutral-solid w-full text-center"
+          className={
+            hideTitle
+              ? "sr-only"
+              : "text-t3-bold text-fg-neutral-solid w-full text-center"
+          }
         >
           {title}
         </h2>
