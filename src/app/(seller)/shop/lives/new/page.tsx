@@ -1,16 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LiveCreateForm } from "./_components/LiveCreateForm";
+import { LiveForm } from "../_components/LiveForm";
 
 export default function NewLivePage() {
   const router = useRouter();
 
   return (
-    <LiveCreateForm
-      onCreated={(created) =>
-        router.push(`/shop/lives/${created.live.publicId}/studio`)
-      }
+    <LiveForm
+      mode={{ type: "create" }}
+      onSaved={(live) => router.push(`/shop/lives/${live.publicId}/studio`)}
     />
   );
 }
