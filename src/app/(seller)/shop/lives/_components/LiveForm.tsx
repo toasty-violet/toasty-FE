@@ -292,7 +292,8 @@ export function LiveForm({
 
           <Button
             label={products.length > 0 ? "상품 수정" : "상품 등록"}
-            color="secondary"
+            // 등록 전에는 눌러야 할 버튼이라 진하게, 등록한 뒤에는 물러난다.
+            color={products.length > 0 ? "assistive" : "secondary"}
             size="md"
             fullWidth
             onClick={() =>

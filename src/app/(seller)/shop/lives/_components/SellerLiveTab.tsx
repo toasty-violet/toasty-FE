@@ -28,6 +28,9 @@ export function SellerLiveTab() {
   const goStudio = (live: SellerScheduledLive) =>
     router.push(`/shop/lives/${live.publicId}/studio`);
 
+  const goEdit = (publicId: string) =>
+    router.push(`/shop/lives/${publicId}/edit`);
+
   const broadcasting = data?.broadcasting;
 
   return (
@@ -53,9 +56,7 @@ export function SellerLiveTab() {
                 live={broadcasting}
                 onWatch={() => router.push(`/live/${broadcasting.publicId}`)}
                 onCopyLink={() => copyLink(broadcasting.publicId)}
-                onEdit={() =>
-                  router.push(`/shop/lives/${broadcasting.publicId}/studio`)
-                }
+                onEdit={() => goEdit(broadcasting.publicId)}
               />
             )}
 
@@ -67,7 +68,7 @@ export function SellerLiveTab() {
               onCreate={() => router.push("/shop/lives/new")}
               onCopyLink={(live) => copyLink(live.publicId)}
               onStart={goStudio}
-              onMore={goStudio}
+              onMore={(live) => goEdit(live.publicId)}
             />
           </>
         )}
