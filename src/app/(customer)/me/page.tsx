@@ -1,5 +1,5 @@
-import { AccountCard } from "./_components/AccountCard";
-import { SupportCard } from "./_components/SupportCard";
+import { AccountCard } from "@/components/cards/AccountCard";
+import { SupportCard } from "@/components/cards/SupportCard";
 
 export default function MyPage() {
   return (
