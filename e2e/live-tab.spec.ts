@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 
+import { stubApi } from "./support/api";
+
 test("방송 중·예정 라이브를 보여준다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives");
 
   await expect(page.getByText("지금 방송중")).toBeVisible();
@@ -17,6 +20,7 @@ test("방송 중·예정 라이브를 보여준다", async ({ page }) => {
 });
 
 test("집계가 없으면 현황을 - 로 둔다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives");
 
   await expect(page.getByText("최신 라이브 현황")).toBeVisible();
@@ -26,6 +30,7 @@ test("집계가 없으면 현황을 - 로 둔다", async ({ page }) => {
 });
 
 test("신규 라이브를 누르면 생성 화면으로 간다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives");
   await page.getByRole("button", { name: "신규 라이브" }).click();
 
@@ -33,6 +38,7 @@ test("신규 라이브를 누르면 생성 화면으로 간다", async ({ page }
 });
 
 test("예정 라이브의 방송 시작은 스튜디오로 보낸다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives");
   await page.getByRole("button", { name: "방송 시작" }).first().click();
 
@@ -40,7 +46,8 @@ test("예정 라이브의 방송 시작은 스튜디오로 보낸다", async ({ 
 });
 
 test("예정된 라이브가 없으면 빈 상태를 보여준다", async ({ page }) => {
-  await page.goto("/shop/lives?mockLiveTab=empty");
+  await stubApi(page, { tab: "empty" });
+  await page.goto("/shop/lives");
 
   await expect(page.getByText("예정된 라이브가 없어요")).toBeVisible();
   // 디자인대로 두 줄이라 줄바꿈을 건너뛰고 찾는다.

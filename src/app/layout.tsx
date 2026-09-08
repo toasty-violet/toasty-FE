@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { APP_FRAME_ID } from "@/components/overlays/app-frame";
-import { MswProvider } from "@/providers/msw-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import "./globals.css";
@@ -32,11 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           className="relative mx-auto h-[84.4rem] w-full max-w-[39rem] overflow-hidden rounded-[0.5rem] bg-white"
         >
           <div className="flex size-full flex-col overflow-y-auto">
-            <MswProvider>
-              <QueryProvider>
-                <AuthProvider>{children}</AuthProvider>
-              </QueryProvider>
-            </MswProvider>
+            <QueryProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </QueryProvider>
           </div>
         </div>
       </body>

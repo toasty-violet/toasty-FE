@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { stubApi } from "./support/api";
+
 const PNG =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
@@ -10,6 +12,7 @@ const photo = (name: string) => ({
 });
 
 test("사진을 골라 상품을 등록하고 라이브를 만든다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("퍼블릭아이디 확인");
 
@@ -25,6 +28,7 @@ test("사진을 골라 상품을 등록하고 라이브를 만든다", async ({ 
 });
 
 test("상품을 편집해도 미리보기 사진이 살아있다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("미리보기 확인");
   await page.locator('input[type="file"]').setInputFiles([photo("a.png")]);
@@ -42,6 +46,7 @@ test("상품을 편집해도 미리보기 사진이 살아있다", async ({ page
 });
 
 test("작성 중 뒤로가기를 누르면 저장 여부를 묻는다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("테스트 방송");
   await page.getByLabel("뒤로 가기").click();
@@ -51,6 +56,7 @@ test("작성 중 뒤로가기를 누르면 저장 여부를 묻는다", async ({
 });
 
 test("작성한 게 없으면 묻지 않고 나간다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop");
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").waitFor();
@@ -60,6 +66,7 @@ test("작성한 게 없으면 묻지 않고 나간다", async ({ page }) => {
 });
 
 test("상품 설정에서 뒤로가기는 이전 단계로 돌아간다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("t");
   await page.locator('input[type="file"]').setInputFiles([photo("a.png")]);
@@ -70,6 +77,7 @@ test("상품 설정에서 뒤로가기는 이전 단계로 돌아간다", async 
 });
 
 test("규격에 안 맞는 사진만 걸러내고 나머지는 담는다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("혼합 업로드");
   await page.locator('input[type="file"]').setInputFiles([
@@ -88,6 +96,7 @@ test("규격에 안 맞는 사진만 걸러내고 나머지는 담는다", async
 });
 
 test("날짜만 바꿔도 뒤로가기에서 물어본다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("날짜").fill("2027-01-01");
   await page.getByLabel("뒤로 가기").click();
@@ -96,6 +105,7 @@ test("날짜만 바꿔도 뒤로가기에서 물어본다", async ({ page }) => 
 });
 
 test("모달이 열리면 포커스가 모달 안으로 들어간다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("포커스 확인");
   await page.getByLabel("뒤로 가기").click();
@@ -107,6 +117,7 @@ test("모달이 열리면 포커스가 모달 안으로 들어간다", async ({ 
 });
 
 test("사진이 20장을 넘어도 발급 요청을 나눠 보낸다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/shop/lives/new");
   await page.getByLabel("방송 제목").fill("대량 등록");
   await page
