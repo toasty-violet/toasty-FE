@@ -15,6 +15,23 @@ export type MeResponse = ApiSuccess<User>;
 // 닉네임 중복 조회 API 응답
 export type NicknameDuplicationResponse = ApiSuccess<{ duplicated: boolean }>;
 
+// 셀러 입점 신청에 보낼 정보
+export interface SellerOnboardingRequest {
+  shopName: string;
+  description: string;
+  shopImageObjectKey: string;
+  sellerName: string;
+  phoneNumber: string;
+  /** 선택 입력이라 비어 있을 수 있다. */
+  businessNumber: string;
+  /** KAKAO_BANK 같은 은행 코드. */
+  bank: string;
+  accountNumber: string;
+}
+
+// 셀러 입점 신청 API 응답. data 는 안내 문구라 화면에서 쓰지 않는다
+export type SellerOnboardingResponse = ApiSuccess<string>;
+
 // 배송지. 카카오 우편번호에서 받은 값을 필드별로 나눠 보낸다.
 export interface CustomerAddress {
   postalCode: string;

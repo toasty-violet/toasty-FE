@@ -13,14 +13,18 @@ const DEBOUNCE_MS = 500;
 /**
  * 닉네임의 형식 검증과 중복 조회를 합쳐 Input 이 그대로 받는 상태로 돌려준다.
  * 구매자·판매자 온보딩이 같은 규칙을 쓰므로 한곳에 둔다.
+ *
+ * @param checkFromStart 처음부터 채워져 있던 값도 조회할지 여부.
+ * 이미 제 것인 닉네임을 띄우는 화면은 false(기본), 아직 아무도 쓰지 않은
+ * 초안을 되살리는 화면은 true 로 둔다.
  */
-export function useNicknameCheck(nickname: string) {
+export function useNicknameCheck(nickname: string, checkFromStart = false) {
   const debounced = useDebouncedValue(nickname, DEBOUNCE_MS);
 
   // 이미 쓰던 닉네임을 채운 채 열리는 화면이 그대로 조회하지 않도록,
   // 이용자가 실제로 고친 뒤부터 묻는다.
   const [initial] = useState(nickname);
-  const edited = nickname !== initial;
+  const edited = checkFromStart || nickname !== initial;
 
   // 형식이 틀린 값은 서버에 물어볼 필요가 없다.
   const malformed = nickname !== "" && !NICKNAME_PATTERN.test(nickname);

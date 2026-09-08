@@ -9,6 +9,7 @@ import type {
   ProductImageUpload,
   ProductImageUploadFile,
 } from "@/types/live";
+import type { ShopImageUploadUrl } from "@/types/upload";
 import type { User } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -128,11 +129,28 @@ export const handlers = [
     return ok({ duplicated: TAKEN_NICKNAMES.includes(nickname) });
   }),
 
+  // 목에는 S3 가 없으므로 발급만 흉내 내고, PUT 은 아래에서 그대로 성공시킨다.
+  http.post(`${BASE_URL}/sellers/shop-image/upload-url`, () =>
+    ok<ShopImageUploadUrl>({
+      objectKey: `sellers/images/7/mock-shop-image.jpg`,
+      uploadUrl: `${BASE_URL}/mock-upload`,
+      expiresIn: 300,
+    }),
+  ),
+
+  http.put(`${BASE_URL}/mock-upload`, () => new HttpResponse(null)),
+
   // 실제 서버처럼 역할을 확정해, 완료 화면에서 새로고침해도 가드에 걸리지 않게 한다.
   http.put(`${BASE_URL}/users/onboarding/customer`, () => {
     mockScenario().role = "CUSTOMER";
 
     return ok("구매자 정보가 등록되었습니다.");
+  }),
+
+  http.put(`${BASE_URL}/users/onboarding/seller`, () => {
+    mockScenario().role = "SELLER";
+
+    return ok("입점 신청이 완료되었습니다.");
   }),
 
   // 사진 본문은 목이 받지 않는다. uploadUrl 은 아래 PUT 핸들러가 200 만 돌려준다.
