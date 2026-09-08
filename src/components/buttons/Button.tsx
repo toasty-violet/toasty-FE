@@ -1,5 +1,5 @@
 type ButtonVariant = "solid" | "outlined";
-type ButtonColor = "primary" | "secondary" | "assistive";
+type ButtonColor = "primary" | "secondary" | "assistive" | "critical";
 type ButtonSize = "lg" | "md" | "sm" | "xs";
 
 type ButtonProps = {
@@ -25,12 +25,14 @@ const solidStyles: Record<ButtonColor, string> = {
   primary: "bg-bg-brand-solid text-fg-neutral-inverted",
   secondary: "bg-bg-neutral-strong text-fg-neutral-inverted",
   assistive: "bg-bg-neutral-weak text-fg-neutral-primary",
+  critical: "bg-bg-critical-solid text-fg-critical-contrast",
 };
 
 const solidDisabledStyles: Record<ButtonColor, string> = {
   primary: "bg-bg-neutral-disabled text-fg-neutral-placeholder",
   secondary: "bg-bg-neutral-disabled text-fg-neutral-placeholder",
   assistive: "bg-bg-neutral-weak text-fg-neutral-disabled",
+  critical: "bg-bg-neutral-disabled text-fg-neutral-placeholder",
 };
 
 // 디자인에 Outlined x Secondary 조합이 없어 Assistive와 동일하게 처리한다.
@@ -38,6 +40,7 @@ const outlinedStyles: Record<ButtonColor, string> = {
   primary: "border-stroke-neutral-weak border text-fg-brand",
   secondary: "border-stroke-neutral-weak border text-fg-neutral-primary",
   assistive: "border-stroke-neutral-weak border text-fg-neutral-primary",
+  critical: "border-stroke-critical-solid border text-fg-critical",
 };
 
 const outlinedDisabledStyle =
