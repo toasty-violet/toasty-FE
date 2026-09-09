@@ -5,14 +5,17 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AmazonIVSBroadcastClient } from "amazon-ivs-web-broadcast";
 import {
   endLive,
+  getLiveProducts,
   getLiveStreamStatus,
   getViewerCount,
+  pinLiveProduct,
   reissueBroadcastCredential,
 } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { BroadcastCredential, LiveViewer } from "@/types/live";
 
 import { LiveHeader } from "./LiveHeader";
+import { LiveProductBar } from "./LiveProductBar";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
 type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
@@ -154,6 +157,27 @@ export function BroadcastPanel({
     refetchInterval: STREAM_STATUS_POLL_MS,
   });
 
+  const products = useQuery({
+    queryKey: ["live-products", live.liveId],
+    queryFn: () => getLiveProducts(live.liveId),
+  });
+
+  const list = products.data?.products ?? [];
+  const pinnedId = products.data?.currentPinnedProductId ?? null;
+  const pinnedIndex = list.findIndex((item) => item.productId === pinnedId);
+  const pinned = pinnedIndex >= 0 ? list[pinnedIndex] : undefined;
+
+  const pin = useMutation({
+    mutationFn: (productId: number) => pinLiveProduct(live.liveId, productId),
+    onSuccess: () => products.refetch(),
+  });
+
+  // 노출 순서대로 다음 상품을 고정한다. 마지막이면 처음으로 돌아간다.
+  const pinNext = () => {
+    if (list.length === 0) return;
+    pin.mutate(list[(pinnedIndex + 1) % list.length].productId);
+  };
+
   const endMutation = useMutation({
     mutationFn: () => endLive(live.liveId),
     onSuccess: () => {
@@ -232,7 +256,19 @@ export function BroadcastPanel({
           )}
         </div>
 
-        {/* 상품 영역과 채팅은 다음 단계에서 이 자리에 들어간다. */}
+        {/* 채팅 오버레이와 입력창은 BE 가 준비되면 이 영역에 함께 들어간다. */}
+        {status === "live" && (
+          <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
+            <LiveProductBar
+              pinned={pinned}
+              totalCount={list.length}
+              pinning={pin.isPending}
+              onOpenAllProducts={() => {}}
+              onEditPinned={() => {}}
+              onPinNext={pinNext}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
