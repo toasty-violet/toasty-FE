@@ -24,7 +24,7 @@ test("사진을 골라 상품을 등록하고 라이브를 만든다", async ({ 
   await page.getByRole("button", { name: "등록하기 (1)" }).click();
 
   await page.getByRole("button", { name: "저장하기" }).click();
-  await expect(page).toHaveURL(/\/shop\/lives\/mock-\d+\/studio$/);
+  await expect(page).toHaveURL(/\/shop\/lives$/);
 });
 
 test("상품을 편집해도 미리보기 사진이 살아있다", async ({ page }) => {
@@ -135,5 +135,5 @@ test("사진이 20장을 넘어도 발급 요청을 나눠 보낸다", async ({ 
 
   // 발급 API 는 20 장까지라, 나눠 부르지 않으면 여기서 400 이 난다.
   await page.getByRole("button", { name: "저장하기" }).click();
-  await expect(page).toHaveURL(/\/shop\/lives\/mock-\d+\/studio$/);
+  await expect(page).toHaveURL(/\/shop\/lives$/);
 });

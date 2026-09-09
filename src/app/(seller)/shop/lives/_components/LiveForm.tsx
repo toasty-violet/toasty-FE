@@ -9,14 +9,18 @@ import { Input } from "@/components/inputs/Input";
 import { Textarea } from "@/components/inputs/Textarea";
 import { Button } from "@/components/buttons/Button";
 import { BottomButton } from "@/components/buttons/BottomButton";
-import { createLive } from "@/app/live/_lib/live-api";
+import { createLive, updateLive } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
-import type { LiveCreateResponse } from "@/types/live";
+import type { Live, LiveProduct, LiveWithProducts } from "@/types/live";
 
 import { LeaveConfirmModal } from "./LeaveConfirmModal";
 import { LiveScheduleField } from "./LiveScheduleField";
 import { ProductSetupForm } from "./ProductSetupForm";
-import { toProductInputs, uploadDraftProducts } from "./upload-draft-products";
+import {
+  toProductInputs,
+  toProductUpserts,
+  uploadDraftProducts,
+} from "./upload-draft-products";
 import type { DraftProduct } from "./draft-product";
 
 const TITLE_MAX = 20;
@@ -40,18 +44,60 @@ function defaultScheduledAt() {
   return at;
 }
 
-export function LiveCreateForm({
-  onCreated,
+/** 상품 목록이 처음과 달라졌는지만 보면 되므로 값들을 한 줄로 이어 붙여 비교한다. */
+function productsSignature(products: DraftProduct[]) {
+  return products
+    .map((product) =>
+      [
+        product.productId ?? product.id,
+        product.name,
+        product.price,
+        product.stockQuantity,
+        product.imageObjectKey ?? "",
+      ].join(":"),
+    )
+    .join("|");
+}
+
+/** 편성된 상품을 폼이 다룰 수 있는 형태로 옮긴다. 사진은 서버가 준 주소를 그대로 쓴다. */
+function toDrafts(products: LiveProduct[]): DraftProduct[] {
+  return products.map((product) => ({
+    id: `product-${product.productId}`,
+    productId: product.productId,
+    previewUrl: product.imageUrl,
+    name: product.name,
+    price: product.price,
+    stockQuantity: product.stockQuantity,
+  }));
+}
+
+export type LiveFormMode =
+  { type: "create" } | { type: "edit"; live: Live; products: LiveProduct[] };
+
+export function LiveForm({
+  mode,
+  onSaved,
 }: {
-  onCreated: (created: LiveCreateResponse) => void;
+  mode: LiveFormMode;
+  onSaved: (live: Live) => void;
 }) {
+  const editing = mode.type === "edit" ? mode : null;
   const router = useRouter();
   const [step, setStep] = useState<"info" | "products">("info");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [initialScheduledAt] = useState(defaultScheduledAt);
+  const [title, setTitle] = useState(editing?.live.title ?? "");
+  const [description, setDescription] = useState(
+    editing?.live.description ?? "",
+  );
+  const [initialScheduledAt] = useState(() =>
+    editing ? new Date(editing.live.scheduledAt) : defaultScheduledAt(),
+  );
   const [scheduledAt, setScheduledAt] = useState(initialScheduledAt);
-  const [products, setProducts] = useState<DraftProduct[]>([]);
+  const [products, setProducts] = useState<DraftProduct[]>(() =>
+    editing ? toDrafts(editing.products) : [],
+  );
+  const [initialProducts] = useState(() =>
+    productsSignature(editing ? toDrafts(editing.products) : []),
+  );
   const [fileError, setFileError] = useState<string | null>(null);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [askingLeave, setAskingLeave] = useState(false);
@@ -70,14 +116,26 @@ export function LiveCreateForm({
       const uploaded = await uploadDraftProducts(products);
       // 저장이 실패해도 올린 사진은 남겨, 다시 시도할 때 또 올리지 않는다.
       setProducts(uploaded);
-      return createLive({
+
+      if (editing) {
+        await updateLive(editing.live.liveId, {
+          title: title.trim(),
+          description: description.trim(),
+          scheduledAt: toLocalIso(scheduledAt),
+          products: toProductUpserts(uploaded),
+        });
+        return editing.live;
+      }
+
+      const created: LiveWithProducts = await createLive({
         title: title.trim(),
         description: description.trim() || undefined,
         scheduledAt: toLocalIso(scheduledAt),
         products: toProductInputs(uploaded),
       });
+      return created.live;
     },
-    onSuccess: onCreated,
+    onSuccess: onSaved,
   });
 
   const pickFiles = (picked: FileList | null) => {
@@ -145,25 +203,45 @@ export function LiveCreateForm({
     setProducts(next);
   };
 
+  const screenTitle = editing ? "라이브 수정" : "신규 라이브";
+
+  // 상품 단계에서도 사진을 더 고를 수 있어야 해서 단계 분기 바깥에 둔다.
+  const filePicker = (
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept={ACCEPTED_TYPES.join(",")}
+      multiple
+      hidden
+      onChange={(event) => {
+        pickFiles(event.target.files);
+        event.target.value = "";
+      }}
+    />
+  );
+
   if (step === "products") {
     return (
       <>
-        <Header title="신규 라이브" onBack={() => setStep("info")} />
+        <Header title="판매 상품" onBack={() => setStep("info")} />
         <ProductSetupForm
           products={products}
           onChange={changeProducts}
+          onAdd={() => fileInputRef.current?.click()}
           onSubmit={() => setStep("info")}
         />
+        {filePicker}
       </>
     );
   }
 
   // 뒤로가기로 작성 중인 내용을 잃기 전에 물어본다.
+  // 수정은 값이 채워진 채로 열리므로, 처음 불러온 값과 달라졌을 때만 묻는다.
   const isDirty =
-    title.trim().length > 0 ||
-    description.trim().length > 0 ||
-    products.length > 0 ||
-    scheduledAt.getTime() !== initialScheduledAt.getTime();
+    title.trim() !== (editing?.live.title ?? "") ||
+    description.trim() !== (editing?.live.description ?? "") ||
+    scheduledAt.getTime() !== initialScheduledAt.getTime() ||
+    productsSignature(products) !== initialProducts;
 
   const canSubmit =
     title.trim().length > 0 &&
@@ -174,7 +252,7 @@ export function LiveCreateForm({
   return (
     <>
       <Header
-        title="신규 라이브"
+        title={screenTitle}
         onBack={() => (isDirty ? setAskingLeave(true) : router.back())}
       />
 
@@ -231,7 +309,8 @@ export function LiveCreateForm({
 
           <Button
             label={products.length > 0 ? "상품 수정" : "상품 등록"}
-            color="secondary"
+            // 등록 전에는 눌러야 할 버튼이라 진하게, 등록한 뒤에는 물러난다.
+            color={products.length > 0 ? "assistive" : "secondary"}
             size="md"
             fullWidth
             onClick={() =>
@@ -240,17 +319,7 @@ export function LiveCreateForm({
                 : fileInputRef.current?.click()
             }
           />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ACCEPTED_TYPES.join(",")}
-            multiple
-            hidden
-            onChange={(event) => {
-              pickFiles(event.target.files);
-              event.target.value = "";
-            }}
-          />
+          {filePicker}
 
           {(fileError || mutation.error) && (
             <p role="alert" className="text-c1-medium text-fg-critical">

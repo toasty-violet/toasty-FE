@@ -2,7 +2,7 @@ import {
   issueProductImageUploadUrls,
   uploadProductImage,
 } from "@/app/live/_lib/live-api";
-import type { LiveProductInput } from "@/types/live";
+import type { LiveProductInput, LiveProductUpsert } from "@/types/live";
 import type { DraftProduct } from "./draft-product";
 
 // 발급 API 는 한 번에 20 장까지 받는다. 상품 상한(50)보다 낮아 나눠 부른다.
@@ -21,7 +21,10 @@ function chunk<T>(items: T[], size: number) {
 export async function uploadDraftProducts(
   products: DraftProduct[],
 ): Promise<DraftProduct[]> {
-  const pending = products.filter((product) => !product.imageObjectKey);
+  // 불러온 상품은 사진을 바꾸기 전까지 file 이 없어 올릴 것도 없다.
+  const pending = products.filter(
+    (product) => product.file && !product.imageObjectKey,
+  );
   if (pending.length === 0) {
     return products;
   }
@@ -30,8 +33,8 @@ export async function uploadDraftProducts(
     chunk(pending, UPLOAD_URL_BATCH).map((batch) =>
       issueProductImageUploadUrls(
         batch.map(({ file }) => ({
-          contentType: file.type,
-          contentLength: file.size,
+          contentType: file!.type,
+          contentLength: file!.size,
         })),
       ),
     ),
@@ -40,7 +43,7 @@ export async function uploadDraftProducts(
 
   await Promise.all(
     uploads.map((upload, index) =>
-      uploadProductImage(upload.uploadUrl, pending[index].file),
+      uploadProductImage(upload.uploadUrl, pending[index].file!),
     ),
   );
 
@@ -61,5 +64,18 @@ export function toProductInputs(products: DraftProduct[]): LiveProductInput[] {
     price: product.price,
     stockQuantity: product.stockQuantity,
     imageObjectKey: product.imageObjectKey!,
+  }));
+}
+
+/** 수정은 상품 전체를 보낸다. 사진을 바꾸지 않은 상품은 키를 빼야 그대로 유지된다. */
+export function toProductUpserts(
+  products: DraftProduct[],
+): LiveProductUpsert[] {
+  return products.map((product) => ({
+    productId: product.productId,
+    name: product.name.trim(),
+    price: product.price,
+    stockQuantity: product.stockQuantity,
+    imageObjectKey: product.imageObjectKey,
   }));
 }
