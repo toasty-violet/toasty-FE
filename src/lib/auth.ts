@@ -1,7 +1,11 @@
 import { apiClient, requestRefresh } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth-store";
 import { useUserStore } from "@/store/user-store";
-import type { KakaoLoginResponse, LogoutResponse } from "@/types/auth";
+import type {
+  DeleteUserResponse,
+  KakaoLoginResponse,
+  LogoutResponse,
+} from "@/types/auth";
 
 //카카오 로그인 요청
 export async function loginWithKakao(code: string) {
@@ -15,6 +19,13 @@ export async function loginWithKakao(code: string) {
 //로그아웃 요청 (refreshToken 쿠키 만료 처리)
 export async function logout() {
   const { data } = await apiClient.post<LogoutResponse>("/logout");
+
+  return data;
+}
+
+//회원탈퇴 요청. 성공하면 계정이 사라지므로 호출한 쪽이 세션을 비워야 한다.
+export async function deleteUser() {
+  const { data } = await apiClient.delete<DeleteUserResponse>("/delete-user");
 
   return data;
 }
