@@ -15,6 +15,7 @@ import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { BroadcastCredential, LiveViewer } from "@/types/live";
 
 import { LiveHeader } from "./LiveHeader";
+import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
@@ -32,6 +33,7 @@ export function BroadcastPanel({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
   const [status, setStatus] = useState<Status>("preparing");
+  const [allProductsOpen, setAllProductsOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -263,13 +265,25 @@ export function BroadcastPanel({
               pinned={pinned}
               totalCount={list.length}
               pinning={pin.isPending}
-              onOpenAllProducts={() => {}}
+              onOpenAllProducts={() => setAllProductsOpen(true)}
               onEditPinned={() => {}}
               onPinNext={pinNext}
             />
           </div>
         )}
       </div>
+
+      <AllProductsSheet
+        open={allProductsOpen}
+        products={list}
+        pinnedProductId={pinnedId}
+        onClose={() => setAllProductsOpen(false)}
+        onEdit={() => {}}
+        onPin={(product) => {
+          pin.mutate(product.productId);
+          setAllProductsOpen(false);
+        }}
+      />
     </div>
   );
 }
