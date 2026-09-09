@@ -7,9 +7,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteLive, getSellerLiveTab } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import { SellerNav } from "@/components/navigations/SellerNav";
+import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import type { SellerScheduledLive } from "@/types/live";
 
-import { DeleteLiveModal } from "./DeleteLiveModal";
 import { LiveNowCard } from "./LiveNowCard";
 import { LiveStatCard } from "./LiveStatCard";
 import { ManageLiveSheet } from "./ManageLiveSheet";
@@ -44,10 +44,10 @@ export function SellerLiveTab() {
 
   const remove = useMutation({
     mutationFn: (live: SellerScheduledLive) => deleteLive(live.liveId),
-    onSuccess: () => {
-      setDeleting(null);
-      queryClient.invalidateQueries({ queryKey: ["seller-live-tab"] });
-    },
+    // 성공이든 실패든 모달은 닫는다. 실패 사유는 목록 위에 남긴다.
+    onSettled: () => setDeleting(null),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["seller-live-tab"] }),
   });
 
   const broadcasting = data?.broadcasting;
@@ -64,6 +64,12 @@ export function SellerLiveTab() {
         {error && (
           <p role="alert" className="text-l5-medium text-fg-critical">
             라이브 정보를 불러오지 못했습니다.
+          </p>
+        )}
+
+        {remove.error && (
+          <p role="alert" className="text-l5-medium text-fg-critical">
+            {describeLiveError(remove.error).message}
           </p>
         )}
 
@@ -117,14 +123,20 @@ export function SellerLiveTab() {
         }}
       />
 
-      {deleting && (
-        <DeleteLiveModal
-          deleting={remove.isPending}
-          error={remove.error ? describeLiveError(remove.error).message : null}
-          onDelete={() => remove.mutate(deleting)}
-          onClose={() => setDeleting(null)}
-        />
-      )}
+      <ConfirmModal
+        open={deleting !== null}
+        title="방송을 삭제할까요?"
+        description="삭제한 방송은 되돌릴 수 없어요."
+        confirmLabel="삭제"
+        tone="critical"
+        confirming={remove.isPending}
+        onConfirm={() => {
+          if (deleting) remove.mutate(deleting);
+        }}
+        onClose={() => {
+          if (!remove.isPending) setDeleting(null);
+        }}
+      />
     </div>
   );
 }
