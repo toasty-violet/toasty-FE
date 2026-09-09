@@ -2,8 +2,6 @@
 
 import { useId } from "react";
 
-import { Button } from "@/components/buttons/Button";
-
 import { Modal } from "./Modal";
 
 type ConfirmModalProps = {
@@ -19,6 +17,13 @@ type ConfirmModalProps = {
   confirming?: boolean;
   onConfirm: () => void;
   onClose: () => void;
+};
+
+// 공통 Button 에 critical(빨강) 색이 없어 확인 버튼만 여기서 직접 그린다.
+// Button 이 critical 을 갖게 되면 그쪽으로 옮긴다.
+const confirmTone = {
+  critical: "bg-bg-critical-solid text-fg-neutral-inverted",
+  primary: "bg-bg-brand-solid text-fg-neutral-inverted",
 };
 
 /** 예/아니오를 묻는 확인 창. 껍데기는 Modal 이 맡는다. */
@@ -58,26 +63,21 @@ export function ConfirmModal({
       </div>
 
       <div className="flex w-full gap-10">
-        <div className="flex-1">
-          <Button
-            label={cancelLabel}
-            variant="outlined"
-            color="assistive"
-            size="md"
-            fullWidth
-            onClick={onClose}
-          />
-        </div>
-        <div className="flex-1">
-          <Button
-            label={confirmLabel}
-            color={tone}
-            size="md"
-            fullWidth
-            disabled={confirming}
-            onClick={onConfirm}
-          />
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="border-stroke-neutral-weak text-l4-semibold text-fg-neutral-primary rounded-10 h-[4.4rem] min-w-0 flex-1 border px-20 transition-colors"
+        >
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={confirming}
+          className={`text-l4-semibold rounded-10 h-[4.4rem] min-w-0 flex-1 px-20 transition-colors disabled:opacity-60 ${confirmTone[tone]}`}
+        >
+          {confirmLabel}
+        </button>
       </div>
     </Modal>
   );
