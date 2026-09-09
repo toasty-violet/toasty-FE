@@ -10,13 +10,19 @@ import {
   getViewerCount,
   pinLiveProduct,
   reissueBroadcastCredential,
+  updateLiveProduct,
 } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
-import type { BroadcastCredential, LiveViewer } from "@/types/live";
+import type {
+  BroadcastCredential,
+  LiveProduct,
+  LiveViewer,
+} from "@/types/live";
 
 import { LiveHeader } from "./LiveHeader";
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
+import { ProductEditSheet } from "./ProductEditSheet";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
 type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
@@ -34,6 +40,7 @@ export function BroadcastPanel({
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
   const [status, setStatus] = useState<Status>("preparing");
   const [allProductsOpen, setAllProductsOpen] = useState(false);
+  const [editing, setEditing] = useState<LiveProduct | undefined>();
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -174,6 +181,20 @@ export function BroadcastPanel({
     onSuccess: () => products.refetch(),
   });
 
+  const edit = useMutation({
+    mutationFn: (values: { price: number; stockQuantity: number }) =>
+      updateLiveProduct(live.liveId, editing!.productId, values),
+    onSuccess: async () => {
+      await products.refetch();
+      setEditing(undefined);
+    },
+  });
+
+  const openEdit = (product: LiveProduct) => {
+    edit.reset();
+    setEditing(product);
+  };
+
   // 노출 순서대로 다음 상품을 고정한다. 마지막이면 처음으로 돌아간다.
   const pinNext = () => {
     if (list.length === 0) return;
@@ -266,7 +287,7 @@ export function BroadcastPanel({
               totalCount={list.length}
               pinning={pin.isPending}
               onOpenAllProducts={() => setAllProductsOpen(true)}
-              onEditPinned={() => {}}
+              onEditPinned={() => pinned && openEdit(pinned)}
               onPinNext={pinNext}
             />
           </div>
@@ -278,10 +299,23 @@ export function BroadcastPanel({
         products={list}
         pinnedProductId={pinnedId}
         onClose={() => setAllProductsOpen(false)}
-        onEdit={() => {}}
+        onEdit={(product) => {
+          setAllProductsOpen(false);
+          openEdit(product);
+        }}
         onPin={(product) => {
           pin.mutate(product.productId);
           setAllProductsOpen(false);
+        }}
+      />
+
+      <ProductEditSheet
+        product={editing}
+        saving={edit.isPending}
+        error={edit.error ? describeLiveError(edit.error).message : null}
+        onSave={edit.mutate}
+        onClose={() => {
+          if (!edit.isPending) setEditing(undefined);
         }}
       />
     </div>
