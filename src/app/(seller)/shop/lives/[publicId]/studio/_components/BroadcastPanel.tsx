@@ -6,21 +6,29 @@ import type { AmazonIVSBroadcastClient } from "amazon-ivs-web-broadcast";
 import {
   endLive,
   getLiveStreamStatus,
+  getViewerCount,
   reissueBroadcastCredential,
 } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import type { BroadcastCredential, LiveViewer } from "@/types/live";
 
-type Status =
-  "preparing" | "ready" | "starting" | "live" | "ended" | "unavailable";
+import { LiveHeader } from "./LiveHeader";
+
+// 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
+type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
 
 const STREAM_STATUS_POLL_MS = 4000;
 
-export function BroadcastPanel({ live }: { live: LiveViewer }) {
+export function BroadcastPanel({
+  live,
+  onLeave,
+}: {
+  live: LiveViewer;
+  onLeave: () => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
   const [status, setStatus] = useState<Status>("preparing");
-  const [connection, setConnection] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,6 +40,33 @@ export function BroadcastPanel({ live }: { live: LiveViewer }) {
       streams.forEach((stream) =>
         stream.getTracks().forEach((track) => track.stop()),
       );
+
+    // 준비가 끝나면 바로 이어서 부른다. 디자인에 송출 시작 버튼이 없다.
+    async function startBroadcast(client: AmazonIVSBroadcastClient) {
+      setStatus("starting");
+      setMessage(null);
+
+      let fresh: BroadcastCredential;
+      try {
+        fresh = await reissueBroadcastCredential(live.liveId);
+      } catch (error: unknown) {
+        setStatus("unavailable");
+        setMessage(describeLiveError(error).message);
+        return;
+      }
+
+      // 실패를 reject 대신 resolve 로 돌려주는 경우가 있어 반환값도 확인한다.
+      const failure = await client
+        .startBroadcast(fresh.streamKey, fresh.ingestEndpoint)
+        .catch((error: unknown) => error);
+
+      if (failure instanceof Error) {
+        setStatus("unavailable");
+        setMessage(`송출을 시작하지 못했습니다. ${failure.message}`);
+        return;
+      }
+      setStatus("live");
+    }
 
     async function setup() {
       const IVSBroadcastClient = (await import("amazon-ivs-web-broadcast"))
@@ -71,10 +106,6 @@ export function BroadcastPanel({ live }: { live: LiveViewer }) {
       await client.addAudioInputDevice(audioStream, "mic");
 
       client.emitter.on(
-        IVSBroadcastClient.BroadcastClientEvents.CONNECTION_STATE_CHANGE,
-        (state) => setConnection(state),
-      );
-      client.emitter.on(
         IVSBroadcastClient.BroadcastClientEvents.ERROR,
         (error) => setMessage(error.message),
       );
@@ -86,7 +117,7 @@ export function BroadcastPanel({ live }: { live: LiveViewer }) {
       }
 
       clientRef.current = client;
-      setStatus("ready");
+      await startBroadcast(client);
     }
 
     setup().catch((error: unknown) => {
@@ -106,11 +137,19 @@ export function BroadcastPanel({ live }: { live: LiveViewer }) {
       client?.delete();
       releaseStreams();
     };
-  }, []);
+  }, [live.liveId]);
 
   const { data: streamStatus } = useQuery({
     queryKey: ["live-stream-status", live.liveId],
     queryFn: () => getLiveStreamStatus(live.liveId),
+    enabled: status === "live",
+    refetchInterval: STREAM_STATUS_POLL_MS,
+  });
+
+  // 시청자 수는 계속 바뀌므로 송출 상태와 같은 주기로 다시 받는다.
+  const { data: viewerCount } = useQuery({
+    queryKey: ["live-viewer-count", live.publicId],
+    queryFn: () => getViewerCount(live.publicId),
     enabled: status === "live",
     refetchInterval: STREAM_STATUS_POLL_MS,
   });
@@ -130,94 +169,71 @@ export function BroadcastPanel({ live }: { live: LiveViewer }) {
     return () => window.removeEventListener("beforeunload", warn);
   }, [status]);
 
-  async function startBroadcast() {
-    const client = clientRef.current;
-    if (!client) return;
+  const connecting = status === "preparing" || status === "starting";
 
-    setStatus("starting");
-    setMessage(null);
-
-    let fresh: BroadcastCredential;
-    try {
-      fresh = await reissueBroadcastCredential(live.liveId);
-    } catch (error: unknown) {
-      setStatus("ready");
-      setMessage(describeLiveError(error).message);
-      return;
-    }
-
-    // 실패를 reject 대신 resolve 로 돌려주는 경우가 있어 반환값도 확인한다.
-    const failure = await client
-      .startBroadcast(fresh.streamKey, fresh.ingestEndpoint)
-      .catch((error: unknown) => error);
-
-    if (failure instanceof Error) {
-      setStatus("ready");
-      setMessage(`송출을 시작하지 못했습니다. ${failure.message}`);
-      return;
-    }
-    setStatus("live");
+  // 카메라·마이크를 못 켜면 송출을 시작할 수 없어 화면에 머물 이유가 없다.
+  if (status === "unavailable") {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-16 bg-black px-20">
+        <p
+          role="alert"
+          className="text-l4-semibold text-fg-neutral-inverted text-center"
+        >
+          {message ?? "카메라·마이크를 켜지 못했습니다."}
+        </p>
+        <button
+          type="button"
+          onClick={onLeave}
+          className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted h-36 px-16"
+        >
+          라이브탭으로
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-4 p-5">
-      <div>
-        <h1 className="text-lg font-semibold">{live.title}</h1>
-        {live.description && (
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {live.description}
-          </p>
-        )}
-      </div>
-
+    <div className="relative flex flex-1 flex-col overflow-hidden bg-black">
+      {/* 카메라 화면이 배경이고, 상단 바와 하단 영역이 그 위에 얹힌다. */}
       <canvas
         ref={canvasRef}
-        className="aspect-[9/16] w-full rounded-xl bg-zinc-900"
+        className="absolute inset-0 size-full object-cover"
       />
 
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-zinc-500 dark:text-zinc-400">
-          {status === "preparing" && "카메라를 준비하는 중…"}
-          {status === "ready" && "준비됨"}
-          {status === "starting" && "연결하는 중…"}
-          {status === "live" &&
-            (streamStatus?.broadcasting ? "방송 중" : "서버 확인 대기")}
-          {status === "ended" && "방송이 종료되었습니다"}
-          {status === "unavailable" && "송출할 수 없음"}
-        </span>
-        {connection && (
-          <span className="text-xs text-zinc-400">{connection}</span>
-        )}
+      <div className="relative flex flex-1 flex-col">
+        <LiveHeader
+          title={live.title}
+          shopImageUrl={live.seller.shopImageUrl}
+          viewerCount={viewerCount}
+          onEnd={() => endMutation.mutate()}
+          ending={endMutation.isPending}
+        />
+
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 px-20">
+          {connecting && (
+            <p className="text-l4-semibold text-fg-neutral-inverted">
+              {status === "preparing"
+                ? "카메라를 준비하는 중…"
+                : "연결하는 중…"}
+            </p>
+          )}
+          {status === "live" && !streamStatus?.broadcasting && (
+            <p className="text-l5-medium text-fg-neutral-inverted opacity-70">
+              서버가 영상을 받는 중입니다…
+            </p>
+          )}
+          {(message || endMutation.error) && (
+            <p
+              role="alert"
+              className="rounded-8 text-l5-medium bg-bg-critical-solid text-fg-neutral-inverted px-12 py-8 text-center"
+            >
+              {message ?? describeLiveError(endMutation.error).message}
+            </p>
+          )}
+        </div>
+
+        {/* 상품 영역과 채팅은 다음 단계에서 이 자리에 들어간다. */}
       </div>
-
-      {(message || endMutation.error) && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
-        >
-          {message ?? describeLiveError(endMutation.error).message}
-        </p>
-      )}
-
-      {status === "live" ? (
-        <button
-          type="button"
-          onClick={() => endMutation.mutate()}
-          disabled={endMutation.isPending}
-          className="rounded-lg bg-red-600 py-3 text-sm font-medium text-white disabled:opacity-40"
-        >
-          {endMutation.isPending ? "종료하는 중…" : "방송 종료"}
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={startBroadcast}
-          disabled={status !== "ready"}
-          className="rounded-lg bg-zinc-900 py-3 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-zinc-900"
-        >
-          송출 시작
-        </button>
-      )}
     </div>
   );
 }

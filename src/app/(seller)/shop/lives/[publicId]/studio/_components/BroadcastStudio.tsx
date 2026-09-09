@@ -1,12 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BroadcastPanel } from "./BroadcastPanel";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import { getLive, getLiveStreamStatus } from "@/app/live/_lib/live-api";
 
 export function BroadcastStudio({ publicId }: { publicId: string }) {
+  const router = useRouter();
   const live = useQuery({
     queryKey: ["live", publicId],
     queryFn: () => getLive(publicId),
@@ -24,7 +25,7 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
   });
 
   if (live.isPending || streamStatus.isPending) {
-    return <p className="p-5 text-sm text-zinc-500">불러오는 중…</p>;
+    return <Notice>불러오는 중…</Notice>;
   }
 
   // 폴링이 일시적으로 실패해도 방송 중 화면이 사라지지 않도록, 데이터가 없을 때만 막는다.
@@ -32,35 +33,55 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
     (live.error && !live.data) || (streamStatus.error && !streamStatus.data);
   if (fatal) {
     return (
-      <p role="alert" className="p-5 text-sm text-red-600 dark:text-red-400">
+      <Notice alert onBack={() => router.replace("/shop/lives")}>
         {describeLiveError(live.error ?? streamStatus.error).message}
-      </p>
+      </Notice>
     );
   }
 
   if (streamStatus.data?.status === "ENDED") {
     return (
-      <div className="flex flex-col gap-3 p-5">
-        <p className="text-sm">이미 종료된 방송입니다.</p>
-        <Link
-          href={`/live/${publicId}`}
-          className="text-sm underline underline-offset-4"
-        >
-          시청 화면 열기
-        </Link>
-      </div>
+      <Notice onBack={() => router.replace("/shop/lives")}>
+        이미 종료된 방송입니다.
+      </Notice>
     );
   }
 
   return (
-    <div className="flex flex-col">
-      <BroadcastPanel live={live.data!} />
-      <Link
-        href={`/live/${publicId}`}
-        className="px-5 pb-5 text-sm underline underline-offset-4"
+    <BroadcastPanel
+      live={live.data!}
+      onLeave={() => router.replace("/shop/lives")}
+    />
+  );
+}
+
+/** 방송 화면 대신 띄우는 안내. 배경이 검정이라 글자를 밝게 둔다. */
+function Notice({
+  children,
+  alert = false,
+  onBack,
+}: {
+  children: React.ReactNode;
+  alert?: boolean;
+  onBack?: () => void;
+}) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-16 bg-black px-20">
+      <p
+        role={alert ? "alert" : undefined}
+        className="text-l4-semibold text-fg-neutral-inverted text-center"
       >
-        시청 화면 열기
-      </Link>
+        {children}
+      </p>
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted h-36 px-16"
+        >
+          라이브탭으로
+        </button>
+      )}
     </div>
   );
 }
