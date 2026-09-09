@@ -1,4 +1,4 @@
-import { SellerLiveTab } from "./_components/SellerLiveTab";
+import { SellerLiveTab } from "@/app/live/_components/SellerLiveTab";
 
 export default function SellerLivesPage() {
   return <SellerLiveTab />;
