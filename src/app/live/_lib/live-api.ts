@@ -4,7 +4,8 @@ import type {
   BroadcastCredential,
   Live,
   LiveCreateRequest,
-  LiveCreateResponse,
+  LiveWithProducts,
+  LiveUpdateRequest,
   LivePlayback,
   LiveStreamStatus,
   ProductImageUpload,
@@ -14,8 +15,8 @@ import type {
 
 export async function createLive(
   request: LiveCreateRequest,
-): Promise<LiveCreateResponse> {
-  const { data } = await apiClient.post<ApiSuccess<LiveCreateResponse>>(
+): Promise<LiveWithProducts> {
+  const { data } = await apiClient.post<ApiSuccess<LiveWithProducts>>(
     "/lives",
     request,
   );
@@ -99,4 +100,22 @@ export async function uploadProductImage(uploadUrl: string, file: File) {
 export async function getSellerLiveTab(): Promise<SellerLiveTab> {
   const { data } = await apiClient.get<ApiSuccess<SellerLiveTab>>("/lives/me");
   return data.data;
+}
+
+/** 셀러가 자기 라이브 하나를 편성 상품까지 가져온다. 수정 화면의 초기값이 된다. */
+export async function getLiveDetail(liveId: number): Promise<LiveWithProducts> {
+  const { data } = await apiClient.get<ApiSuccess<LiveWithProducts>>(
+    `/lives/${liveId}`,
+  );
+  return data.data;
+}
+
+/** 방송 전 라이브의 정보와 편성 상품을 고친다. */
+export async function updateLive(liveId: number, body: LiveUpdateRequest) {
+  await apiClient.patch(`/lives/${liveId}`, body);
+}
+
+/** 방송 전 라이브를 지운다. */
+export async function deleteLive(liveId: number) {
+  await apiClient.delete(`/lives/${liveId}`);
 }

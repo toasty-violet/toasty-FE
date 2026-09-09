@@ -1,5 +1,11 @@
 import type { Page } from "@playwright/test";
-import type { Live, LiveStatus, SellerLiveTab } from "@/types/live";
+import type {
+  Live,
+  LiveProduct,
+  LiveStatus,
+  LiveWithProducts,
+  SellerLiveTab,
+} from "@/types/live";
 
 /**
  * 화면이 부르는 API 를 테스트 안에서 대신 받아준다.
@@ -25,11 +31,9 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
   const { tab = "full", liveMissing = false } = scenario;
 
   const lives = new Map<string, Live>();
-  const productCounts = new Map<number, number>([
-    [1, 3],
-    [2, 5],
-  ]);
+  const products = new Map<number, LiveProduct[]>();
   let nextLiveId = 1;
+  let nextProductId = 1;
 
   const seed = (title: string, status: LiveStatus) => {
     const liveId = nextLiveId++;
@@ -47,14 +51,68 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
     });
   };
 
+  const seedProducts = (liveId: number, names: string[]) =>
+    products.set(
+      liveId,
+      names.map((name, index) => ({
+        productId: nextProductId++,
+        liveProductId: nextProductId,
+        name,
+        price: 39000 + index * 10000,
+        stockQuantity: 10 + index,
+        imageUrl: `/product-image/${name}.png`,
+        displayOrder: index,
+        status: "SCHEDULED" as const,
+      })),
+    );
+
   seed("목 라이브", "READY");
   seed("방송 중인 목 라이브", "LIVE");
   seed("종료된 목 라이브", "ENDED");
+  seedProducts(1, ["니트 가디건", "코듀로이 팬츠", "울 머플러"]);
+  seedProducts(2, ["레더 자켓", "데님 셔츠"]);
+
+  const byLiveId = (liveId: number) =>
+    [...lives.values()].find((live) => live.liveId === liveId);
+
+  // 사진을 바꾸지 않은 상품은 imageObjectKey 가 없다. 쓰던 주소를 그대로 둔다.
+  const toProducts = (
+    payload: {
+      productId?: number;
+      name: string;
+      price: number;
+      stockQuantity: number;
+      imageObjectKey?: string;
+    }[],
+    previous: LiveProduct[] = [],
+  ): LiveProduct[] =>
+    payload.map((item, index) => {
+      const kept =
+        !item.imageObjectKey &&
+        previous.find((old) => old.productId === item.productId);
+      return {
+        productId: item.productId ?? nextProductId++,
+        liveProductId: nextProductId++,
+        name: item.name,
+        price: item.price,
+        stockQuantity: item.stockQuantity,
+        imageUrl: kept ? kept.imageUrl : `/product-image/${item.name}.png`,
+        displayOrder: index,
+        status: "SCHEDULED" as const,
+      };
+    });
 
   await page.addInitScript(() => {
     // 서비스워커가 먼저 가로채지 않도록 끈다.
     Object.defineProperty(navigator, "serviceWorker", { value: undefined });
   });
+
+  await page.route("**/product-image/**", (route) =>
+    route.fulfill({
+      contentType: "image/svg+xml",
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="160" height="160" fill="#E5E7EB"/></svg>',
+    }),
+  );
 
   await page.route("**/api/v1/**", (route) => {
     const request = route.request();
@@ -116,7 +174,7 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
             publicId: live.publicId,
             title: live.title,
             scheduledAt: live.scheduledAt,
-            productCount: productCounts.get(live.liveId) ?? 0,
+            productCount: products.get(live.liveId)?.length ?? 0,
           }))
           .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt)),
       };
@@ -203,6 +261,44 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
         broadcasting: live?.status === "LIVE",
         startedAt: live?.startedAt,
       });
+    }
+
+    // 수정 화면은 상세를 읽어 폼을 채우고, 저장·삭제로 상태를 바꾼다.
+    const one = path.match(/^\/lives\/(\d+)$/);
+    if (one) {
+      const live = byLiveId(Number(one[1]));
+      if (!live) return liveNotFound();
+
+      if (request.method() === "GET") {
+        const detail: LiveWithProducts = {
+          live,
+          products: products.get(live.liveId) ?? [],
+        };
+        return ok(detail);
+      }
+      if (request.method() === "PATCH") {
+        const patch = JSON.parse(request.postData() ?? "{}") as {
+          title?: string;
+          description?: string;
+          scheduledAt?: string;
+          products?: Parameters<typeof toProducts>[0];
+        };
+        live.title = patch.title ?? live.title;
+        live.description = patch.description ?? live.description;
+        live.scheduledAt = patch.scheduledAt ?? live.scheduledAt;
+        if (patch.products) {
+          products.set(
+            live.liveId,
+            toProducts(patch.products, products.get(live.liveId)),
+          );
+        }
+        return ok(null);
+      }
+      if (request.method() === "DELETE") {
+        lives.delete(live.publicId);
+        products.delete(live.liveId);
+        return ok(null);
+      }
     }
 
     // 조용히 통과하지 않도록 어떤 요청인지 남긴다.

@@ -111,10 +111,12 @@ function ProductCard({
 export function ProductSetupForm({
   products,
   onChange,
+  onAdd,
   onSubmit,
 }: {
   products: DraftProduct[];
   onChange: (next: DraftProduct[]) => void;
+  onAdd: () => void;
   onSubmit: () => void;
 }) {
   // 서버는 0 원도 받지만 결제 흐름이 아직 없어 화면에서 막는다.
@@ -126,7 +128,7 @@ export function ProductSetupForm({
     <>
       <div className="flex flex-1 flex-col overflow-y-auto">
         <h1 className="text-st1-semibold text-fg-neutral-solid px-20 pt-20">
-          상품 정보를 입력해 주세요
+          상품별 내용을 작성해주세요
         </h1>
         <p className="text-c2-medium text-fg-neutral-secondary px-20 pt-16">
           총 {products.length}개
@@ -143,6 +145,17 @@ export function ProductSetupForm({
               onRemove={() => onChange(products.filter((_, i) => i !== index))}
             />
           ))}
+
+          {/* 공통 Button 이 아이콘을 받지 않아 이 화면에 따로 뒀다. */}
+          <button
+            type="button"
+            onClick={onAdd}
+            className="rounded-10 text-l4-semibold bg-bg-neutral-weak text-fg-neutral-primary flex h-[4.4rem] w-full items-center justify-center gap-4 px-20 transition-colors"
+          >
+            {/* 아이콘 색이 박혀 있어 버튼 글자색을 따라가게 한다. */}
+            <PlusIcon className="size-18 shrink-0 [&_path]:fill-current" />
+            상품 추가
+          </button>
         </div>
       </div>
 

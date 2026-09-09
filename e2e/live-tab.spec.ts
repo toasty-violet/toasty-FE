@@ -37,11 +37,24 @@ test("신규 라이브를 누르면 생성 화면으로 간다", async ({ page }
   await expect(page).toHaveURL(/\/shop\/lives\/new$/);
 });
 
-test("예정 라이브의 방송 시작은 스튜디오로 보낸다", async ({ page }) => {
+test("방송 시작은 체크 시트를 거쳐 스튜디오로 보낸다", async ({ page }) => {
   await stubApi(page);
   await page.goto("/shop/lives");
   await page.getByRole("button", { name: "방송 시작" }).first().click();
 
+  // 두 항목을 다 체크해야 열린다.
+  const start = page
+    .getByRole("dialog")
+    .getByRole("button", { name: "방송 시작" });
+  await expect(start).toBeDisabled();
+  await page
+    .getByRole("checkbox", { name: "카메라 및 마이크 준비 완료" })
+    .click();
+  await expect(start).toBeDisabled();
+  await page.getByRole("checkbox", { name: "상품 목록 설정 완료" }).click();
+  await expect(start).toBeEnabled();
+
+  await start.click();
   await expect(page).toHaveURL(/\/shop\/lives\/mock-\d+\/studio$/);
 });
 
