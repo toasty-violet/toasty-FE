@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { BroadcastPanel } from "./BroadcastPanel";
+import { StudioNotice } from "./StudioNotice";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import { getLive, getLiveStreamStatus } from "@/app/live/_lib/live-api";
 
@@ -25,7 +26,7 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
   });
 
   if (live.isPending || streamStatus.isPending) {
-    return <Notice>불러오는 중…</Notice>;
+    return <StudioNotice>불러오는 중…</StudioNotice>;
   }
 
   // 폴링이 일시적으로 실패해도 방송 중 화면이 사라지지 않도록, 데이터가 없을 때만 막는다.
@@ -33,17 +34,17 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
     (live.error && !live.data) || (streamStatus.error && !streamStatus.data);
   if (fatal) {
     return (
-      <Notice alert onBack={() => router.replace("/shop/lives")}>
+      <StudioNotice alert onBack={() => router.replace("/shop/lives")}>
         {describeLiveError(live.error ?? streamStatus.error).message}
-      </Notice>
+      </StudioNotice>
     );
   }
 
   if (streamStatus.data?.status === "ENDED") {
     return (
-      <Notice onBack={() => router.replace("/shop/lives")}>
+      <StudioNotice onBack={() => router.replace("/shop/lives")}>
         이미 종료된 방송입니다.
-      </Notice>
+      </StudioNotice>
     );
   }
 
@@ -52,36 +53,5 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
       live={live.data!}
       onLeave={() => router.replace("/shop/lives")}
     />
-  );
-}
-
-/** 방송 화면 대신 띄우는 안내. 배경이 검정이라 글자를 밝게 둔다. */
-function Notice({
-  children,
-  alert = false,
-  onBack,
-}: {
-  children: React.ReactNode;
-  alert?: boolean;
-  onBack?: () => void;
-}) {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-16 bg-black px-20">
-      <p
-        role={alert ? "alert" : undefined}
-        className="text-l4-semibold text-fg-neutral-inverted text-center"
-      >
-        {children}
-      </p>
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted h-36 px-16"
-        >
-          라이브탭으로
-        </button>
-      )}
-    </div>
   );
 }

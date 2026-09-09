@@ -25,6 +25,7 @@ import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
+import { StudioNotice } from "./StudioNotice";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
 type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
@@ -185,8 +186,14 @@ export function BroadcastPanel({
   });
 
   const edit = useMutation({
-    mutationFn: (values: { price: number; stockQuantity: number }) =>
-      updateLiveProduct(live.liveId, editing!.productId, values),
+    mutationFn: ({
+      productId,
+      ...values
+    }: {
+      productId: number;
+      price: number;
+      stockQuantity: number;
+    }) => updateLiveProduct(live.liveId, productId, values),
     onSuccess: async () => {
       await products.refetch();
       setEditing(undefined);
@@ -228,21 +235,9 @@ export function BroadcastPanel({
   // 카메라·마이크를 못 켜면 송출을 시작할 수 없어 화면에 머물 이유가 없다.
   if (status === "unavailable") {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-16 bg-black px-20">
-        <p
-          role="alert"
-          className="text-l4-semibold text-fg-neutral-inverted text-center"
-        >
-          {message ?? "카메라·마이크를 켜지 못했습니다."}
-        </p>
-        <button
-          type="button"
-          onClick={onLeave}
-          className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted h-36 px-16"
-        >
-          라이브탭으로
-        </button>
-      </div>
+      <StudioNotice alert onBack={onLeave}>
+        {message ?? "카메라·마이크를 켜지 못했습니다."}
+      </StudioNotice>
     );
   }
 
@@ -340,7 +335,9 @@ export function BroadcastPanel({
         product={editing}
         saving={edit.isPending}
         error={edit.error ? describeLiveError(edit.error).message : null}
-        onSave={edit.mutate}
+        onSave={(values) =>
+          editing && edit.mutate({ productId: editing.productId, ...values })
+        }
         onClose={() => {
           if (!edit.isPending) setEditing(undefined);
         }}

@@ -24,7 +24,7 @@ export function LiveHeader({
   return (
     <header className="flex w-full items-center gap-12 bg-gradient-to-b from-[#1a1c204d] from-20% to-transparent px-20 pt-12 pb-24">
       <div className="flex min-w-0 flex-1 items-center gap-8">
-        <span className="bg-bg-neutral-weak relative size-32 shrink-0 overflow-hidden rounded-full border border-[#edeef0]">
+        <span className="bg-bg-neutral-weak relative size-32 shrink-0 overflow-hidden rounded-full border border-gray-300">
           {shopImageUrl && (
             <Image
               src={shopImageUrl}
