@@ -20,6 +20,8 @@ import type {
 } from "@/types/live";
 
 import { LiveHeader } from "./LiveHeader";
+import { ConfirmModal } from "@/components/overlays/ConfirmModal";
+
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
@@ -41,6 +43,7 @@ export function BroadcastPanel({
   const [status, setStatus] = useState<Status>("preparing");
   const [allProductsOpen, setAllProductsOpen] = useState(false);
   const [editing, setEditing] = useState<LiveProduct | undefined>();
+  const [askingEnd, setAskingEnd] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -206,7 +209,11 @@ export function BroadcastPanel({
     onSuccess: () => {
       clientRef.current?.stopBroadcast();
       setStatus("ended");
+      setAskingEnd(false);
+      onLeave();
     },
+    // 실패 사유는 모달 뒤 화면에 남는다. 모달을 닫아야 보인다.
+    onError: () => setAskingEnd(false),
   });
 
   useEffect(() => {
@@ -252,7 +259,10 @@ export function BroadcastPanel({
           title={live.title}
           shopImageUrl={live.seller.shopImageUrl}
           viewerCount={viewerCount}
-          onEnd={() => endMutation.mutate()}
+          onEnd={() => {
+            endMutation.reset();
+            setAskingEnd(true);
+          }}
           ending={endMutation.isPending}
         />
 
@@ -262,6 +272,11 @@ export function BroadcastPanel({
               {status === "preparing"
                 ? "카메라를 준비하는 중…"
                 : "연결하는 중…"}
+            </p>
+          )}
+          {status === "ended" && (
+            <p className="text-l4-semibold text-fg-neutral-inverted">
+              방송이 종료되었습니다.
             </p>
           )}
           {status === "live" && !streamStatus?.broadcasting && (
@@ -306,6 +321,18 @@ export function BroadcastPanel({
         onPin={(product) => {
           pin.mutate(product.productId);
           setAllProductsOpen(false);
+        }}
+      />
+
+      <ConfirmModal
+        open={askingEnd}
+        title="방송을 종료할까요?"
+        description="라이브에서 판매되지 않은 상품은 종료 후 일반 판매 상품으로 자동 전환돼요."
+        confirmLabel={endMutation.isPending ? "종료하는 중…" : "종료"}
+        confirming={endMutation.isPending}
+        onConfirm={() => endMutation.mutate()}
+        onClose={() => {
+          if (!endMutation.isPending) setAskingEnd(false);
         }}
       />
 
