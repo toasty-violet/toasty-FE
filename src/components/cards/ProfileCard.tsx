@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/buttons/Button";
+import { formatAddress } from "@/lib/address";
 import { fetchCustomerProfile } from "@/lib/user";
 
 function InfoRow({
@@ -66,7 +67,7 @@ export function ProfileCard() {
           <InfoRow label="배송지">
             {/* 우편번호와 주소는 한 줄, 상세 주소는 아랫줄 */}
             <span className="block">
-              [{address.postalCode}] {address.address}
+              [{address.postalCode}] {formatAddress(address)}
             </span>
             <span className="block">{address.detailAddress}</span>
           </InfoRow>

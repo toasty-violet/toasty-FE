@@ -2,7 +2,9 @@ import { apiClient } from "@/lib/api-client";
 import type {
   CustomerOnboardingPayload,
   CustomerOnboardingResponse,
+  CustomerProfile,
   CustomerProfileResponse,
+  CustomerProfileUpdateResponse,
   MeResponse,
   NicknameDuplicationResponse,
   SellerOnboardingRequest,
@@ -22,6 +24,14 @@ export async function fetchCustomerProfile() {
     await apiClient.get<CustomerProfileResponse>("/customers/profile");
 
   return data.data;
+}
+
+//구매자 마이페이지에서 회원 정보 수정
+export async function updateCustomerProfile(profile: CustomerProfile) {
+  await apiClient.put<CustomerProfileUpdateResponse>(
+    "/customers/profile",
+    profile,
+  );
 }
 
 //닉네임 중복 여부 조회

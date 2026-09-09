@@ -1,8 +1,8 @@
 "use client";
 
-import { Input } from "@/components/inputs/Input";
+import { NAME_PATTERN } from "@/lib/validation";
 
-import { NAME_PATTERN } from "../_lib/validation";
+import { Input } from "./Input";
 
 type NameFieldProps = {
   value: string;

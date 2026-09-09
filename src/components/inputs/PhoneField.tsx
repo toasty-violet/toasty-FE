@@ -1,8 +1,8 @@
 "use client";
 
-import { Input } from "@/components/inputs/Input";
+import { PHONE_PATTERN, onlyDigits } from "@/lib/validation";
 
-import { PHONE_PATTERN, onlyDigits } from "../_lib/validation";
+import { Input } from "./Input";
 
 type PhoneFieldProps = {
   value: string;
