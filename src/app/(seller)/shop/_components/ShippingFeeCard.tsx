@@ -1,8 +1,10 @@
+import { formatThousand } from "@/lib/format";
+
 // API 명세가 나오기 전이라 디자인 값을 그대로 둔다.
-const ROWS = [
-  { label: "기본 배송비", value: "3,000원" },
-  { label: "무료배송 기준 금액", value: "100,000원" },
-  { label: "도서산간 배송비", value: "5,000원" },
+const ROWS: { label: string; value: number | null; unit: string }[] = [
+  { label: "기본 배송비", value: 3000, unit: "원" },
+  { label: "무료배송 기준 금액", value: 100000, unit: "원" },
+  { label: "도서산간 배송비", value: 5000, unit: "원" },
 ];
 
 export function ShippingFeeCard() {
@@ -17,7 +19,9 @@ export function ShippingFeeCard() {
               {row.label}
             </span>
             <span className="text-b4-regular text-fg-neutral-solid min-w-0 flex-1 text-right">
-              {row.value}
+              {row.value === null
+                ? "-"
+                : `${formatThousand(row.value)}${row.unit}`}
             </span>
           </div>
         ))}
