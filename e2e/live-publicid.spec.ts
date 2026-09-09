@@ -1,11 +1,15 @@
 import { test, expect } from "@playwright/test";
 
+import { stubApi } from "./support/api";
+
 test("미리 둔 목 라이브를 publicId 주소로 연다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/live/mock-1");
   await expect(page.getByRole("heading", { name: "목 라이브" })).toBeVisible();
 });
 
 test("없는 publicId 는 찾을 수 없음을 보여준다", async ({ page }) => {
+  await stubApi(page, { liveMissing: true });
   await page.goto("/live/does-not-exist");
   // 404 를 react-query 가 3번 재시도한 뒤에야 에러 화면이 뜬다.
   await expect(page.getByText("라이브를 찾을 수 없습니다.")).toBeVisible({
@@ -14,6 +18,7 @@ test("없는 publicId 는 찾을 수 없음을 보여준다", async ({ page }) =
 });
 
 test("방송 중인 라이브는 재생 화면을 보여준다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/live/mock-2");
   await expect(
     page.getByRole("heading", { name: "방송 중인 목 라이브" }),
@@ -22,11 +27,13 @@ test("방송 중인 라이브는 재생 화면을 보여준다", async ({ page }
 });
 
 test("종료된 라이브는 종료 안내를 보여준다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/live/mock-3");
   await expect(page.getByText("방송이 종료되었습니다")).toBeVisible();
 });
 
 test("대기 중인 라이브는 시작 전 안내를 보여준다", async ({ page }) => {
+  await stubApi(page);
   await page.goto("/live/mock-1");
   await expect(page.getByText("아직 방송이 시작되지 않았습니다")).toBeVisible();
 });

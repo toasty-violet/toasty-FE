@@ -1,4 +1,4 @@
-import type { CustomerOnboardingDraft } from "@/types/user";
+import type { CustomerProfile } from "@/types/user";
 
 const DRAFT_KEY = "customer-onboarding-draft";
 
@@ -9,17 +9,17 @@ const DRAFT_KEY = "customer-onboarding-draft";
  * 메모리 상태로는 값이 남지 않아 sessionStorage 를 쓴다.
  * 온보딩을 마치거나 벗어날 때 반드시 비운다.
  */
-export function saveOnboardingDraft(draft: CustomerOnboardingDraft) {
+export function saveOnboardingDraft(draft: CustomerProfile) {
   sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
 }
 
-export function loadOnboardingDraft(): CustomerOnboardingDraft | null {
+export function loadOnboardingDraft(): CustomerProfile | null {
   const raw = sessionStorage.getItem(DRAFT_KEY);
   if (!raw) return null;
 
   // 손으로 고친 값이 들어와도 화면이 죽지 않고 1단계로 되돌아가게 한다.
   try {
-    return JSON.parse(raw) as CustomerOnboardingDraft;
+    return JSON.parse(raw) as CustomerProfile;
   } catch {
     return null;
   }

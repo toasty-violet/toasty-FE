@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 const API = "http://localhost:8080/api/v1";
 
-// MSW 보다 앞단에서 가로채 시나리오를 고정한다.
+// 네트워크 요청을 가로채 시나리오를 고정한다.
 async function stub(
   page: Page,
   scenario: {

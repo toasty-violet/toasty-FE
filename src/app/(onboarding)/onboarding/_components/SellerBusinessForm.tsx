@@ -6,7 +6,10 @@ import { useMutation } from "@tanstack/react-query";
 
 import { BottomButton } from "@/components/buttons/BottomButton";
 import { Input } from "@/components/inputs/Input";
+import { NameField } from "@/components/inputs/NameField";
+import { PhoneField } from "@/components/inputs/PhoneField";
 import { submitSellerOnboarding } from "@/lib/user";
+import { NAME_PATTERN, PHONE_PATTERN, onlyDigits } from "@/lib/validation";
 
 import {
   clearSellerDraft,
@@ -15,10 +18,7 @@ import {
   saveSellerDraft,
   type SellerOnboardingDraft,
 } from "../_lib/seller-onboarding-draft";
-import { NAME_PATTERN, PHONE_PATTERN, onlyDigits } from "../_lib/validation";
 import { BankSelectField } from "./BankSelectField";
-import { NameField } from "./NameField";
-import { PhoneField } from "./PhoneField";
 
 const BUSINESS_NUMBER_PATTERN = /^[0-9]{10}$/;
 

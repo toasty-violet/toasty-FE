@@ -43,9 +43,9 @@ export interface CustomerAddress {
   detailAddress: string;
 }
 
-// 구매자 온보딩 1단계에서 입력받는 기본 정보.
-// 결제 등록까지 마쳐야 제출하므로, 그 전까지는 세션 스토리지에서 임시 보관한다.
-export interface CustomerOnboardingDraft {
+// 구매자의 기본 정보.
+// 온보딩 등록, 마이페이지 조회·수정이 모두 같은 형태를 주고받는다.
+export interface CustomerProfile {
   name: string;
   nickname: string;
   phoneNumber: string;
@@ -53,9 +53,15 @@ export interface CustomerOnboardingDraft {
 }
 
 // 구매자 온보딩에 보내는 정보. 기본 정보와 결제 세션을 한 번에 제출한다.
-export interface CustomerOnboardingPayload extends CustomerOnboardingDraft {
+export interface CustomerOnboardingPayload extends CustomerProfile {
   sessionId: string;
 }
 
 // 구매자 온보딩 API 응답
 export type CustomerOnboardingResponse = ApiSuccess<string>;
+
+// 구매자 정보 조회 API 응답
+export type CustomerProfileResponse = ApiSuccess<CustomerProfile>;
+
+// 구매자 정보 수정 API 응답
+export type CustomerProfileUpdateResponse = ApiSuccess<string>;
