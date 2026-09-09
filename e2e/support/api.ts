@@ -20,6 +20,8 @@ export type Scenario = {
   tab?: "full" | "empty" | "scheduled" | "stat";
   /** 시청 화면이 어떤 라이브도 찾지 못하는 경우. */
   liveMissing?: boolean;
+  /** 미리 고정해 둘 상품. 방송 중인 라이브(mock-2)에 걸린다. */
+  pinnedProductId?: number;
 };
 
 function tomorrowEvening() {
@@ -30,7 +32,7 @@ function tomorrowEvening() {
 }
 
 export async function stubApi(page: Page, scenario: Scenario = {}) {
-  const { tab = "full", liveMissing = false } = scenario;
+  const { tab = "full", liveMissing = false, pinnedProductId } = scenario;
 
   const lives = new Map<string, Live>();
   const products = new Map<number, LiveProduct[]>();
@@ -74,6 +76,7 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
   seed("종료된 목 라이브", "ENDED");
   seedProducts(1, ["니트 가디건", "코듀로이 팬츠", "울 머플러"]);
   seedProducts(2, ["레더 자켓", "데님 셔츠"]);
+  if (pinnedProductId !== undefined) pinned.set(2, pinnedProductId);
 
   const byLiveId = (liveId: number) =>
     [...lives.values()].find((live) => live.liveId === liveId);
@@ -204,6 +207,19 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
         },
       };
       return ok(viewer);
+    }
+
+    // 시청 화면도 같은 형태를 받는다. 인증만 없다.
+    const publicProducts = path.match(/^\/lives\/public\/([^/]+)\/products$/);
+    if (publicProducts) {
+      const live = lives.get(publicProducts[1]);
+      if (!live) return liveNotFound();
+
+      const body: LiveProducts = {
+        currentPinnedProductId: pinned.get(live.liveId) ?? null,
+        products: products.get(live.liveId) ?? [],
+      };
+      return ok(body);
     }
 
     // 방송 화면의 전체 상품 시트. 고정된 적이 없으면 currentPinnedProductId 가 null 이다.
