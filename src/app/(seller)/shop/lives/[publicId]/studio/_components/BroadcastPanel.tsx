@@ -9,14 +9,14 @@ import {
   reissueBroadcastCredential,
 } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
-import type { BroadcastCredential, Live } from "@/types/live";
+import type { BroadcastCredential, LiveViewer } from "@/types/live";
 
 type Status =
   "preparing" | "ready" | "starting" | "live" | "ended" | "unavailable";
 
 const STREAM_STATUS_POLL_MS = 4000;
 
-export function BroadcastPanel({ live }: { live: Live }) {
+export function BroadcastPanel({ live }: { live: LiveViewer }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
   const [status, setStatus] = useState<Status>("preparing");

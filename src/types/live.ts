@@ -15,6 +15,30 @@ export interface Live {
   endedAt?: string;
 }
 
+/** 화면에 셀러를 보여줄 때 필요한 것만 담는다. */
+export interface SellerProfile {
+  sellerId: number;
+  shopName: string;
+  shopImageUrl: string;
+}
+
+/**
+ * 시청 화면 진입에 필요한 정보. 셀러 라이브(Live)와 달리 sellerId·createdAt 이
+ * 없고 스토어 정보가 붙는다. 시청자 수는 계속 바뀌어 따로 받는다.
+ */
+export interface LiveViewer {
+  liveId: number;
+  publicId: string;
+  title: string;
+  description?: string;
+  status: LiveStatus;
+  playbackUrl: string;
+  scheduledAt: string;
+  startedAt?: string;
+  endedAt?: string;
+  seller: SellerProfile;
+}
+
 /** 송출 권한 그 자체다. 로그·localStorage·쿼리스트링에 남기지 않는다. */
 export interface BroadcastCredential {
   ingestEndpoint: string;
@@ -43,6 +67,20 @@ export interface LiveWithProducts {
 }
 
 /** 라이브에 편성할 상품. imageObjectKey 는 업로드 주소 발급에서 받은 값이다. */
+/** 방송 화면의 전체 상품 시트를 채운다. */
+export interface LiveProducts {
+  /** 지금 소개 중인 상품. 아직 아무것도 고정하지 않았으면 null. */
+  currentPinnedProductId: number | null;
+  /** 노출 순서대로. */
+  products: LiveProduct[];
+}
+
+/** 방송 중에는 가격과 재고만 고칠 수 있다. */
+export interface LiveProductUpdateRequest {
+  price: number;
+  stockQuantity: number;
+}
+
 export interface LiveProductInput {
   name: string;
   price: number;

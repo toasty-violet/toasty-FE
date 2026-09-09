@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test";
 import type {
   Live,
+  LiveProducts,
+  LiveViewer,
   LiveProduct,
   LiveStatus,
   LiveWithProducts,
@@ -34,6 +36,7 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
   const products = new Map<number, LiveProduct[]>();
   let nextLiveId = 1;
   let nextProductId = 1;
+  const pinned = new Map<number, number>();
 
   const seed = (title: string, status: LiveStatus) => {
     const liveId = nextLiveId++;
@@ -182,10 +185,61 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
     }
 
     // 방송 시작이 스튜디오로 넘어갈 때 그 화면이 부르는 것들이다.
+    const viewerCount = path.match(/^\/lives\/public\/([^/]+)\/viewer-count$/);
+    if (viewerCount) {
+      return ok({ viewerCount: 132 });
+    }
+
     const publicOne = path.match(/^\/lives\/public\/([^/]+)$/);
     if (publicOne) {
       const live = liveMissing ? undefined : lives.get(publicOne[1]);
-      return live ? ok(live) : liveNotFound();
+      if (!live) return liveNotFound();
+
+      const viewer: LiveViewer = {
+        ...live,
+        seller: {
+          sellerId: live.sellerId,
+          shopName: "목 스토어",
+          shopImageUrl: "/product-image/shop.png",
+        },
+      };
+      return ok(viewer);
+    }
+
+    // 방송 화면의 전체 상품 시트. 고정된 적이 없으면 currentPinnedProductId 가 null 이다.
+    const liveProducts = path.match(/^\/lives\/(\d+)\/products$/);
+    if (liveProducts) {
+      const live = byLiveId(Number(liveProducts[1]));
+      if (!live) return liveNotFound();
+
+      const body: LiveProducts = {
+        currentPinnedProductId: pinned.get(live.liveId) ?? null,
+        products: products.get(live.liveId) ?? [],
+      };
+      return ok(body);
+    }
+
+    const pin = path.match(/^\/lives\/(\d+)\/products\/(\d+)\/pin$/);
+    if (pin) {
+      pinned.set(Number(pin[1]), Number(pin[2]));
+      return ok(null);
+    }
+
+    const editProduct = path.match(/^\/lives\/(\d+)\/products\/(\d+)$/);
+    if (editProduct && request.method() === "PATCH") {
+      const liveId = Number(editProduct[1]);
+      const productId = Number(editProduct[2]);
+      const patch = JSON.parse(request.postData() ?? "{}") as {
+        price: number;
+        stockQuantity: number;
+      };
+      products.set(
+        liveId,
+        (products.get(liveId) ?? []).map((product) =>
+          product.productId === productId ? { ...product, ...patch } : product,
+        ),
+      );
+      return ok(null);
     }
 
     // 시청 화면은 라이브 정보와 따로 재생 정보를 폴링한다.
