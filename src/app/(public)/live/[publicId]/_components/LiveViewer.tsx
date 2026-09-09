@@ -17,6 +17,7 @@ import { LIVE_ERROR_CODE } from "@/types/live";
 
 import { LivePlayer } from "./LivePlayer";
 import { ViewerProductBar } from "./ViewerProductBar";
+import { ViewerProductsSheet } from "./ViewerProductsSheet";
 
 const POLL_MS = 4000;
 
@@ -43,6 +44,7 @@ function Notice({
 export function LiveViewer({ publicId }: { publicId: string }) {
   const router = useRouter();
   const [playbackError, setPlaybackError] = useState("");
+  const [productsOpen, setProductsOpen] = useState(false);
 
   const {
     data: live,
@@ -158,11 +160,19 @@ export function LiveViewer({ publicId }: { publicId: string }) {
           <ViewerProductBar
             pinned={pinned}
             totalCount={list.length}
-            onOpenAllProducts={() => {}}
+            onOpenAllProducts={() => setProductsOpen(true)}
             onBuy={() => {}}
           />
         </div>
       </div>
+
+      <ViewerProductsSheet
+        open={productsOpen}
+        products={list}
+        pinnedProductId={products?.currentPinnedProductId ?? null}
+        onClose={() => setProductsOpen(false)}
+        onBuy={() => {}}
+      />
     </div>
   );
 }

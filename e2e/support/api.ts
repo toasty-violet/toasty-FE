@@ -76,7 +76,18 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
   seed("종료된 목 라이브", "ENDED");
   seedProducts(1, ["니트 가디건", "코듀로이 팬츠", "울 머플러"]);
   seedProducts(2, ["레더 자켓", "데님 셔츠"]);
-  if (pinnedProductId !== undefined) pinned.set(2, pinnedProductId);
+  // 서버는 고정하면 그 상품을 ACTIVE 로 바꾸고 되돌리지 않는다.
+  const pin = (liveId: number, productId: number) => {
+    pinned.set(liveId, productId);
+    products.set(
+      liveId,
+      (products.get(liveId) ?? []).map((item) =>
+        item.productId === productId ? { ...item, status: "ACTIVE" } : item,
+      ),
+    );
+  };
+
+  if (pinnedProductId !== undefined) pin(2, pinnedProductId);
 
   const byLiveId = (liveId: number) =>
     [...lives.values()].find((live) => live.liveId === liveId);
@@ -235,9 +246,9 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
       return ok(body);
     }
 
-    const pin = path.match(/^\/lives\/(\d+)\/products\/(\d+)\/pin$/);
-    if (pin) {
-      pinned.set(Number(pin[1]), Number(pin[2]));
+    const pinRequest = path.match(/^\/lives\/(\d+)\/products\/(\d+)\/pin$/);
+    if (pinRequest) {
+      pin(Number(pinRequest[1]), Number(pinRequest[2]));
       return ok(null);
     }
 
