@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
@@ -42,6 +42,8 @@ export function PaymentRegisterButton() {
     },
     onError: () => {
       setError("가입에 실패했어요. 다시 시도해 주세요.");
+      // orderId 가 남아 있으면 재시도 버튼이 잠긴 채로 굳으므로 쿼리를 털어낸다.
+      router.replace("/onboarding/customer/payment-register");
     },
   });
 
@@ -51,13 +53,20 @@ export function PaymentRegisterButton() {
     router.replace("/onboarding/customer");
   }, [router]);
 
+  // 이미 제출한 세션. 세션 하나는 한 번만 쓸 수 있으므로 재제출을 막는다.
+  // StrictMode 는 개발 모드에서 effect 를 두 번 실행하고, 복귀 URL 을 새로고침해도
+  // 같은 orderId 로 다시 들어온다. 의존성 배열로는 둘 다 막지 못해 ref 로 기억한다.
+  const submittedSessionId = useRef<string | null>(null);
+
   // 계좌 등록을 마치고 돌아왔으면 기본 정보와 세션을 함께 제출한다.
   useEffect(() => {
     if (!paidSessionId) return;
+    if (submittedSessionId.current === paidSessionId) return;
 
     const draft = loadOnboardingDraft();
     if (!draft) return;
 
+    submittedSessionId.current = paidSessionId;
     onboarding.mutate({ ...draft, sessionId: paidSessionId });
     // 제출은 등록 복귀당 한 번이면 된다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,6 +88,8 @@ export function PaymentRegisterButton() {
   });
 
   // 등록 후 제출까지 이어지는 동안에는 버튼을 다시 누를 수 없어야 한다.
+  // 복귀 직후 제출이 시작되기 전 한 틱도 눌리면 안 되므로 orderId 도 함께 본다.
+  // 제출이 실패하면 위에서 orderId 를 지워 이 잠금이 풀린다.
   const pending =
     registration.isPending || onboarding.isPending || !!paidSessionId;
   const message = error || failMessage;
