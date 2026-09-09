@@ -53,3 +53,18 @@ export interface CustomerOnboardingPayload {
 
 // 구매자 온보딩 API 응답
 export type CustomerOnboardingResponse = ApiSuccess<string>;
+
+// 마이페이지에 띄우는 구매자 정보
+export interface CustomerProfile {
+  name: string;
+  nickname: string;
+  phoneNumber: string;
+  address: {
+    postalCode: string;
+    address: string;
+    detailAddress: string;
+  };
+}
+
+// 구매자 정보 조회 API 응답
+export type CustomerProfileResponse = ApiSuccess<CustomerProfile>;

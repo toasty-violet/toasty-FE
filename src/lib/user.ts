@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import type {
   CustomerOnboardingPayload,
   CustomerOnboardingResponse,
+  CustomerProfileResponse,
   MeResponse,
   NicknameDuplicationResponse,
   SellerOnboardingRequest,
@@ -11,6 +12,14 @@ import type {
 //내 정보(role, nickname) 조회
 export async function fetchMe() {
   const { data } = await apiClient.get<MeResponse>("/users/me");
+
+  return data.data;
+}
+
+//마이페이지에 띄울 구매자 정보(이름, 닉네임, 연락처, 배송지) 조회
+export async function fetchCustomerProfile() {
+  const { data } =
+    await apiClient.get<CustomerProfileResponse>("/customers/profile");
 
   return data.data;
 }
