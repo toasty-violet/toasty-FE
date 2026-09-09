@@ -43,13 +43,23 @@ export interface CustomerAddress {
   detailAddress: string;
 }
 
-// 구매자 온보딩에 보내는 기본 정보
-export interface CustomerOnboardingPayload {
+// 구매자의 기본 정보.
+// 온보딩 등록, 마이페이지 조회·수정이 모두 같은 형태를 주고받는다.
+export interface CustomerProfile {
   name: string;
   nickname: string;
   phoneNumber: string;
   address: CustomerAddress;
 }
 
+// 구매자 온보딩에 보내는 기본 정보
+export type CustomerOnboardingPayload = CustomerProfile;
+
 // 구매자 온보딩 API 응답
 export type CustomerOnboardingResponse = ApiSuccess<string>;
+
+// 구매자 정보 조회 API 응답
+export type CustomerProfileResponse = ApiSuccess<CustomerProfile>;
+
+// 구매자 정보 수정 API 응답
+export type CustomerProfileUpdateResponse = ApiSuccess<string>;

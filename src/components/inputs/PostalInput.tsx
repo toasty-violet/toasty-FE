@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/buttons/Button";
+import { formatAddress, type DraftAddress } from "@/lib/address";
 
 import { Input } from "./Input";
 
@@ -22,15 +23,7 @@ type PostcodeData = {
 };
 
 // toasty 백엔드에 넘길 주소 타입
-export type PostalValue = {
-  postalCode: string;
-  roadAddress: string;
-  jibunAddress: string;
-  addressType: "R" | "J" | "";
-  buildingName: string;
-  legalDong: string;
-  detailAddress: string;
-};
+export type PostalValue = DraftAddress;
 
 type PostalInputProps = {
   value: PostalValue;
@@ -70,25 +63,6 @@ function loadPostcodeSdk() {
     script.addEventListener("load", () => resolve(), { once: true });
     script.addEventListener("error", () => reject(), { once: true });
   });
-}
-
-/**
- * 입력창에 보여줄 주소 문자열.
- * API로는 각 필드를 분리해 보내므로, 조합은 표시 용도로만 쓴다.
- */
-function formatAddress(value: PostalValue) {
-  const base =
-    value.addressType === "J" ? value.jibunAddress : value.roadAddress;
-  if (base === "") return "";
-
-  // 도로명 주소를 고른 경우에만 참고항목(법정동, 건물명)을 괄호로 덧붙인다.
-  if (value.addressType !== "R") return base;
-
-  const parts = [value.legalDong, value.buildingName].filter(
-    (part) => part !== "",
-  );
-
-  return parts.length > 0 ? `${base} (${parts.join(", ")})` : base;
 }
 
 export function PostalInput({
