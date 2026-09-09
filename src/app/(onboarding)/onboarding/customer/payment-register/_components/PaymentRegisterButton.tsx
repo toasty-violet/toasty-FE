@@ -10,7 +10,11 @@ import {
   loadOnboardingDraft,
 } from "@/app/(onboarding)/onboarding/_lib/onboarding-draft";
 import { fetchPayerIdSession } from "@/lib/payment";
-import { loadPoint3Widgets, requestPoint3Payment } from "@/lib/point3";
+import {
+  loadPoint3Widgets,
+  requestPoint3Payment,
+  resolvePoint3FailMessage,
+} from "@/lib/point3";
 import { submitCustomerOnboarding } from "@/lib/user";
 
 const ORDER_NAME = "toasty 계좌 등록";
@@ -26,8 +30,9 @@ export function PaymentRegisterButton() {
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
 
-  // 등록 실패로 돌아온 경우 point3 가 code/message 를 실어 보낸다.
-  const failMessage = searchParams.get("message");
+  // 등록 실패로 돌아온 경우 point3 가 code 를 실어 보낸다.
+  // 안내 문구는 code 로 정한다. 함께 오는 message 는 사용자에게 보여주지 않는다.
+  const failMessage = resolvePoint3FailMessage(searchParams.get("code"));
   // 등록 성공으로 돌아온 경우에만 orderId(=sessionId)가 붙는다.
   const paidSessionId = searchParams.get("orderId");
 
