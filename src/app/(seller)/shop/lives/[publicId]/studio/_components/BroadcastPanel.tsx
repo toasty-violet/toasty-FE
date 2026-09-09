@@ -25,7 +25,7 @@ import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
-import { StudioNotice } from "./StudioNotice";
+import { LiveNotice } from "@/app/live/_components/LiveNotice";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
 type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
@@ -238,9 +238,9 @@ export function BroadcastPanel({
   // 카메라·마이크를 못 켜면 송출을 시작할 수 없어 화면에 머물 이유가 없다.
   if (status === "unavailable") {
     return (
-      <StudioNotice alert onBack={onLeave}>
+      <LiveNotice alert onBack={onLeave}>
         {message ?? "카메라·마이크를 켜지 못했습니다."}
-      </StudioNotice>
+      </LiveNotice>
     );
   }
 

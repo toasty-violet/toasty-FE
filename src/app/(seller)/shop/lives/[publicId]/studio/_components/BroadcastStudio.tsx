@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { BroadcastPanel } from "./BroadcastPanel";
-import { StudioNotice } from "./StudioNotice";
+import { LiveNotice } from "@/app/live/_components/LiveNotice";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import { getLive, getLiveStreamStatus } from "@/app/live/_lib/live-api";
 
@@ -26,7 +26,7 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
   });
 
   if (live.isPending || streamStatus.isPending) {
-    return <StudioNotice>불러오는 중…</StudioNotice>;
+    return <LiveNotice>불러오는 중…</LiveNotice>;
   }
 
   // 폴링이 일시적으로 실패해도 방송 중 화면이 사라지지 않도록, 데이터가 없을 때만 막는다.
@@ -34,17 +34,17 @@ export function BroadcastStudio({ publicId }: { publicId: string }) {
     (live.error && !live.data) || (streamStatus.error && !streamStatus.data);
   if (fatal) {
     return (
-      <StudioNotice alert onBack={() => router.replace("/shop/lives")}>
+      <LiveNotice alert onBack={() => router.replace("/shop/lives")}>
         {describeLiveError(live.error ?? streamStatus.error).message}
-      </StudioNotice>
+      </LiveNotice>
     );
   }
 
   if (streamStatus.data?.status === "ENDED") {
     return (
-      <StudioNotice onBack={() => router.replace("/shop/lives")}>
+      <LiveNotice onBack={() => router.replace("/shop/lives")}>
         이미 종료된 방송입니다.
-      </StudioNotice>
+      </LiveNotice>
     );
   }
 
