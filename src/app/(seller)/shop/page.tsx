@@ -1,6 +1,5 @@
 import { AccountCard } from "@/components/cards/AccountCard";
 import { SupportCard } from "@/components/cards/SupportCard";
-import { SellerNav } from "@/components/navigations/SellerNav";
 
 import { SalesSummaryCard } from "./_components/SalesSummaryCard";
 import { ShippingFeeCard } from "./_components/ShippingFeeCard";
@@ -16,8 +15,6 @@ export default function ShopPage() {
         <AccountCard />
         <SupportCard />
       </div>
-
-      <SellerNav />
     </div>
   );
 }

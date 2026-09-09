@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { deleteLive, getSellerLiveTab } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
-import { SellerNav } from "@/components/navigations/SellerNav";
 import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import type { SellerScheduledLive } from "@/types/live";
 
@@ -98,8 +97,6 @@ export function SellerLiveTab() {
           </>
         )}
       </div>
-
-      <SellerNav />
 
       <StartLiveSheet
         open={starting !== null}
