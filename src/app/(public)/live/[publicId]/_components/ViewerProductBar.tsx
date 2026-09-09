@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import { Button } from "@/components/buttons/Button";
 import type { LiveProduct } from "@/types/live";
 
 // tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
@@ -11,11 +12,14 @@ const OVERLAY = "#1a1c20b2"; // bg/overlay
 export function ViewerProductBar({
   pinned,
   totalCount,
+  buyDisabled = false,
   onOpenAllProducts,
   onBuy,
 }: {
   pinned?: LiveProduct;
   totalCount: number;
+  /** 비로그인처럼 아직 살 수 없는 경우. */
+  buyDisabled?: boolean;
   onOpenAllProducts: () => void;
   onBuy: () => void;
 }) {
@@ -48,13 +52,12 @@ export function ViewerProductBar({
             </div>
           </div>
 
-          <button
-            type="button"
+          <Button
+            label="구매하기"
+            size="xs"
+            disabled={buyDisabled || pinned.stockQuantity === 0}
             onClick={onBuy}
-            className="rounded-8 text-l5-semibold bg-bg-brand-solid text-fg-neutral-inverted flex h-36 shrink-0 items-center justify-center px-16"
-          >
-            구매하기
-          </button>
+          />
         </div>
       ) : (
         <div className="bg-bg-layer-default rounded-10 text-l5-medium text-fg-neutral-secondary flex min-h-[6.4rem] min-w-0 flex-1 items-center p-8">

@@ -22,6 +22,8 @@ export type Scenario = {
   liveMissing?: boolean;
   /** 미리 고정해 둘 상품. 방송 중인 라이브(mock-2)에 걸린다. */
   pinnedProductId?: number;
+  /** 비로그인으로 열 때. 기본은 로그인된 셀러다. */
+  loggedIn?: boolean;
 };
 
 function tomorrowEvening() {
@@ -32,7 +34,12 @@ function tomorrowEvening() {
 }
 
 export async function stubApi(page: Page, scenario: Scenario = {}) {
-  const { tab = "full", liveMissing = false, pinnedProductId } = scenario;
+  const {
+    tab = "full",
+    liveMissing = false,
+    pinnedProductId,
+    loggedIn = true,
+  } = scenario;
 
   const lives = new Map<string, Live>();
   const products = new Map<number, LiveProduct[]>();
@@ -156,7 +163,18 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
         }),
       });
 
-    if (path === "/refresh") return ok({ accessToken: "test-token" });
+    if (path === "/refresh") {
+      return loggedIn
+        ? ok({ accessToken: "test-token" })
+        : route.fulfill({
+            status: 401,
+            contentType: "application/json",
+            body: JSON.stringify({
+              success: false,
+              error: { code: "AUTH_EXPIRED", message: "만료" },
+            }),
+          });
+    }
     if (path === "/logout") return ok(null);
     if (path === "/users/me") return ok({ role: "SELLER", nickname: "tester" });
 

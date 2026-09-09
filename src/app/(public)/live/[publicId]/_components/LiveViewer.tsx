@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
+import AlertRoundIcon from "@/assets/AlertRound.svg";
 import CloseIcon from "@/assets/Close.svg";
+import { Button } from "@/components/buttons/Button";
 import { LiveHeader, viewerLabel } from "@/app/live/_components/LiveHeader";
 import {
   getLive,
@@ -13,6 +15,7 @@ import {
   getViewerCount,
 } from "@/app/live/_lib/live-api";
 import { ApiRequestError } from "@/lib/api-error";
+import { useAuthStore } from "@/store/auth-store";
 import { LIVE_ERROR_CODE } from "@/types/live";
 
 import { LivePlayer } from "./LivePlayer";
@@ -45,6 +48,10 @@ export function LiveViewer({ publicId }: { publicId: string }) {
   const router = useRouter();
   const [playbackError, setPlaybackError] = useState("");
   const [productsOpen, setProductsOpen] = useState(false);
+
+  // 비로그인은 구매를 막고 로그인으로 안내한다. 시청 자체는 막지 않는다.
+  const isGuest = useAuthStore((state) => state.status) === "guest";
+  const goLogin = () => router.push("/login");
 
   const {
     data: live,
@@ -126,14 +133,17 @@ export function LiveViewer({ publicId }: { publicId: string }) {
             </>
           }
           action={
-            <button
-              type="button"
-              aria-label="닫기"
-              onClick={() => router.back()}
-              className="text-fg-neutral-inverted shrink-0"
-            >
-              <CloseIcon className="size-24 [&_path]:fill-current" />
-            </button>
+            <div className="flex shrink-0 items-center gap-12">
+              {isGuest && <Button label="로그인" size="xs" onClick={goLogin} />}
+              <button
+                type="button"
+                aria-label="닫기"
+                onClick={() => router.back()}
+                className="text-fg-neutral-inverted shrink-0"
+              >
+                <CloseIcon className="size-24 [&_path]:fill-current" />
+              </button>
+            </div>
           }
         />
 
@@ -160,9 +170,17 @@ export function LiveViewer({ publicId }: { publicId: string }) {
           <ViewerProductBar
             pinned={pinned}
             totalCount={list.length}
+            buyDisabled={isGuest}
             onOpenAllProducts={() => setProductsOpen(true)}
             onBuy={() => {}}
           />
+
+          {isGuest && (
+            <p className="bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex items-center gap-8 rounded-full px-16 py-8">
+              <AlertRoundIcon className="size-18 shrink-0 [&_path]:fill-current" />
+              로그인 후 상품 구매가 가능해요.
+            </p>
+          )}
         </div>
       </div>
 
@@ -170,6 +188,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         open={productsOpen}
         products={list}
         pinnedProductId={products?.currentPinnedProductId ?? null}
+        buyDisabled={isGuest}
         onClose={() => setProductsOpen(false)}
         onBuy={() => {}}
       />

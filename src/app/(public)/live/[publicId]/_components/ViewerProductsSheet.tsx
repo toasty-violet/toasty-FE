@@ -20,10 +20,12 @@ function buyState(product: LiveProduct) {
 function ProductRow({
   product,
   isPinned,
+  buyDisabled,
   onBuy,
 }: {
   product: LiveProduct;
   isPinned: boolean;
+  buyDisabled: boolean;
   onBuy: () => void;
 }) {
   const state = buyState(product);
@@ -69,7 +71,7 @@ function ProductRow({
         <Button
           label={state === "soldOut" ? "품절" : "구매하기"}
           size="xs"
-          disabled={state === "soldOut"}
+          disabled={buyDisabled || state === "soldOut"}
           onClick={onBuy}
         />
       )}
@@ -82,12 +84,15 @@ export function ViewerProductsSheet({
   open,
   products,
   pinnedProductId,
+  buyDisabled = false,
   onClose,
   onBuy,
 }: {
   open: boolean;
   products: LiveProduct[];
   pinnedProductId: number | null;
+  /** 비로그인처럼 아직 살 수 없는 경우. */
+  buyDisabled?: boolean;
   onClose: () => void;
   onBuy: (product: LiveProduct) => void;
 }) {
@@ -110,6 +115,7 @@ export function ViewerProductsSheet({
               <ProductRow
                 product={product}
                 isPinned={product.productId === pinnedProductId}
+                buyDisabled={buyDisabled}
                 onBuy={() => onBuy(product)}
               />
             </Fragment>
