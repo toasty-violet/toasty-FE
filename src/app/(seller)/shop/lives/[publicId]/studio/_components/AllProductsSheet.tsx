@@ -8,6 +8,8 @@ import PinIcon from "@/assets/Pin.svg";
 import { BottomSheet } from "@/components/overlays/BottomSheet";
 import type { LiveProduct } from "@/types/live";
 
+import { SALE_STATUS } from "./sale-status";
+
 function RoundAction({
   label,
   icon: Icon,
@@ -26,7 +28,7 @@ function RoundAction({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex shrink-0 flex-col items-center justify-center gap-6 disabled:opacity-40"
+      className="flex shrink-0 flex-col items-center justify-center gap-6"
     >
       <span
         className={`flex size-36 items-center justify-center rounded-full ${
@@ -56,7 +58,7 @@ function ProductRow({
   onEdit: () => void;
   onPin: () => void;
 }) {
-  const soldOut = product.stockQuantity === 0;
+  const sale = SALE_STATUS[product.status];
 
   return (
     <li className="flex w-full items-start gap-8">
@@ -75,19 +77,15 @@ function ProductRow({
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="flex flex-wrap items-center gap-4">
             {isPinned && (
-              <span className="rounded-6 text-l7-semibold bg-bg-brand-weak text-fg-brand flex items-center gap-4 px-5 pt-4 pb-5">
+              <span className="text-l7-semibold text-fg-brand flex items-center gap-4">
                 <PinIcon className="size-12 [&_path]:fill-current" />
                 현재 고정 상품
               </span>
             )}
             <span
-              className={`rounded-6 text-l7-semibold px-5 pt-4 pb-5 ${
-                soldOut
-                  ? "bg-bg-neutral-weak text-fg-neutral-secondary"
-                  : "bg-bg-brand-weak text-fg-brand"
-              }`}
+              className={`rounded-6 text-l7-semibold px-5 pt-4 pb-5 ${sale.className}`}
             >
-              {soldOut ? "판매대기" : "판매중"}
+              {sale.label}
             </span>
           </div>
 
@@ -113,7 +111,8 @@ function ProductRow({
         <RoundAction
           label="고정"
           icon={PinIcon}
-          strong
+          // 이미 고정된 상품은 누를 일이 없어 물러나 있는다.
+          strong={!isPinned}
           disabled={isPinned}
           onClick={onPin}
         />

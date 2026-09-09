@@ -7,6 +7,8 @@ import EditIcon from "@/assets/Edit.svg";
 import PinIcon from "@/assets/Pin.svg";
 import type { LiveProduct } from "@/types/live";
 
+import { SALE_STATUS } from "./sale-status";
+
 // tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
 const OVERLAY = "#1a1c20b2"; // bg/overlay
 const OVERLAY_INVERSE_SUBTLE = "#ffffff1f"; // bg/overlay-inverse-subtle
@@ -14,11 +16,14 @@ const OVERLAY_INVERSE_SUBTLE = "#ffffff1f"; // bg/overlay-inverse-subtle
 function ActionButton({
   label,
   icon: Icon,
+  /** 눌러야 할 버튼임을 알릴 때 채운다. */
+  emphasized = false,
   disabled = false,
   onClick,
 }: {
   label: string;
   icon: FC<SVGProps<SVGSVGElement>>;
+  emphasized?: boolean;
   disabled?: boolean;
   onClick: () => void;
 }) {
@@ -27,8 +32,12 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      style={{ backgroundColor: OVERLAY_INVERSE_SUBTLE }}
-      className="rounded-8 text-l5-semibold text-fg-neutral-inverted flex h-36 min-w-0 flex-1 items-center justify-center gap-4 px-16 backdrop-blur-[5px] disabled:opacity-50"
+      style={
+        emphasized ? undefined : { backgroundColor: OVERLAY_INVERSE_SUBTLE }
+      }
+      className={`rounded-8 text-l5-semibold text-fg-neutral-inverted flex h-36 min-w-0 flex-1 items-center justify-center gap-4 px-16 disabled:opacity-50 ${
+        emphasized ? "bg-bg-brand-solid" : "backdrop-blur-[5px]"
+      }`}
     >
       {/* 아이콘 색이 박혀 있어 버튼 글자색을 따라가게 한다. */}
       <Icon className="size-18 shrink-0 [&_path]:fill-current" />
@@ -41,13 +50,13 @@ function ActionButton({
 function PinnedCard({ product }: { product?: LiveProduct }) {
   if (!product) {
     return (
-      <div className="bg-bg-layer-default rounded-10 text-l5-medium text-fg-neutral-secondary flex min-w-0 flex-1 items-center p-8">
+      <div className="bg-bg-layer-default rounded-10 text-l5-medium text-fg-neutral-secondary flex min-h-[6.4rem] min-w-0 flex-1 items-center p-8">
         아직 소개 중인 상품이 없어요.
       </div>
     );
   }
 
-  const soldOut = product.stockQuantity === 0;
+  const sale = SALE_STATUS[product.status];
 
   return (
     <div className="bg-bg-layer-default rounded-10 flex min-w-0 flex-1 items-center gap-12 overflow-hidden p-8">
@@ -77,13 +86,9 @@ function PinnedCard({ product }: { product?: LiveProduct }) {
       </div>
 
       <span
-        className={`rounded-6 text-l7-semibold flex shrink-0 items-center justify-center px-5 pt-4 pb-5 ${
-          soldOut
-            ? "bg-bg-neutral-weak text-fg-neutral-secondary"
-            : "bg-bg-brand-weak text-fg-brand"
-        }`}
+        className={`rounded-6 text-l7-semibold flex shrink-0 self-start px-5 pt-4 pb-5 ${sale.className}`}
       >
-        {soldOut ? "품절" : "판매중"}
+        {sale.label}
       </span>
     </div>
   );
@@ -131,6 +136,8 @@ export function LiveProductBar({
         <ActionButton
           label={pinning ? "고정하는 중…" : "다음 상품 고정"}
           icon={PinIcon}
+          // 지금 소개 중인 상품을 다 팔았으면 다음으로 넘기라고 알린다.
+          emphasized={pinned?.status === "CLOSED"}
           disabled={pinning || totalCount === 0}
           onClick={onPinNext}
         />
