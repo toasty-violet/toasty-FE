@@ -19,6 +19,7 @@ export function CustomerOnboardingForm() {
   return (
     <CustomerInfoForm
       initialValues={draft ?? undefined}
+      suggestNickname
       submitLabel="다음"
       onSubmit={(values) => {
         // 온보딩은 결제 등록까지 마쳐야 제출하므로, 여기서는 보관만 한다.

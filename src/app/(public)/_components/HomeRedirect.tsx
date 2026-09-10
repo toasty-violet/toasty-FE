@@ -13,7 +13,7 @@ export function HomeRedirect() {
   const status = useAuthStore((state) => state.status);
   const user = useUserStore((state) => state.user);
 
-  // 토큰이 먼저 들어오고 /users/me 는 뒤에 도착하므로 그 사이에는 판단하지 않는다
+  // 토큰이 먼저 들어오고 /users/role 은 뒤에 도착하므로 그 사이에는 판단하지 않는다
   const isPending = status === "loading" || (status === "authed" && !user);
 
   useEffect(() => {

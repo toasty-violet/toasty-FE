@@ -176,7 +176,7 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
           });
     }
     if (path === "/logout") return ok(null);
-    if (path === "/users/me") return ok({ role: "SELLER", nickname: "tester" });
+    if (path === "/users/role") return ok({ role: "SELLER" });
 
     if (path === "/lives/me") {
       const mine =

@@ -2,18 +2,23 @@ import type { ApiSuccess } from "@/types/api";
 
 export type UserRole = "SELLER" | "CUSTOMER";
 
-// /users/me 에서 내려주는 유저 정보
+// /users/role 에서 내려주는 유저 정보
 // 역할을 아직 고르지 않은 유저는 role 이 아예 내려오지 않는다
 export interface User {
   role?: UserRole | null;
-  nickname: string;
 }
 
-// 내 정보 조회 API 응답
-export type MeResponse = ApiSuccess<User>;
+// 역할 조회 API 응답
+export type UserRoleResponse = ApiSuccess<User>;
 
-// 닉네임 중복 조회 API 응답
-export type NicknameDuplicationResponse = ApiSuccess<{ duplicated: boolean }>;
+// 닉네임·스토어 이름 중복 조회 API 응답. 둘이 같은 형태를 준다
+export type DuplicationResponse = ApiSuccess<{ duplicated: boolean }>;
+
+// 추천 닉네임 발급 API 응답
+export type NicknameSuggestionResponse = ApiSuccess<{ nickname: string }>;
+
+// 추천 스토어 이름 발급 API 응답
+export type ShopNameSuggestionResponse = ApiSuccess<{ shopName: string }>;
 
 // 셀러 입점 신청에 보낼 정보
 export interface SellerOnboardingRequest {

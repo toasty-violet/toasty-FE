@@ -22,7 +22,7 @@ export function RouteGuard({ require, children }: RouteGuardProps) {
   const status = useAuthStore((state) => state.status);
   const user = useUserStore((state) => state.user);
 
-  // 토큰이 먼저 들어오고 /users/me 는 뒤에 도착한다.
+  // 토큰이 먼저 들어오고 /users/role 은 뒤에 도착한다.
   // 그 사이(authed 인데 user 가 아직 null)를 판정 완료로 보면 권한이 있는데도 쫓아낸다.
   const isPending = status === "loading" || (status === "authed" && !user);
   const isAllowed =

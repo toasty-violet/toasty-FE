@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { BottomButton } from "@/components/buttons/BottomButton";
 import { Input } from "@/components/inputs/Input";
@@ -9,6 +9,7 @@ import { PhoneField } from "@/components/inputs/PhoneField";
 import { PostalInput, type PostalValue } from "@/components/inputs/PostalInput";
 import { useNicknameCheck } from "@/hooks/use-nickname-check";
 import { isCompleteAddress } from "@/lib/address";
+import { fetchSuggestedNickname } from "@/lib/user";
 import { NAME_PATTERN, PHONE_PATTERN } from "@/lib/validation";
 import type { CustomerProfile } from "@/types/user";
 
@@ -32,6 +33,11 @@ type CustomerInfoFormProps = {
    * 아직 등록 전인 온보딩 초안은 되살렸더라도 조회를 거쳐야 한다.
    */
   nicknameRegistered?: boolean;
+  /**
+   * 닉네임이 비어 있을 때 서버의 추천 닉네임을 채워 둘지.
+   * 아직 닉네임이 없는 온보딩만 켠다. 마이페이지 수정은 제 닉네임을 띄우므로 끈다.
+   */
+  suggestNickname?: boolean;
   submitLabel: string;
   onSubmit: (values: CustomerProfile) => void;
   isPending?: boolean;
@@ -44,6 +50,7 @@ type CustomerInfoFormProps = {
 export function CustomerInfoForm({
   initialValues,
   nicknameRegistered = false,
+  suggestNickname = false,
   submitLabel,
   onSubmit,
   isPending = false,
@@ -60,8 +67,24 @@ export function CustomerInfoForm({
   // 아직 등록 전인 초안을 되살린 경우는 채워둔 값도 그대로 조회한다.
   const { verified: nicknameVerified, ...nicknameState } = useNicknameCheck(
     nickname,
+    "nickname",
     initialValues !== undefined && !nicknameRegistered,
   );
+
+  // 빈 입력창에 채워 둘 예시 닉네임을 받아 온다. 초안에서 되살린 닉네임이 있으면 그쪽이 우선이다.
+  // 두 값 모두 화면이 사는 동안 바뀌지 않아 사실상 마운트 때 한 번만 받는다.
+  // 응답이 오는 사이 사용자가 적은 값이 있으면 그쪽을 남긴다.
+  // 없어도 그만인 값이라 실패하면 빈 입력창으로 둔다.
+  const initialNickname = initialValues?.nickname ?? "";
+  useEffect(() => {
+    if (!suggestNickname || initialNickname !== "") return;
+
+    fetchSuggestedNickname()
+      .then((suggested) =>
+        setNickname((prev) => (prev === "" ? suggested : prev)),
+      )
+      .catch(() => {});
+  }, [suggestNickname, initialNickname]);
 
   // 원래 제 닉네임을 그대로 두는 경우는 중복 조회 없이 통과시킨다.
   const nicknameKept =
