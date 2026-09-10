@@ -1,8 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import type { FC, SVGProps } from "react";
 
+import { AllProductsButton } from "@/app/live/_components/AllProductsButton";
+import { PinnedProductCard } from "@/app/live/_components/PinnedProductCard";
 import EditIcon from "@/assets/Edit.svg";
 import PinIcon from "@/assets/Pin.svg";
 import type { LiveProduct } from "@/types/live";
@@ -10,7 +11,6 @@ import type { LiveProduct } from "@/types/live";
 import { SALE_STATUS } from "./sale-status";
 
 // tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
-const OVERLAY = "#1a1c20b2"; // bg/overlay
 const OVERLAY_INVERSE_SUBTLE = "#ffffff1f"; // bg/overlay-inverse-subtle
 
 function ActionButton({
@@ -46,51 +46,15 @@ function ActionButton({
   );
 }
 
-/** 지금 소개 중인 상품. 아직 아무것도 고정하지 않았으면 자리만 지킨다. */
-function PinnedCard({ product }: { product?: LiveProduct }) {
-  if (!product) {
-    return (
-      <div className="bg-bg-layer-default rounded-10 text-l5-medium text-fg-neutral-secondary flex min-h-[6.4rem] min-w-0 flex-1 items-center p-8">
-        아직 소개 중인 상품이 없어요.
-      </div>
-    );
-  }
-
-  const sale = SALE_STATUS[product.status];
-
+/** 카드 오른쪽에 붙는 판매 상태 배지. */
+function SaleBadge({ status }: { status: LiveProduct["status"] }) {
+  const sale = SALE_STATUS[status];
   return (
-    <div className="bg-bg-layer-default rounded-10 flex min-w-0 flex-1 items-center gap-12 overflow-hidden p-8">
-      <span className="rounded-8 relative size-48 shrink-0 overflow-hidden">
-        <Image
-          src={product.imageUrl}
-          alt=""
-          fill
-          sizes="48px"
-          unoptimized
-          className="object-cover"
-        />
-      </span>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <p className="text-l5-medium text-fg-neutral-solid truncate">
-          {product.name}
-        </p>
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-l4-semibold text-fg-brand">
-            {product.price.toLocaleString("ko-KR")}원
-          </span>
-          <span className="text-l7-medium text-fg-neutral-secondary">
-            재고 {product.stockQuantity}개
-          </span>
-        </div>
-      </div>
-
-      <span
-        className={`rounded-6 text-l7-semibold flex shrink-0 self-start px-5 pt-4 pb-5 ${sale.className}`}
-      >
-        {sale.label}
-      </span>
-    </div>
+    <span
+      className={`rounded-6 text-l7-semibold flex shrink-0 self-start px-5 pt-4 pb-5 ${sale.className}`}
+    >
+      {sale.label}
+    </span>
   );
 }
 
@@ -113,17 +77,15 @@ export function LiveProductBar({
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full items-end gap-8">
-        <PinnedCard product={pinned} />
+        <PinnedProductCard
+          product={pinned}
+          trailing={pinned && <SaleBadge status={pinned.status} />}
+        />
 
-        <button
-          type="button"
+        <AllProductsButton
+          totalCount={totalCount}
           onClick={onOpenAllProducts}
-          style={{ backgroundColor: OVERLAY }}
-          className="rounded-10 text-fg-neutral-inverted flex shrink-0 flex-col items-center justify-center gap-4 self-stretch px-12"
-        >
-          <span className="text-l3-medium">{totalCount}</span>
-          <span className="text-l7-regular">전체상품</span>
-        </button>
+        />
       </div>
 
       <div className="flex w-full items-center gap-8">

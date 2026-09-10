@@ -1,7 +1,10 @@
 "use client";
 
-/** 방송 화면 대신 띄우는 안내. 배경이 검정이라 글자를 밝게 둔다. */
-export function StudioNotice({
+/**
+ * 방송 화면 대신 띄우는 안내. 송출과 시청이 함께 쓴다.
+ * 배경이 검정이라 글자를 밝게 둔다.
+ */
+export function LiveNotice({
   children,
   alert = false,
   onBack,

@@ -19,13 +19,13 @@ import type {
   LiveViewer,
 } from "@/types/live";
 
-import { LiveHeader } from "./LiveHeader";
+import { LiveHeader, viewerLabel } from "@/app/live/_components/LiveHeader";
 import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
-import { StudioNotice } from "./StudioNotice";
+import { LiveNotice } from "@/app/live/_components/LiveNotice";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
 type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
@@ -238,9 +238,9 @@ export function BroadcastPanel({
   // 카메라·마이크를 못 켜면 송출을 시작할 수 없어 화면에 머물 이유가 없다.
   if (status === "unavailable") {
     return (
-      <StudioNotice alert onBack={onLeave}>
+      <LiveNotice alert onBack={onLeave}>
         {message ?? "카메라·마이크를 켜지 못했습니다."}
-      </StudioNotice>
+      </LiveNotice>
     );
   }
 
@@ -256,12 +256,27 @@ export function BroadcastPanel({
         <LiveHeader
           title={live.title}
           shopImageUrl={live.seller.shopImageUrl}
-          viewerCount={viewerCount}
-          onEnd={() => {
-            endMutation.reset();
-            setAskingEnd(true);
-          }}
-          ending={endMutation.isPending}
+          subtitle={
+            <>
+              <span className="text-l6-medium">{viewerLabel(viewerCount)}</span>
+              <span className="text-l7-medium">∙</span>
+              {/* 판매율은 주문 집계가 생기면 서버가 준다. */}
+              <span className="text-l7-medium">판매율 -%</span>
+            </>
+          }
+          action={
+            <button
+              type="button"
+              onClick={() => {
+                endMutation.reset();
+                setAskingEnd(true);
+              }}
+              disabled={endMutation.isPending}
+              className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted flex h-32 shrink-0 items-center justify-center px-12 disabled:opacity-60"
+            >
+              {endMutation.isPending ? "종료 중…" : "방송종료"}
+            </button>
+          }
         />
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8 px-20">
