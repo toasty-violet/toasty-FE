@@ -222,6 +222,18 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
       return ok({ viewerCount: 132 });
     }
 
+    // 토큰만 내려준다. 진짜 IVS 채팅방에는 붙지 못하고 화면은 빈 채로 남는다.
+    const chatToken = path.match(/^\/lives\/public\/([^/]+)\/chat-token$/);
+    if (chatToken) {
+      const live = lives.get(chatToken[1]);
+      if (!live) return liveNotFound();
+      return ok({
+        token: "mock-chat-token",
+        expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+        writable: loggedIn,
+      });
+    }
+
     const publicOne = path.match(/^\/lives\/public\/([^/]+)$/);
     if (publicOne) {
       const live = liveMissing ? undefined : lives.get(publicOne[1]);

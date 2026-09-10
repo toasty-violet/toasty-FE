@@ -3,6 +3,7 @@ import type { ApiSuccess } from "@/types/api";
 import type {
   BroadcastCredential,
   Live,
+  LiveChatToken,
   LiveCreateRequest,
   LiveWithProducts,
   LiveUpdateRequest,
@@ -161,4 +162,15 @@ export async function updateLiveProduct(
   body: LiveProductUpdateRequest,
 ) {
   await apiClient.patch(`/lives/${liveId}/products/${productId}`, body);
+}
+
+/**
+ * 채팅방에 들어갈 토큰을 받는다. 인증이 없어도 부를 수 있고 그때는 읽기만 된다.
+ * 방이 없는 라이브는 404 가 난다. 서버가 끝난 방송의 방을 나중에 회수한다.
+ */
+export async function issueChatToken(publicId: string): Promise<LiveChatToken> {
+  const { data } = await apiClient.post<ApiSuccess<LiveChatToken>>(
+    `/lives/public/${publicId}/chat-token`,
+  );
+  return data.data;
 }

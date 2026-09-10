@@ -47,7 +47,7 @@ test("SELLER 는 홈에서 /shop 으로 이동한다", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/shop$/);
   await expect(
-    page.getByRole("heading", { name: "상점 페이지 (/shop)" }),
+    page.getByRole("heading", { name: "판매 내역 요약" }),
   ).toBeVisible();
 });
 
@@ -57,7 +57,9 @@ test("role 이 null 이면 홈에서 /onboarding 로 이동한다", async ({ pag
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
+    page.getByRole("heading", {
+      name: "토스티에서 이용할 역할을 선택해 주세요",
+    }),
   ).toBeVisible();
 });
 
@@ -71,7 +73,9 @@ test("role 키가 없으면 홈에서 /onboarding 로 이동한다", async ({ pa
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
+    page.getByRole("heading", {
+      name: "토스티에서 이용할 역할을 선택해 주세요",
+    }),
   ).toBeVisible();
 });
 
