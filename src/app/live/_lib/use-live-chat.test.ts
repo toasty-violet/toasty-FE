@@ -95,6 +95,42 @@ describe("useLiveChat", () => {
     await waitFor(() => expect(issueChatToken).toHaveBeenCalledTimes(1));
   });
 
+  // 방송이 잠깐 끊겼다 이어지면 enabled 가 true → false → true 로 흔들린다.
+  describe("다시 붙을 때", () => {
+    const renderWithEnabled = () =>
+      renderHook(({ enabled }) => useLiveChat({ publicId: "abc", enabled }), {
+        initialProps: { enabled: true },
+      });
+
+    it("앞 연결에서 받은 메시지를 새 방에 이어 쌓지 않는다", async () => {
+      const { result, rerender } = renderWithEnabled();
+      await waitFor(() => expect(room.connect).toHaveBeenCalled());
+      receive("1", "안녕하세요", { role: "CUSTOMER", displayName: "손님" });
+      expect(result.current.messages).toHaveLength(1);
+
+      rerender({ enabled: false });
+      rerender({ enabled: true });
+
+      expect(result.current.messages).toHaveLength(0);
+    });
+
+    // 되돌리지 않으면 방이 다시 생겨도 방송이 끝날 때까지 입력줄이 안 돌아온다.
+    it("그때 방이 없었어도 다시 물어본다", async () => {
+      issueChatToken.mockRejectedValueOnce(
+        new ApiRequestError(LIVE_ERROR_CODE.CHAT_ROOM_NOT_FOUND, "없음", 404),
+      );
+
+      const { result, rerender } = renderWithEnabled();
+      await waitFor(() => expect(result.current.unavailable).toBe(true));
+
+      rerender({ enabled: false });
+      rerender({ enabled: true });
+
+      await waitFor(() => expect(result.current.unavailable).toBe(false));
+      expect(result.current.writable).toBe(true);
+    });
+  });
+
   // 서버가 끝난 방송의 채팅방을 회수하면 방이 없어진다.
   it("채팅방이 없으면 없다고 알린다", async () => {
     issueChatToken.mockRejectedValue(

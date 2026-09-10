@@ -58,6 +58,17 @@ export function useLiveChat({
   // 비로그인으로 찍히고, 첫 토큰은 세션 내내 쓰여서 방송 내내 잠긴 채로 남는다.
   const authResolved = useAuthStore((state) => state.status) !== "loading";
 
+  // 방송이 잠깐 끊겼다 이어지면 방에 다시 붙는다. 앞 연결에서 받은 것을 새 방에
+  // 이어 쌓지 않고, 그때 없던 방이 다시 생겼을 수도 있어 되돌린다.
+  const session = `${publicId}|${enabled}|${authResolved}`;
+  const [startedSession, setStartedSession] = useState(session);
+  if (session !== startedSession) {
+    setStartedSession(session);
+    setMessages([]);
+    setWritable(false);
+    setUnavailable(false);
+  }
+
   useEffect(() => {
     if (!enabled || !authResolved) return;
 
