@@ -27,11 +27,14 @@ const POLL_MS = 4000;
 
 export function LiveViewer({ publicId }: { publicId: string }) {
   const router = useRouter();
-  const [playbackError, setPlaybackError] = useState("");
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const [productsOpen, setProductsOpen] = useState(false);
 
   // 비로그인은 구매를 막고 로그인으로 안내한다. 시청 자체는 막지 않는다.
-  const isGuest = useAuthStore((state) => state.status) === "guest";
+  const authStatus = useAuthStore((state) => state.status);
+  const isGuest = authStatus === "guest";
+  // 로그인 여부가 확정되기 전(loading)에 구매를 열면 잠깐 눌리다가 잠긴다.
+  const buyDisabled = authStatus !== "authed";
   const goLogin = () => router.push("/login");
 
   const {
@@ -93,7 +96,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         <div className="absolute inset-0">
           <LivePlayer
             playbackUrl={playback.playbackUrl}
-            onError={setPlaybackError}
+            onPlaybackError={setPlaybackError}
           />
         </div>
       )}
@@ -153,7 +156,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
             <ViewerProductBar
               pinned={pinned}
               totalCount={list.length}
-              buyDisabled={isGuest}
+              buyDisabled={buyDisabled}
               onOpenAllProducts={() => setProductsOpen(true)}
               onBuy={() => {}}
             />
@@ -172,7 +175,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         open={productsOpen}
         products={list}
         pinnedProductId={products?.currentPinnedProductId ?? null}
-        buyDisabled={isGuest}
+        buyDisabled={buyDisabled}
         onClose={() => setProductsOpen(false)}
         onBuy={() => {}}
       />
