@@ -170,9 +170,12 @@ export function BroadcastPanel({
     refetchInterval: STREAM_STATUS_POLL_MS,
   });
 
+  // 재고를 줄이는 건 셀러가 아니라 시청자의 구매라, 상태도 함께 다시 받아야 한다.
   const products = useQuery({
     queryKey: ["live-products", live.liveId],
     queryFn: () => getLiveProducts(live.liveId),
+    enabled: status === "live",
+    refetchInterval: STREAM_STATUS_POLL_MS,
   });
 
   const list = products.data?.products ?? [];
