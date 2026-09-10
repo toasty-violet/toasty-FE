@@ -130,6 +130,21 @@ describe("ViewerProductsSheet", () => {
     expect(screen.getByText("현재 고정 상품")).toBeInTheDocument();
   });
 
+  it("편성된 상품이 없으면 없다고 알린다", () => {
+    render(
+      <ViewerProductsSheet
+        open
+        products={[]}
+        pinnedProductId={null}
+        onClose={noop}
+        onBuy={noop}
+      />,
+    );
+
+    expect(screen.getByText("편성된 상품이 없어요.")).toBeInTheDocument();
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+  });
+
   it("비로그인이면 살 수 있는 상품도 잠근다", () => {
     renderSheet({ buyDisabled: true });
 
