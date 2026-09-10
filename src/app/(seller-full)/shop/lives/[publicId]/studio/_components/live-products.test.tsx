@@ -140,6 +140,22 @@ describe("AllProductsSheet", () => {
     expect(pins[1]).toBeDisabled();
   });
 
+  it("편성된 상품이 없으면 없다고 알린다", () => {
+    render(
+      <AllProductsSheet
+        open
+        products={[]}
+        pinnedProductId={null}
+        onClose={noop}
+        onEdit={noop}
+        onPin={noop}
+      />,
+    );
+
+    expect(screen.getByText("편성된 상품이 없어요.")).toBeInTheDocument();
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+  });
+
   // 다 판 상품은 더 소개할 수 없다.
   it("판매완료 상품은 고정할 수 없다", () => {
     render(
