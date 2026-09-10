@@ -131,6 +131,16 @@ export async function deleteLive(liveId: number) {
   await apiClient.delete(`/lives/${liveId}`);
 }
 
+/** 시청 화면이 볼 편성 상품. 인증이 필요 없고 셀러 조회와 같은 형태를 준다. */
+export async function getPublicLiveProducts(
+  publicId: string,
+): Promise<LiveProducts> {
+  const { data } = await apiClient.get<ApiSuccess<LiveProducts>>(
+    `/lives/public/${publicId}/products`,
+  );
+  return data.data;
+}
+
 /** 방송 화면의 전체 상품과 지금 고정된 상품을 함께 가져온다. */
 export async function getLiveProducts(liveId: number): Promise<LiveProducts> {
   const { data } = await apiClient.get<ApiSuccess<LiveProducts>>(
