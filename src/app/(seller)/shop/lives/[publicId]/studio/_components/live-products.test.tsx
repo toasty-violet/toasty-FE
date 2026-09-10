@@ -140,6 +140,22 @@ describe("AllProductsSheet", () => {
     expect(pins[1]).toBeDisabled();
   });
 
+  // 다 판 상품은 더 소개할 수 없다.
+  it("판매완료 상품은 고정할 수 없다", () => {
+    render(
+      <AllProductsSheet
+        open
+        products={[product({ productId: 9, status: "CLOSED" })]}
+        pinnedProductId={null}
+        onClose={noop}
+        onEdit={noop}
+        onPin={noop}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "고정" })).toBeDisabled();
+  });
+
   it("고정을 누르면 그 상품을 알린다", async () => {
     const user = userEvent.setup();
     const onPin = vi.fn();

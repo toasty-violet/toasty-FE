@@ -10,16 +10,27 @@ import type { LiveProduct } from "@/types/live";
 
 import { SALE_STATUS } from "./sale-status";
 
+const CIRCLE = "flex size-36 items-center justify-center rounded-full";
+
+// 채운 버튼은 잠기면 색이 물러난다. #5b606b 는 semantic 이름이 없어 원색을 쓴다.
+function circleTone(emphasized: boolean, disabled: boolean) {
+  if (!emphasized) return "bg-bg-neutral-weak text-fg-neutral-solid";
+  return disabled
+    ? "bg-bg-neutral-disabled text-fg-neutral-inverted"
+    : "bg-gray-800 text-fg-neutral-inverted";
+}
+
 function RoundAction({
   label,
   icon: Icon,
-  strong = false,
+  emphasized = false,
   disabled = false,
   onClick,
 }: {
   label: string;
   icon: FC<SVGProps<SVGSVGElement>>;
-  strong?: boolean;
+  /** 눌러야 할 버튼임을 알릴 때 채운다. 잠기면 채운 색이 물러난다. */
+  emphasized?: boolean;
   disabled?: boolean;
   onClick: () => void;
 }) {
@@ -30,13 +41,7 @@ function RoundAction({
       disabled={disabled}
       className="flex shrink-0 flex-col items-center justify-center gap-6"
     >
-      <span
-        className={`flex size-36 items-center justify-center rounded-full ${
-          strong
-            ? "bg-fg-neutral-primary text-fg-neutral-inverted"
-            : "bg-bg-neutral-weak text-fg-neutral-solid"
-        }`}
-      >
+      <span className={`${CIRCLE} ${circleTone(emphasized, disabled)}`}>
         {/* 아이콘 색이 박혀 있어 버튼 글자색을 따라가게 한다. */}
         <Icon className="size-24 [&_path]:fill-current" />
       </span>
@@ -111,9 +116,9 @@ function ProductRow({
         <RoundAction
           label="고정"
           icon={PinIcon}
-          // 이미 고정된 상품은 누를 일이 없어 물러나 있는다.
-          strong={!isPinned}
-          disabled={isPinned}
+          emphasized
+          // 이미 고정했거나 다 판 상품은 소개할 수 없다.
+          disabled={isPinned || product.status === "CLOSED"}
           onClick={onPin}
         />
       </div>
