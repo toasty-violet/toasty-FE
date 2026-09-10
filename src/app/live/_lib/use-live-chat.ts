@@ -32,15 +32,15 @@ function toView(
   return {
     id,
     content,
-    role:
-      role === "SELLER" || role === "CUSTOMER" ? (role as ChatRole) : "GUEST",
+    role: role === "SELLER" || role === "CUSTOMER" ? role : "GUEST",
     displayName: attributes?.displayName ?? "익명",
   };
 }
 
 /**
  * 라이브 채팅방에 붙어 메시지를 받고 보낸다. 셀러 송출과 구매자 시청이 함께 쓴다.
- * 방송한 적 없는 라이브는 채팅방이 없어 `unavailable` 로 돌아온다.
+ * 채팅방은 라이브를 만들 때 함께 생기고 끝난 방송의 것은 서버가 나중에 회수한다.
+ * 회수됐거나 아직 방이 없는 라이브는 `unavailable` 로 돌아온다.
  */
 export function useLiveChat({
   publicId,
@@ -120,10 +120,17 @@ export function useLiveChat({
     };
   }, [publicId, enabled, authResolved]);
 
+  // 보냈는지를 돌려줘 실패한 글이 입력줄에 남게 한다.
   const send = useCallback(async (content: string) => {
     const room = roomRef.current;
-    if (!room) return;
-    await room.sendMessage(new SendMessageRequest(content));
+    if (!room) return false;
+    try {
+      await room.sendMessage(new SendMessageRequest(content));
+      return true;
+    } catch {
+      // 연결이 끊겼거나 서버가 쓰기를 막았다.
+      return false;
+    }
   }, []);
 
   return { messages, writable, unavailable, send };

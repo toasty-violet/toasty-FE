@@ -53,15 +53,17 @@ describe("LiveChatOverlay", () => {
   });
 });
 
+const sends = (ok = true) => vi.fn(async () => ok);
+
 describe("LiveChatInput", () => {
   it("적기 전에는 전송 버튼을 두지 않는다", () => {
-    render(<LiveChatInput onSend={vi.fn()} />);
+    render(<LiveChatInput onSend={sends()} />);
 
     expect(screen.queryByRole("button", { name: "전송" })).toBeNull();
   });
 
   it("적은 말을 보내고 입력줄을 비운다", async () => {
-    const onSend = vi.fn();
+    const onSend = sends();
     render(<LiveChatInput onSend={onSend} />);
     const input = screen.getByRole("textbox", { name: "채팅 입력" });
 
@@ -74,7 +76,7 @@ describe("LiveChatInput", () => {
 
   // 공백만 보내면 채팅방에 빈 줄이 남는다.
   it("공백만 있으면 보내지 않는다", async () => {
-    const onSend = vi.fn();
+    const onSend = sends();
     render(<LiveChatInput onSend={onSend} />);
 
     await userEvent.type(
@@ -86,8 +88,19 @@ describe("LiveChatInput", () => {
     expect(onSend).not.toHaveBeenCalled();
   });
 
+  // 연결이 끊겼는데 지워버리면 적은 글을 잃는다.
+  it("보내지 못했으면 적은 글을 남긴다", async () => {
+    render(<LiveChatInput onSend={sends(false)} />);
+    const input = screen.getByRole("textbox", { name: "채팅 입력" });
+
+    await userEvent.type(input, "사고싶어요");
+    await userEvent.click(screen.getByRole("button", { name: "전송" }));
+
+    expect(input).toHaveValue("사고싶어요");
+  });
+
   it("보낼 수 없는 사람에게는 입력줄을 잠근다", () => {
-    render(<LiveChatInput disabled onSend={vi.fn()} />);
+    render(<LiveChatInput disabled onSend={sends()} />);
 
     expect(screen.getByRole("textbox", { name: "채팅 입력" })).toBeDisabled();
   });

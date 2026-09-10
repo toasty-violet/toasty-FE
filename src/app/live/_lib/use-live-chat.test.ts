@@ -95,7 +95,7 @@ describe("useLiveChat", () => {
     await waitFor(() => expect(issueChatToken).toHaveBeenCalledTimes(1));
   });
 
-  // 방송한 적 없는 라이브는 채팅방이 없다.
+  // 서버가 끝난 방송의 채팅방을 회수하면 방이 없어진다.
   it("채팅방이 없으면 없다고 알린다", async () => {
     issueChatToken.mockRejectedValue(
       new ApiRequestError(LIVE_ERROR_CODE.CHAT_ROOM_NOT_FOUND, "없음", 404),
@@ -165,6 +165,22 @@ describe("useLiveChat", () => {
     expect(room.sendMessage).toHaveBeenCalledWith(
       expect.objectContaining({ content: "사고싶어요" }),
     );
+  });
+
+  // 연결이 끊겼거나 서버가 막으면 sendMessage 가 던진다.
+  it("보내지 못하면 false 를 준다", async () => {
+    room.sendMessage.mockRejectedValue(new Error("끊김"));
+    const { result } = renderHook(() =>
+      useLiveChat({ publicId: "abc", enabled: true }),
+    );
+
+    await waitFor(() => expect(room.connect).toHaveBeenCalled());
+    let sent;
+    await act(async () => {
+      sent = await result.current.send("사고싶어요");
+    });
+
+    expect(sent).toBe(false);
   });
 
   // 세션이 끝날 무렵 SDK 가 tokenProvider 를 다시 부른다.

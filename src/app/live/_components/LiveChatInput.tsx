@@ -11,16 +11,16 @@ export function LiveChatInput({
   onSend,
 }: {
   disabled?: boolean;
-  onSend: (text: string) => void;
+  /** 보내지 못했으면 false 를 준다. 그때는 적은 글을 지우지 않는다. */
+  onSend: (text: string) => Promise<boolean>;
 }) {
   const [text, setText] = useState("");
   const trimmed = text.trim();
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
     if (!trimmed) return;
-    onSend(trimmed);
-    setText("");
+    if (await onSend(trimmed)) setText("");
   }
 
   return (

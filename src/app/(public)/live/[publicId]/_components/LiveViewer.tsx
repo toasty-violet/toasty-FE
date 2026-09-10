@@ -28,6 +28,17 @@ import { ViewerProductsSheet } from "./ViewerProductsSheet";
 
 const POLL_MS = 4000;
 
+function GuestNotice({ className = "" }: { className?: string }) {
+  return (
+    <p
+      className={`bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex w-fit items-center gap-8 rounded-full px-16 py-8 ${className}`}
+    >
+      <AlertRoundIcon className="size-18 shrink-0 [&_path]:fill-current" />
+      로그인 후 상품 구매가 가능해요.
+    </p>
+  );
+}
+
 export function LiveViewer({ publicId }: { publicId: string }) {
   const router = useRouter();
   const [playbackError, setPlaybackError] = useState<string | null>(null);
@@ -73,7 +84,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
     refetchInterval: broadcasting ? POLL_MS : false,
   });
 
-  // 방송한 적 없는 라이브는 채팅방이 없다. 방송 중일 때만 붙는다.
+  // 채팅 자리는 방송 중에만 있으므로 그때만 방에 붙는다.
   const chat = useLiveChat({ publicId, enabled: broadcasting });
 
   if (isPending) return <LiveNotice>불러오는 중…</LiveNotice>;
@@ -158,7 +169,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         {/* 방송 중이 아니면 살 수 없으므로 상품 영역을 두지 않는다. */}
         {broadcasting && (
           <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
-            <LiveChatOverlay messages={chat.messages} />
+            {!chat.unavailable && <LiveChatOverlay messages={chat.messages} />}
 
             <ViewerProductBar
               pinned={pinned}
@@ -168,17 +179,17 @@ export function LiveViewer({ publicId }: { publicId: string }) {
               onBuy={() => {}}
             />
 
-            {/* 안내는 입력줄 위에 잠깐 얹히는 것이라 자리를 차지하지 않는다. */}
-            <div className="relative w-full">
-              <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
-
-              {isGuest && (
-                <p className="bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted absolute inset-x-0 top-1/2 mx-auto flex w-fit -translate-y-1/2 items-center gap-8 rounded-full px-16 py-8">
-                  <AlertRoundIcon className="size-18 shrink-0 [&_path]:fill-current" />
-                  로그인 후 상품 구매가 가능해요.
-                </p>
-              )}
-            </div>
+            {chat.unavailable ? (
+              isGuest && <GuestNotice />
+            ) : (
+              // 안내는 입력줄 위에 얹혀 자리를 차지하지 않는다.
+              <div className="relative w-full">
+                <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
+                {isGuest && (
+                  <GuestNotice className="absolute inset-x-0 top-1/2 -translate-y-1/2" />
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

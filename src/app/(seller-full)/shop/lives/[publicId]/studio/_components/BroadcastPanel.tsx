@@ -181,7 +181,7 @@ export function BroadcastPanel({
     refetchInterval: STREAM_STATUS_POLL_MS,
   });
 
-  // 채팅방은 방송이 시작돼야 생긴다. 상품 목록과 같은 조건으로 붙는다.
+  // 채팅 자리는 방송 중에만 있으므로 그때만 방에 붙는다.
   const chat = useLiveChat({
     publicId: live.publicId,
     enabled: status === "live",
@@ -318,7 +318,7 @@ export function BroadcastPanel({
 
         {status === "live" && (
           <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
-            <LiveChatOverlay messages={chat.messages} />
+            {!chat.unavailable && <LiveChatOverlay messages={chat.messages} />}
 
             <LiveProductBar
               pinned={pinned}
@@ -329,7 +329,9 @@ export function BroadcastPanel({
               onPinNext={pinNext}
             />
 
-            <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
+            {!chat.unavailable && (
+              <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
+            )}
           </div>
         )}
       </div>
