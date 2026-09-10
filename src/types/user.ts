@@ -52,8 +52,10 @@ export interface CustomerProfile {
   address: CustomerAddress;
 }
 
-// 구매자 온보딩에 보내는 기본 정보
-export type CustomerOnboardingPayload = CustomerProfile;
+// 구매자 온보딩에 보내는 정보. 기본 정보와 결제 세션을 한 번에 제출한다.
+export interface CustomerOnboardingPayload extends CustomerProfile {
+  sessionId: string;
+}
 
 // 구매자 온보딩 API 응답
 export type CustomerOnboardingResponse = ApiSuccess<string>;

@@ -1,29 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 
 import { CustomerInfoForm } from "@/components/forms/CustomerInfoForm";
-import { submitCustomerOnboarding } from "@/lib/user";
+
+import {
+  loadOnboardingDraft,
+  saveOnboardingDraft,
+} from "../_lib/onboarding-draft";
 
 //구매자가 기본 정보(이름, 닉네임, 연락처, 배송지)를 입력하는 온보딩 컴포넌트
 export function CustomerOnboardingForm() {
   const router = useRouter();
-
-  const mutation = useMutation({
-    mutationFn: submitCustomerOnboarding,
-    onSuccess: () => {
-      // role 을 여기서 바꾸면 아직 (onboarding) 안이라 그 가드가 먼저 반응해
-      // 완료 화면 대신 제 역할의 홈으로 밀어낸다. 갱신은 도착한 화면에 맡긴다.
-      router.replace("/onboarding/customer/complete");
-    },
-  });
+  // 결제 등록 화면에서 되돌아온 경우 앞서 입력한 값으로 시작한다.
+  const [draft] = useState(loadOnboardingDraft);
 
   return (
     <CustomerInfoForm
-      submitLabel={mutation.isPending ? "등록 중…" : "다음"}
-      isPending={mutation.isPending}
-      onSubmit={mutation.mutate}
+      initialValues={draft ?? undefined}
+      submitLabel="다음"
+      onSubmit={(values) => {
+        // 온보딩은 결제 등록까지 마쳐야 제출하므로, 여기서는 보관만 한다.
+        saveOnboardingDraft(values);
+        router.push("/onboarding/customer/payment-register");
+      }}
     />
   );
 }

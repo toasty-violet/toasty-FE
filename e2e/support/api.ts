@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test";
 import type {
   Live,
+  LiveProducts,
+  LiveViewer,
   LiveProduct,
   LiveStatus,
   LiveWithProducts,
@@ -18,6 +20,10 @@ export type Scenario = {
   tab?: "full" | "empty" | "scheduled" | "stat";
   /** 시청 화면이 어떤 라이브도 찾지 못하는 경우. */
   liveMissing?: boolean;
+  /** 미리 고정해 둘 상품. 방송 중인 라이브(mock-2)에 걸린다. */
+  pinnedProductId?: number;
+  /** 비로그인으로 열 때. 기본은 로그인된 셀러다. */
+  loggedIn?: boolean;
 };
 
 function tomorrowEvening() {
@@ -28,12 +34,18 @@ function tomorrowEvening() {
 }
 
 export async function stubApi(page: Page, scenario: Scenario = {}) {
-  const { tab = "full", liveMissing = false } = scenario;
+  const {
+    tab = "full",
+    liveMissing = false,
+    pinnedProductId,
+    loggedIn = true,
+  } = scenario;
 
   const lives = new Map<string, Live>();
   const products = new Map<number, LiveProduct[]>();
   let nextLiveId = 1;
   let nextProductId = 1;
+  const pinned = new Map<number, number>();
 
   const seed = (title: string, status: LiveStatus) => {
     const liveId = nextLiveId++;
@@ -71,6 +83,18 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
   seed("종료된 목 라이브", "ENDED");
   seedProducts(1, ["니트 가디건", "코듀로이 팬츠", "울 머플러"]);
   seedProducts(2, ["레더 자켓", "데님 셔츠"]);
+  // 서버는 고정하면 그 상품을 ACTIVE 로 바꾸고 되돌리지 않는다.
+  const pin = (liveId: number, productId: number) => {
+    pinned.set(liveId, productId);
+    products.set(
+      liveId,
+      (products.get(liveId) ?? []).map((item) =>
+        item.productId === productId ? { ...item, status: "ACTIVE" } : item,
+      ),
+    );
+  };
+
+  if (pinnedProductId !== undefined) pin(2, pinnedProductId);
 
   const byLiveId = (liveId: number) =>
     [...lives.values()].find((live) => live.liveId === liveId);
@@ -139,7 +163,18 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
         }),
       });
 
-    if (path === "/refresh") return ok({ accessToken: "test-token" });
+    if (path === "/refresh") {
+      return loggedIn
+        ? ok({ accessToken: "test-token" })
+        : route.fulfill({
+            status: 401,
+            contentType: "application/json",
+            body: JSON.stringify({
+              success: false,
+              error: { code: "AUTH_EXPIRED", message: "만료" },
+            }),
+          });
+    }
     if (path === "/logout") return ok(null);
     if (path === "/users/me") return ok({ role: "SELLER", nickname: "tester" });
 
@@ -182,10 +217,74 @@ export async function stubApi(page: Page, scenario: Scenario = {}) {
     }
 
     // 방송 시작이 스튜디오로 넘어갈 때 그 화면이 부르는 것들이다.
+    const viewerCount = path.match(/^\/lives\/public\/([^/]+)\/viewer-count$/);
+    if (viewerCount) {
+      return ok({ viewerCount: 132 });
+    }
+
     const publicOne = path.match(/^\/lives\/public\/([^/]+)$/);
     if (publicOne) {
       const live = liveMissing ? undefined : lives.get(publicOne[1]);
-      return live ? ok(live) : liveNotFound();
+      if (!live) return liveNotFound();
+
+      const viewer: LiveViewer = {
+        ...live,
+        seller: {
+          sellerId: live.sellerId,
+          shopName: "목 스토어",
+          shopImageUrl: "/product-image/shop.png",
+        },
+      };
+      return ok(viewer);
+    }
+
+    // 시청 화면도 같은 형태를 받는다. 인증만 없다.
+    const publicProducts = path.match(/^\/lives\/public\/([^/]+)\/products$/);
+    if (publicProducts) {
+      const live = lives.get(publicProducts[1]);
+      if (!live) return liveNotFound();
+
+      const body: LiveProducts = {
+        currentPinnedProductId: pinned.get(live.liveId) ?? null,
+        products: products.get(live.liveId) ?? [],
+      };
+      return ok(body);
+    }
+
+    // 방송 화면의 전체 상품 시트. 고정된 적이 없으면 currentPinnedProductId 가 null 이다.
+    const liveProducts = path.match(/^\/lives\/(\d+)\/products$/);
+    if (liveProducts) {
+      const live = byLiveId(Number(liveProducts[1]));
+      if (!live) return liveNotFound();
+
+      const body: LiveProducts = {
+        currentPinnedProductId: pinned.get(live.liveId) ?? null,
+        products: products.get(live.liveId) ?? [],
+      };
+      return ok(body);
+    }
+
+    const pinRequest = path.match(/^\/lives\/(\d+)\/products\/(\d+)\/pin$/);
+    if (pinRequest) {
+      pin(Number(pinRequest[1]), Number(pinRequest[2]));
+      return ok(null);
+    }
+
+    const editProduct = path.match(/^\/lives\/(\d+)\/products\/(\d+)$/);
+    if (editProduct && request.method() === "PATCH") {
+      const liveId = Number(editProduct[1]);
+      const productId = Number(editProduct[2]);
+      const patch = JSON.parse(request.postData() ?? "{}") as {
+        price: number;
+        stockQuantity: number;
+      };
+      products.set(
+        liveId,
+        (products.get(liveId) ?? []).map((product) =>
+          product.productId === productId ? { ...product, ...patch } : product,
+        ),
+      );
+      return ok(null);
     }
 
     // 시청 화면은 라이브 정보와 따로 재생 정보를 폴링한다.
