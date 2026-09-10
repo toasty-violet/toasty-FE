@@ -23,8 +23,15 @@ const EMPTY_POSTAL: PostalValue = {
 };
 
 type CustomerInfoFormProps = {
-  /** 이미 등록된 정보를 고치는 화면이라면 넘긴다. 없으면 빈 폼으로 시작한다. */
+  /** 이미 채워둘 값이 있으면 넘긴다. 없으면 빈 폼으로 시작한다. */
   initialValues?: CustomerProfile;
+  /**
+   * initialValues 의 닉네임이 이미 등록을 마친 제 닉네임인지.
+   *
+   * 마이페이지 수정은 그대로 두면 중복 조회 없이 통과시켜야 하지만,
+   * 아직 등록 전인 온보딩 초안은 되살렸더라도 조회를 거쳐야 한다.
+   */
+  nicknameRegistered?: boolean;
   submitLabel: string;
   onSubmit: (values: CustomerProfile) => void;
   isPending?: boolean;
@@ -36,6 +43,7 @@ type CustomerInfoFormProps = {
  */
 export function CustomerInfoForm({
   initialValues,
+  nicknameRegistered = false,
   submitLabel,
   onSubmit,
   isPending = false,
@@ -49,12 +57,17 @@ export function CustomerInfoForm({
 
   // 이름·연락처는 각 필드가 형식 검증과 에러 표시를 함께 맡는다.
   // 닉네임은 형식 검증에 더해 중복 조회까지 통과해야 한다.
-  const { verified: nicknameVerified, ...nicknameState } =
-    useNicknameCheck(nickname);
+  // 아직 등록 전인 초안을 되살린 경우는 채워둔 값도 그대로 조회한다.
+  const { verified: nicknameVerified, ...nicknameState } = useNicknameCheck(
+    nickname,
+    initialValues !== undefined && !nicknameRegistered,
+  );
 
   // 원래 제 닉네임을 그대로 두는 경우는 중복 조회 없이 통과시킨다.
   const nicknameKept =
-    initialValues !== undefined && nickname === initialValues.nickname;
+    nicknameRegistered &&
+    initialValues !== undefined &&
+    nickname === initialValues.nickname;
 
   // 우편번호 검색을 마쳐야 배송지가 확정된다.
   const canSubmit =

@@ -46,6 +46,7 @@ export function CustomerProfileEditForm() {
   return (
     <CustomerInfoForm
       initialValues={profile}
+      nicknameRegistered
       submitLabel={mutation.isPending ? "저장 중…" : "저장"}
       isPending={mutation.isPending}
       onSubmit={mutation.mutate}
