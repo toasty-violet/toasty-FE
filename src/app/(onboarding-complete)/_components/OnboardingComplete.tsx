@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import CheckRoundIcon from "@/assets/CheckRound.svg";
 import { BottomButton } from "@/components/buttons/BottomButton";
 import { Header } from "@/components/headers/Header";
-import { fetchMe } from "@/lib/user";
+import { fetchRole } from "@/lib/user";
 import { useUserStore } from "@/store/user-store";
 
 type OnboardingCompleteProps = {
@@ -28,7 +28,7 @@ export function OnboardingComplete({
   // 온보딩으로 role 이 바뀌었으므로 새로 받아 둔다.
   // 온보딩 화면에서 미리 갱신하면 그쪽 가드가 먼저 반응해 여기까지 오지 못한다.
   useEffect(() => {
-    fetchMe().then(setUser);
+    fetchRole().then(setUser);
   }, [setUser]);
 
   return (

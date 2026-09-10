@@ -5,15 +5,17 @@ import type {
   CustomerProfile,
   CustomerProfileResponse,
   CustomerProfileUpdateResponse,
-  MeResponse,
-  NicknameDuplicationResponse,
+  DuplicationResponse,
+  NicknameSuggestionResponse,
   SellerOnboardingRequest,
   SellerOnboardingResponse,
+  ShopNameSuggestionResponse,
+  UserRoleResponse,
 } from "@/types/user";
 
-//내 정보(role, nickname) 조회
-export async function fetchMe() {
-  const { data } = await apiClient.get<MeResponse>("/users/me");
+//내 역할 조회
+export async function fetchRole() {
+  const { data } = await apiClient.get<UserRoleResponse>("/users/role");
 
   return data.data;
 }
@@ -34,14 +36,42 @@ export async function updateCustomerProfile(profile: CustomerProfile) {
   );
 }
 
-//닉네임 중복 여부 조회
+//구매자 닉네임 중복 여부 조회. 스토어 이름과 이름 공간이 달라 서로 겹쳐도 중복이 아니다
 export async function fetchNicknameDuplicated(nickname: string) {
-  const { data } = await apiClient.get<NicknameDuplicationResponse>(
-    "/search-nickname",
+  const { data } = await apiClient.get<DuplicationResponse>(
+    "/customers/nickname",
     { params: { nickname } },
   );
 
   return data.data.duplicated;
+}
+
+//셀러 스토어 이름 중복 여부 조회
+export async function fetchShopNameDuplicated(shopName: string) {
+  const { data } = await apiClient.get<DuplicationResponse>(
+    "/sellers/shop-name",
+    { params: { shopName } },
+  );
+
+  return data.data.duplicated;
+}
+
+//온보딩 입력창에 채워 둘 추천 닉네임 발급. 자리를 잡아두지는 않아 제출 때 중복될 수 있다
+export async function fetchSuggestedNickname() {
+  const { data } = await apiClient.get<NicknameSuggestionResponse>(
+    "/customers/nickname/suggestion",
+  );
+
+  return data.data.nickname;
+}
+
+//온보딩 입력창에 채워 둘 추천 스토어 이름 발급
+export async function fetchSuggestedShopName() {
+  const { data } = await apiClient.get<ShopNameSuggestionResponse>(
+    "/sellers/shop-name/suggestion",
+  );
+
+  return data.data.shopName;
 }
 
 //구매자 온보딩. 닉네임은 가입 시 자동 생성되므로 등록이 아니라 수정이다.

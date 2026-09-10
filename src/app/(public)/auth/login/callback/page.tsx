@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import { useUserStore } from "@/store/user-store";
 import { loginWithKakao } from "@/lib/auth";
-import { fetchMe } from "@/lib/user";
+import { fetchRole } from "@/lib/user";
 import { ApiRequestError } from "@/lib/api-error";
 
 //카카오 로그인 시 콜백 페이지
@@ -33,8 +33,8 @@ function KakaoCallbackContent() {
     loginWithKakao(code)
       .then((response) => {
         setAccessToken(response.data.accessToken);
-        // 로그인 후 /users/me api를 호출해 페이지 가드가 작동하도록 한다.
-        return fetchMe();
+        // 로그인 후 /users/role api를 호출해 페이지 가드가 작동하도록 한다.
+        return fetchRole();
       })
       .then((user) => {
         setUser(user);
