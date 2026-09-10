@@ -13,12 +13,15 @@ import {
   updateLiveProduct,
 } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
+import { useLiveChat } from "@/app/live/_lib/use-live-chat";
 import type {
   BroadcastCredential,
   LiveProduct,
   LiveViewer,
 } from "@/types/live";
 
+import { LiveChatInput } from "@/app/live/_components/LiveChatInput";
+import { LiveChatOverlay } from "@/app/live/_components/LiveChatOverlay";
 import { LiveHeader, viewerLabel } from "@/app/live/_components/LiveHeader";
 import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 
@@ -178,6 +181,12 @@ export function BroadcastPanel({
     refetchInterval: STREAM_STATUS_POLL_MS,
   });
 
+  // 채팅방은 방송이 시작돼야 생긴다. 상품 목록과 같은 조건으로 붙는다.
+  const chat = useLiveChat({
+    publicId: live.publicId,
+    enabled: status === "live",
+  });
+
   const list = products.data?.products ?? [];
   const pinnedId = products.data?.currentPinnedProductId ?? null;
   const pinnedIndex = list.findIndex((item) => item.productId === pinnedId);
@@ -307,9 +316,10 @@ export function BroadcastPanel({
           )}
         </div>
 
-        {/* 채팅 오버레이와 입력창은 BE 가 준비되면 이 영역에 함께 들어간다. */}
         {status === "live" && (
           <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
+            <LiveChatOverlay messages={chat.messages} />
+
             <LiveProductBar
               pinned={pinned}
               totalCount={list.length}
@@ -318,6 +328,8 @@ export function BroadcastPanel({
               onEditPinned={() => pinned && openEdit(pinned)}
               onPinNext={pinNext}
             />
+
+            <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
           </div>
         )}
       </div>
