@@ -4,10 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 
+import ShopImageDefault from "@/assets/ShopImageDefault.svg";
 import { uploadShopImage } from "@/lib/upload";
 
 import CameraIcon from "./assets/Camera.svg";
-import ShopImageDefault from "./assets/ShopImageDefault.svg";
 
 type ShopImageFieldProps = {
   onChange: (objectKey: string) => void;
