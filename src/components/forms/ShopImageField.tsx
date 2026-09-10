@@ -4,13 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 
-import { uploadShopImage } from "@/lib/upload";
-
-import CameraIcon from "./assets/Camera.svg";
-import ShopImageDefault from "./assets/ShopImageDefault.svg";
+import CameraIcon from "@/assets/Camera.svg";
+import DefaultImage from "@/assets/DefaultImage.svg";
+import { isRenderableImageSrc, uploadShopImage } from "@/lib/upload";
 
 type ShopImageFieldProps = {
   onChange: (objectKey: string) => void;
+  /** 이미 등록된 사진의 주소. 수정 화면에서 지금 사진을 띄우는 데 쓴다. */
+  initialImageUrl?: string | null;
 };
 
 // 서버가 presign 해주는 형식과 크기. 이 범위를 벗어난 파일은 올려도 400 이라 미리 거른다.
@@ -18,9 +19,15 @@ const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024;
 
 //스토어 사진을 골라 S3 에 올리고, 제출에 쓸 objectKey 를 상위로 넘기는 컴포넌트
-export function ShopImageField({ onChange }: ShopImageFieldProps) {
+export function ShopImageField({
+  onChange,
+  initialImageUrl,
+}: ShopImageFieldProps) {
+  // 사진이 없는 스토어는 서버가 null 을 주므로 여기서 빈 문자열로 맞춰 둔다.
+  const initialPreview = initialImageUrl ?? "";
   // 서버에는 objectKey 만 오가므로, 화면에 띄울 그림은 고른 파일에서 직접 만든다.
-  const [previewUrl, setPreviewUrl] = useState("");
+  // 수정 화면은 이미 올려 둔 사진에서 시작한다.
+  const [previewUrl, setPreviewUrl] = useState(initialPreview);
   const [validationError, setValidationError] = useState("");
 
   const upload = useMutation({
@@ -34,10 +41,10 @@ export function ShopImageField({ onChange }: ShopImageFieldProps) {
     event.target.value = "";
     if (!file) return;
 
-    // 거른 사진은 등록되지 않았으므로 미리보기를 기본 이미지로 되돌린다.
+    // 거른 사진은 등록되지 않았으므로 미리보기를 원래 사진으로 되돌린다.
     // 앞서 올려 둔 사진이 있었다면 그 objectKey 도 함께 비워, 화면과 제출값을 맞춘다.
     const reject = (message: string) => {
-      setPreviewUrl("");
+      setPreviewUrl(initialPreview);
       setValidationError(message);
       onChange("");
     };
@@ -65,8 +72,8 @@ export function ShopImageField({ onChange }: ShopImageFieldProps) {
     <div className="flex w-full flex-col items-center gap-8">
       <label className="relative block size-[10rem] cursor-pointer">
         <span className="border-stroke-neutral-weak relative block size-full overflow-hidden rounded-full border">
-          {previewUrl === "" ? (
-            <ShopImageDefault className="size-full" />
+          {!isRenderableImageSrc(previewUrl) ? (
+            <DefaultImage className="size-full" />
           ) : (
             <Image
               src={previewUrl}

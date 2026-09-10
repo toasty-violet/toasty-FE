@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { BottomButton } from "@/components/buttons/BottomButton";
+import { ShopImageField } from "@/components/forms/ShopImageField";
 import { Input } from "@/components/inputs/Input";
 import { Textarea } from "@/components/inputs/Textarea";
 import { useNicknameCheck } from "@/hooks/use-nickname-check";
@@ -15,7 +16,6 @@ import {
   saveSellerDraft,
   type SellerOnboardingDraft,
 } from "../_lib/seller-onboarding-draft";
-import { ShopImageField } from "./ShopImageField";
 
 //셀러가 스토어 사진·이름·소개를 입력하는 온보딩 첫 단계 컴포넌트
 export function SellerInfoForm() {
