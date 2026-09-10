@@ -92,6 +92,9 @@ export function Slider({
         gap: `${gap / 10}rem`,
         marginInline: `-${edgePadding / 10}rem`,
         paddingInline: `${edgePadding / 10}rem`,
+        // 이게 없으면 스냅이 첫 장을 패딩 안쪽까지 끌어당겨, 맨 처음 화면에서
+        // 첫 장만 제목보다 왼쪽으로 튀어나온다.
+        scrollPaddingInline: `${edgePadding / 10}rem`,
       }}
     >
       {children}
