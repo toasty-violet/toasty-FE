@@ -73,13 +73,16 @@ export function CustomerInfoForm({
 
   // 빈 입력창에 채워 둘 예시 닉네임을 받아 온다. 초안에서 되살린 닉네임이 있으면 그쪽이 우선이다.
   // 두 값 모두 화면이 사는 동안 바뀌지 않아 사실상 마운트 때 한 번만 받는다.
+  // 응답이 오는 사이 사용자가 적은 값이 있으면 그쪽을 남긴다.
   // 없어도 그만인 값이라 실패하면 빈 입력창으로 둔다.
   const initialNickname = initialValues?.nickname ?? "";
   useEffect(() => {
     if (!suggestNickname || initialNickname !== "") return;
 
     fetchSuggestedNickname()
-      .then(setNickname)
+      .then((suggested) =>
+        setNickname((prev) => (prev === "" ? suggested : prev)),
+      )
       .catch(() => {});
   }, [suggestNickname, initialNickname]);
 

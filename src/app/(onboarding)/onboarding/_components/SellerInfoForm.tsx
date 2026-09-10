@@ -36,11 +36,16 @@ export function SellerInfoForm() {
 
   // 빈 입력창에 채워 둘 예시 이름을 받아 온다. 이미 닉네임이 설정돼 있다면 해당 닉네임이 노출된다.
   // 실패하면 빈 입력창으로 둔다. 마운트 때 한 번만 본다. 유저가 지워서 다시 비어도 새로 받지 않는다.
+  // 타이핑은 초안 state 만 바꾸므로, 응답이 오는 사이 적은 값이 있는지는 그쪽으로 확인한다.
   useEffect(() => {
     if (readSellerDraft().shopName !== "") return;
 
     fetchSuggestedShopName()
-      .then((shopName) => setDraft((prev) => ({ ...prev, shopName })))
+      .then((shopName) =>
+        setDraft((prev) =>
+          prev.shopName === "" ? { ...prev, shopName } : prev,
+        ),
+      )
       .catch(() => {});
   }, []);
 
