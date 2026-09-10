@@ -150,6 +150,8 @@ export const LIVE_ERROR_CODE = {
   STREAM_STATUS_FETCH_FAILED: "LIVE_STREAM_STATUS_FETCH_FAILED",
   BROADCAST_STOP_FAILED: "LIVE_BROADCAST_STOP_FAILED",
   STREAM_KEY_DELETE_FAILED: "LIVE_STREAM_KEY_DELETE_FAILED",
+  CHAT_ROOM_NOT_FOUND: "LIVE_CHAT_ROOM_NOT_FOUND",
+  CHAT_TOKEN_ISSUE_FAILED: "LIVE_CHAT_TOKEN_ISSUE_FAILED",
 } as const;
 
 /** 셀러 라이브탭 한 화면. 세 필드가 화면의 세 구역에 대응한다. */
@@ -183,4 +185,15 @@ export interface SellerScheduledLive {
   title: string;
   scheduledAt: string;
   productCount: number;
+}
+
+/** 서버가 로그인 유저와 방송 주인을 대조해 정한다. 화면은 보낸 사람을 그리는 데만 쓴다. */
+export type ChatRole = "SELLER" | "CUSTOMER" | "GUEST";
+
+export interface LiveChatToken {
+  token: string;
+  /** 접속한 세션이 유지되는 시각. 이 전에 다시 받아야 채팅이 끊기지 않는다. */
+  expiresAt: string;
+  /** 비로그인과 종료된 방송은 읽기만 된다. */
+  writable: boolean;
 }
