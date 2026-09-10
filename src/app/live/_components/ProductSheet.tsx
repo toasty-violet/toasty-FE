@@ -12,6 +12,7 @@ export function ProductSheet({
   children,
 }: {
   open: boolean;
+  /** children 이 빌 조건과 같아야 한다. 걸러서 넘긴다면 거른 뒤 개수로 낸다. */
   isEmpty: boolean;
   onClose: () => void;
   children: ReactNode;

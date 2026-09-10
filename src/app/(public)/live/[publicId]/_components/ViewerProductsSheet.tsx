@@ -30,7 +30,7 @@ function ProductRow({
   const state = buyState(product);
 
   return (
-    <li className="flex h-[6.8rem] w-full items-center gap-12 overflow-hidden">
+    <li className="flex min-h-[6.8rem] w-full items-center gap-12 overflow-hidden">
       <ProductSummary product={product} isPinned={isPinned} />
 
       {state !== "notYet" && (
