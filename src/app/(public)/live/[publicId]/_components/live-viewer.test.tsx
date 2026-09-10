@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { APP_FRAME_ID } from "@/components/overlays/app-frame";
@@ -15,6 +15,18 @@ vi.mock("next/navigation", () => ({
 // IVS 플레이어는 wasm 을 받아와 jsdom 에서 돌지 않는다.
 vi.mock("./LivePlayer", () => ({ LivePlayer: () => null }));
 
+// 채팅은 웹소켓을 열어 jsdom 에서 붙지 않는다. 방을 흉내만 낸다.
+vi.mock("amazon-ivs-chat-messaging", () => ({
+  ChatRoom: class {
+    addListener() {}
+    connect() {}
+    disconnect() {}
+  },
+  SendMessageRequest: class {},
+}));
+
+const { issueChatToken } = vi.hoisted(() => ({ issueChatToken: vi.fn() }));
+
 vi.mock("@/app/live/_lib/live-api", () => ({
   getLive: vi.fn(async () => ({
     title: "첫 방송",
@@ -25,6 +37,7 @@ vi.mock("@/app/live/_lib/live-api", () => ({
     playbackUrl: "https://example.test/live.m3u8",
   })),
   getViewerCount: vi.fn(async () => 12),
+  issueChatToken,
   getPublicLiveProducts: vi.fn(async () => ({
     currentPinnedProductId: 1,
     products: [
@@ -59,6 +72,11 @@ function renderViewer(status: AuthStatus) {
 }
 
 beforeEach(() => {
+  issueChatToken.mockResolvedValue({
+    token: "t",
+    expiresAt: "2026-09-11T01:00:00Z",
+    writable: true,
+  });
   const frame = document.createElement("div");
   frame.id = APP_FRAME_ID;
   document.body.append(frame);
@@ -93,5 +111,30 @@ describe("LiveViewer 구매 잠금", () => {
     expect(
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeEnabled();
+  });
+});
+
+describe("LiveViewer 채팅", () => {
+  it("방송 중이면 채팅 입력줄을 둔다", async () => {
+    renderViewer("authed");
+
+    expect(
+      await screen.findByRole("textbox", { name: "채팅 입력" }),
+    ).toBeEnabled();
+  });
+
+  // 비로그인과 끝난 방송은 서버가 읽기 전용 토큰을 준다.
+  it("읽기 전용 토큰이면 입력줄을 잠근다", async () => {
+    issueChatToken.mockResolvedValue({
+      token: "t",
+      expiresAt: "2026-09-11T01:00:00Z",
+      writable: false,
+    });
+
+    renderViewer("guest");
+
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "채팅 입력" })).toBeDisabled(),
+    );
   });
 });
