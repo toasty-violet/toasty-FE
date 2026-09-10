@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiRequestError } from "@/lib/api-error";
+import { useAuthStore } from "@/store/auth-store";
 import { LIVE_ERROR_CODE } from "@/types/live";
 
 import { useLiveChat } from "./use-live-chat";
@@ -51,6 +52,11 @@ function receive(
 }
 
 beforeEach(() => {
+  useAuthStore.setState({
+    status: "guest",
+    accessToken: null,
+    isLoggedIn: false,
+  });
   room.listeners = [];
   room.tokenProvider = null;
   vi.clearAllMocks();
@@ -66,6 +72,27 @@ describe("useLiveChat", () => {
     renderHook(() => useLiveChat({ publicId: "abc", enabled: false }));
 
     expect(issueChatToken).not.toHaveBeenCalled();
+  });
+
+  // 서버가 로그인 유저를 보고 쓰기 권한을 정한다. 부팅 중에 받으면 비로그인으로 찍힌다.
+  it("로그인 여부가 확정되기 전에는 토큰을 받지 않는다", async () => {
+    useAuthStore.setState({
+      status: "loading",
+      accessToken: null,
+      isLoggedIn: false,
+    });
+
+    const { rerender } = renderHook(() =>
+      useLiveChat({ publicId: "abc", enabled: true }),
+    );
+    expect(issueChatToken).not.toHaveBeenCalled();
+
+    act(() => {
+      useAuthStore.getState().setAccessToken("token");
+    });
+    rerender();
+
+    await waitFor(() => expect(issueChatToken).toHaveBeenCalledTimes(1));
   });
 
   // 방송한 적 없는 라이브는 채팅방이 없다.

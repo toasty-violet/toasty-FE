@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatRoom, SendMessageRequest } from "amazon-ivs-chat-messaging";
 
 import { ApiRequestError } from "@/lib/api-error";
+import { useAuthStore } from "@/store/auth-store";
 import { LIVE_ERROR_CODE, type ChatRole } from "@/types/live";
 
 import { issueChatToken } from "./live-api";
@@ -53,8 +54,12 @@ export function useLiveChat({
   const [unavailable, setUnavailable] = useState(false);
   const roomRef = useRef<ChatRoom | null>(null);
 
+  // 서버가 로그인 유저를 보고 역할과 쓰기 권한을 정한다. 아직 모르는 채로 받으면
+  // 비로그인으로 찍히고, 첫 토큰은 세션 내내 쓰여서 방송 내내 잠긴 채로 남는다.
+  const authResolved = useAuthStore((state) => state.status) !== "loading";
+
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !authResolved) return;
 
     let cancelled = false;
     let room: ChatRoom | undefined;
@@ -113,7 +118,7 @@ export function useLiveChat({
       room?.disconnect();
       roomRef.current = null;
     };
-  }, [publicId, enabled]);
+  }, [publicId, enabled, authResolved]);
 
   const send = useCallback(async (content: string) => {
     const room = roomRef.current;
