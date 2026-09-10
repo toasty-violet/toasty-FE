@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getLive, getLiveDetail } from "@/app/live/_lib/live-api";
-import { LiveForm } from "../../../_components/LiveForm";
+import { LiveForm } from "@/app/live/_components/LiveForm";
 
 export function LiveEditScreen({ publicId }: { publicId: string }) {
   const router = useRouter();

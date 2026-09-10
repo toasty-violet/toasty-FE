@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { LiveForm } from "../_components/LiveForm";
+import { LiveForm } from "@/app/live/_components/LiveForm";
 
 export default function NewLivePage() {
   const router = useRouter();
