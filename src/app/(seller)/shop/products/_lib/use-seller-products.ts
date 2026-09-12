@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
 import type { SellerProductFilter } from "@/types/product";
@@ -40,31 +39,4 @@ export function useSellerProducts({
     items: pages.flatMap((page) => page.items),
     counts: pages[0]?.counts ?? null,
   };
-}
-
-/** 목록 끝에 닿으면 다음 묶음을 부른다. 돌려받은 ref 를 목록 끝에 둔다. */
-export function useLoadMoreOnReach(
-  load: () => void,
-  { enabled }: { enabled: boolean },
-) {
-  const sentinel = useRef<HTMLDivElement>(null);
-  // 관찰자를 다시 만들지 않고도 최신 함수를 부르게 한다.
-  const loadRef = useRef(load);
-  useEffect(() => {
-    loadRef.current = load;
-  });
-
-  useEffect(() => {
-    const target = sentinel.current;
-    if (!target || !enabled) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) loadRef.current();
-    });
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [enabled]);
-
-  return sentinel;
 }

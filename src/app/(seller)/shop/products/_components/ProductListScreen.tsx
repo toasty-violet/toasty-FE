@@ -6,10 +6,9 @@ import { useRouter } from "next/navigation";
 import SearchIcon from "@/assets/Search.svg";
 import type { SellerProduct, SellerProductFilter } from "@/types/product";
 
-import {
-  useLoadMoreOnReach,
-  useSellerProducts,
-} from "../_lib/use-seller-products";
+import { useLoadMoreOnReach } from "@/hooks/use-load-more-on-reach";
+
+import { useSellerProducts } from "../_lib/use-seller-products";
 import { ProductActions } from "./ProductActions";
 import { ProductFilterChips } from "./ProductFilterChips";
 import { SellerProductRow } from "./SellerProductRow";
