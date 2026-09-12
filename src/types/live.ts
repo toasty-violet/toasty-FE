@@ -114,19 +114,6 @@ export interface LiveProductUpsert {
   imageObjectKey?: string;
 }
 
-export interface ProductImageUploadFile {
-  contentType: string;
-  contentLength: number;
-}
-
-export interface ProductImageUpload {
-  /** 라이브 생성 요청에 그대로 넣는다. */
-  objectKey: string;
-  /** 이 주소로 사진 본문만 PUT 한다. */
-  uploadUrl: string;
-  expiresIn: number;
-}
-
 export interface LiveStreamStatus {
   status: LiveStatus;
   broadcasting: boolean;
