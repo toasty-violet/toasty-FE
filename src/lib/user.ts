@@ -9,6 +9,9 @@ import type {
   NicknameSuggestionResponse,
   SellerOnboardingRequest,
   SellerOnboardingResponse,
+  SellerShopResponse,
+  SellerShopUpdateRequest,
+  SellerShopUpdateResponse,
   ShopNameSuggestionResponse,
   UserRoleResponse,
 } from "@/types/user";
@@ -44,6 +47,18 @@ export async function fetchNicknameDuplicated(nickname: string) {
   );
 
   return data.data.duplicated;
+}
+
+//셀러 스토어 홈에 띄울 정보(프로필, 판매 요약, 배송비) 조회
+export async function fetchSellerShop() {
+  const { data } = await apiClient.get<SellerShopResponse>("/sellers/shop");
+
+  return data.data;
+}
+
+//셀러 스토어 정보(사진, 이름, 소개, 배송비) 수정
+export async function updateSellerShop(body: SellerShopUpdateRequest) {
+  await apiClient.put<SellerShopUpdateResponse>("/sellers/shop", body);
 }
 
 //셀러 스토어 이름 중복 여부 조회
