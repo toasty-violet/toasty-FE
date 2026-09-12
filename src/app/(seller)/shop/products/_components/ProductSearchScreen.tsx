@@ -32,7 +32,7 @@ export function ProductSearchScreen() {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useSellerProducts({ status, keyword: debounced });
+  } = useSellerProducts({ status, keyword: debounced, enabled: searching });
 
   // 받는 중에는 관찰을 끊는다. 그대로 두면 같은 묶음을 다시 부르며 앞 요청을 취소한다.
   const loadMore = useLoadMoreOnReach(fetchNextPage, {

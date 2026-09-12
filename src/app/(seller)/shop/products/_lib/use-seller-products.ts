@@ -14,14 +14,18 @@ import { getSellerProducts } from "./product-api";
 export function useSellerProducts({
   status,
   keyword = "",
+  enabled = true,
 }: {
   status: SellerProductFilter;
   keyword?: string;
+  /** 검색 화면은 적기 전에는 묻지 않는다. */
+  enabled?: boolean;
 }) {
   const query = useInfiniteQuery({
     queryKey: ["seller-products", status, keyword],
     queryFn: ({ pageParam }) =>
       getSellerProducts({ status, cursor: pageParam, keyword }),
+    enabled,
     initialPageParam: null as number | null,
     getNextPageParam: (last) => (last.hasNext ? last.nextCursor : null),
     // 칩을 바꾸면 키가 달라져 처음부터 받는다. 그동안 앞 묶음을 두어
