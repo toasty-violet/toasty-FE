@@ -17,7 +17,7 @@ const SKELETON_ROWS = [0, 1, 2];
 export function StoreTop3Section() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const authStatus = useAuthStore((state) => state.status);
 
   const { data, isPending, error } = useQuery({
     queryKey: TOP_STORES_KEY,
@@ -55,8 +55,13 @@ export function StoreTop3Section() {
   });
 
   const handleToggleFollow = (store: TopStore) => {
-    // 비로그인 상태에서는 요청을 보내지 않고 로그인부터 시킨다.
-    if (!isLoggedIn) {
+    // 목록은 조회 한 번이면 뜨지만 인증은 refresh → role 두 번이라, 부팅이 끝나기 전에
+    // 눌릴 수 있다. 로그인 여부가 확정되기 전에는 로그인으로 보내지 않고 아무것도 하지 않는다.
+    if (authStatus === "loading") {
+      return;
+    }
+    // 비로그인이 확정된 경우에만 요청을 보내지 않고 로그인부터 시킨다.
+    if (authStatus === "guest") {
       router.push("/login");
       return;
     }
