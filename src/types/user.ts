@@ -56,6 +56,8 @@ export interface SellerShop {
   sellerId: number;
   /** 사진을 등록하지 않았으면 null 이다. */
   shopImageUrl: string | null;
+  /** 수정에 그대로 실어 보내라고 조회가 함께 내려주는 키. 사진이 없으면 null 이다. */
+  shopImageObjectKey: string | null;
   shopName: string;
   followerCount: number;
   productCount: number;

@@ -9,7 +9,6 @@ import { ShopImageField } from "@/components/forms/ShopImageField";
 import { Input } from "@/components/inputs/Input";
 import { Textarea } from "@/components/inputs/Textarea";
 import { useNicknameCheck } from "@/hooks/use-nickname-check";
-import { objectKeyFromUrl } from "@/lib/upload";
 import { updateSellerShop } from "@/lib/user";
 import type { SellerShop } from "@/types/user";
 
@@ -23,9 +22,9 @@ export function ShopEditForm({ shop }: { shop: SellerShop }) {
   const [shopName, setShopName] = useState(shop.shopName);
   const [description, setDescription] = useState(shop.description);
   // 수정 API 는 사진을 그대로 둘 때도 objectKey 를 요구한다. 빼고 보내면 사진이
-  // 지워지므로, 새로 고르기 전까지는 지금 사진의 키를 들고 있는다.
-  const [shopImageObjectKey, setShopImageObjectKey] = useState(() =>
-    objectKeyFromUrl(shop.shopImageUrl),
+  // 지워지므로, 새로 고르기 전까지는 조회가 내려준 키를 들고 있는다.
+  const [shopImageObjectKey, setShopImageObjectKey] = useState(
+    shop.shopImageObjectKey ?? "",
   );
   // 입력 중에는 칸을 비울 수 있어야 하므로 null 을 허용한다.
   const [shippingFee, setShippingFee] = useState<
