@@ -116,7 +116,12 @@ export function BroadcastPanel({
       }
 
       client = IVSBroadcastClient.create({
-        streamConfig: IVSBroadcastClient.BASIC_PORTRAIT,
+        // 카메라가 720×1280 으로 받으니 줄이지 않고 보낸다. BASIC 채널은 1080p·3.5Mbps 까지 받는다.
+        streamConfig: {
+          maxResolution: { width: 720, height: 1280 },
+          maxFramerate: 30,
+          maxBitrate: 2500,
+        },
       });
 
       if (canvasRef.current) {
