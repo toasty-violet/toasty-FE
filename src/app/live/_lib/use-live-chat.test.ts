@@ -126,8 +126,10 @@ describe("useLiveChat", () => {
       rerender({ enabled: false });
       rerender({ enabled: true });
 
-      await waitFor(() => expect(result.current.unavailable).toBe(false));
-      expect(result.current.writable).toBe(true);
+      // unavailable 은 렌더 중에 되돌아가고 writable 은 새 토큰이 와야 참이 된다.
+      // 늦게 정해지는 쪽을 기다려야 둘 다 본 것이 된다.
+      await waitFor(() => expect(result.current.writable).toBe(true));
+      expect(result.current.unavailable).toBe(false);
     });
   });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AmazonIVSBroadcastClient } from "amazon-ivs-web-broadcast";
 import {
   endLive,
@@ -44,6 +44,7 @@ export function BroadcastPanel({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<Status>("preparing");
   const [allProductsOpen, setAllProductsOpen] = useState(false);
   const [editing, setEditing] = useState<LiveProduct | undefined>();
@@ -115,7 +116,12 @@ export function BroadcastPanel({
       }
 
       client = IVSBroadcastClient.create({
-        streamConfig: IVSBroadcastClient.BASIC_PORTRAIT,
+        // 카메라가 720×1280 으로 받으니 줄이지 않고 보낸다. BASIC 채널은 1080p·3.5Mbps 까지 받는다.
+        streamConfig: {
+          maxResolution: { width: 720, height: 1280 },
+          maxFramerate: 30,
+          maxBitrate: 2500,
+        },
       });
 
       if (canvasRef.current) {
@@ -229,6 +235,9 @@ export function BroadcastPanel({
       clientRef.current?.stopBroadcast();
       setStatus("ended");
       setAskingEnd(false);
+      // 끝난 라이브는 라이브탭에서 빠진다. 버리지 않으면 돌아간 화면이
+      // 종료 전에 받아둔 목록을 staleTime 동안 그대로 다시 그린다.
+      queryClient.invalidateQueries({ queryKey: ["seller-live-tab"] });
       onLeave();
     },
     // 실패 사유는 모달 뒤 화면에 남는다. 모달을 닫아야 보인다.

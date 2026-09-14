@@ -1,6 +1,6 @@
 "use client";
 
-import ShopImageDefault from "@/assets/ShopImageDefault.svg";
+import DefaultImage from "@/assets/DefaultImage.svg";
 import { Button } from "@/components/buttons/Button";
 import { formatThousand } from "@/lib/format";
 import type { TopStore } from "@/types/store";
@@ -23,7 +23,7 @@ export function StoreTop3Item({ store, onToggleFollow }: StoreTop3ItemProps) {
             className="size-full object-cover"
           />
         ) : (
-          <ShopImageDefault className="size-full" />
+          <DefaultImage className="size-full" />
         )}
       </div>
 
