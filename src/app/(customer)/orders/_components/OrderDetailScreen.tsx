@@ -79,7 +79,7 @@ function AmountRow({ label, value }: { label: string; value: string }) {
 
 function Detail({ order }: { order: CustomerOrderDetail }) {
   // 발송완료가 아니면 서버가 운송장을 주지 않아 그 줄을 두지 않는다.
-  const shipped = order.courier !== null && order.trackingNumber !== null;
+  const shipped = order.courierName !== null && order.trackingNumber !== null;
 
   return (
     <div className="bg-bg-layer-default flex flex-1 flex-col overflow-y-auto pb-56">
@@ -118,7 +118,7 @@ function Detail({ order }: { order: CustomerOrderDetail }) {
           {shipped && (
             <InfoRow
               label="운송장 번호"
-              value={`${order.courier} ${order.trackingNumber}`}
+              value={`${order.courierName} ${order.trackingNumber}`}
             />
           )}
         </div>

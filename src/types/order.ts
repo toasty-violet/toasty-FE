@@ -22,7 +22,7 @@ export interface CustomerOrder {
   quantity: number;
   totalAmount: number;
   /** 발송완료가 아니면 null. */
-  courier: string | null;
+  courierName: string | null;
   trackingNumber: string | null;
 }
 
@@ -53,6 +53,6 @@ export interface CustomerOrderDetail {
   productPrice: number;
   shippingFee: number;
   totalAmount: number;
-  courier: string | null;
+  courierName: string | null;
   trackingNumber: string | null;
 }
