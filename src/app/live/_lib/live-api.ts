@@ -12,6 +12,7 @@ import type {
   LiveProductUpdateRequest,
   LiveViewer,
   LiveStreamStatus,
+  PublicLive,
   SellerLiveTab,
 } from "@/types/live";
 
@@ -33,6 +34,16 @@ export async function getLive(publicId: string): Promise<LiveViewer> {
   const { data } = await apiClient.get<ApiSuccess<LiveViewer>>(
     `/lives/public/${publicId}`,
   );
+  return data.data;
+}
+
+/**
+ * 홈에 거는 공개 라이브 목록. 인증이 없어도 부를 수 있고,
+ * 그때는 following 이 모두 false 로 온다.
+ */
+export async function getPublicLives(): Promise<PublicLive[]> {
+  const { data } =
+    await apiClient.get<ApiSuccess<PublicLive[]>>("/lives/public");
   return data.data;
 }
 
