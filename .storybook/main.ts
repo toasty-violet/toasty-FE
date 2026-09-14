@@ -19,7 +19,23 @@ const config: StorybookConfig = {
 
     config.module?.rules?.push({
       test: /\.svg$/,
-      use: ["@svgr/webpack"],
+      use: [
+        {
+          loader: "@svgr/webpack",
+          options: {
+            // next.config.ts 와 같은 이유로 viewBox 를 지우지 않는다.
+            // 지우면 다른 크기로 쓸 때 축소가 아니라 크롭이 된다.
+            svgoConfig: {
+              plugins: [
+                {
+                  name: "preset-default",
+                  params: { overrides: { removeViewBox: false } },
+                },
+              ],
+            },
+          },
+        },
+      ],
     });
 
     return config;
