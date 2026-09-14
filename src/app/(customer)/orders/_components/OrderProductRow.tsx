@@ -2,18 +2,18 @@
 
 import Image from "next/image";
 
-// tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
-const SHOP_NAME = "#5b606b"; // fg/neutral-weak
-
-/** 주문에 담긴 상품 한 줄. 목록 카드와 주문 상세가 같은 모양을 쓴다. */
+/**
+ * 주문에 담긴 상품 한 줄. 목록 카드와 주문 상세가 같은 모양을 쓴다.
+ * 맨 윗줄 label 에는 구매자 화면은 스토어 이름을, 셀러 화면은 받는사람을 둔다.
+ */
 export function OrderProductRow({
-  shopName,
+  label,
   productName,
   quantity,
   totalAmount,
   imageUrl,
 }: {
-  shopName: string;
+  label?: string;
   productName: string;
   quantity: number;
   totalAmount: number;
@@ -33,9 +33,11 @@ export function OrderProductRow({
       </span>
 
       <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <span className="text-l6-regular truncate" style={{ color: SHOP_NAME }}>
-          {shopName}
-        </span>
+        {label && (
+          <span className="text-l6-regular text-fg-neutral-primary truncate">
+            {label}
+          </span>
+        )}
         <span className="text-l6-medium text-fg-neutral-solid truncate">
           {productName}
         </span>
