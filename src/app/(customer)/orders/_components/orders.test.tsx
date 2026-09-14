@@ -36,7 +36,7 @@ const order = (over: Partial<CustomerOrder> & { orderId: number }) => ({
   productImageUrl: "/i.png",
   quantity: 1,
   totalAmount: 29000,
-  courier: null,
+  courierName: null,
   trackingNumber: null,
   ...over,
 });
@@ -61,7 +61,7 @@ const detail = (
   productPrice: 95000,
   shippingFee: 3000,
   totalAmount: 98000,
-  courier: null,
+  courierName: null,
   trackingNumber: null,
   ...over,
 });
@@ -157,7 +157,7 @@ describe("OrderListScreen", () => {
         order({
           orderId: 1,
           status: "SHIPPED",
-          courier: "CJ 대한통운",
+          courierName: "CJ 대한통운",
           trackingNumber: "394817503811",
         }),
       ],
@@ -205,7 +205,7 @@ describe("OrderDetailScreen", () => {
     getMyOrder.mockResolvedValue(
       detail({
         status: "SHIPPED",
-        courier: "CJ 대한통운",
+        courierName: "CJ 대한통운",
         trackingNumber: "394817503811",
       }),
     );

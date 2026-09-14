@@ -14,7 +14,7 @@ const TRACKING = "#2a3038"; // fg/neutral-solid-muted
 /** 주문내역 카드 한 장. 발송완료면 상품 아래에 운송장이 붙는다. */
 export function OrderCard({ order }: { order: CustomerOrder }) {
   // 발송완료가 아니면 서버가 운송장을 주지 않는다.
-  const shipped = order.courier !== null && order.trackingNumber !== null;
+  const shipped = order.courierName !== null && order.trackingNumber !== null;
 
   return (
     <li className="bg-bg-layer-default rounded-12 flex w-full flex-col gap-16 overflow-hidden p-16">
@@ -55,7 +55,7 @@ export function OrderCard({ order }: { order: CustomerOrder }) {
               className="text-l6-regular min-w-0 truncate"
               style={{ color: TRACKING }}
             >
-              {order.courier} {order.trackingNumber}
+              {order.courierName} {order.trackingNumber}
             </span>
           </div>
         )}
