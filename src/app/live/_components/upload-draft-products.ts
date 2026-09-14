@@ -1,7 +1,7 @@
 import {
   issueProductImageUploadUrls,
   uploadProductImage,
-} from "@/app/live/_lib/live-api";
+} from "@/lib/product-image";
 import type { LiveProductInput, LiveProductUpsert } from "@/types/live";
 import type { DraftProduct } from "./draft-product";
 
