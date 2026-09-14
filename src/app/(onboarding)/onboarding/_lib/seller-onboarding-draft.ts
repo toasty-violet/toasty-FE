@@ -1,0 +1,74 @@
+// info-1 과 info-2 는 별개의 라우트라 입력값이 메모리에 남지 않는다.
+// 온보딩 완료 폼을 한 번에 제출하기 위해 세션 스토리지에 폼 정보를 저장한다.
+// 대표자명·계좌번호 같은 개인정보라, 탭을 닫으면 함께 사라지는 쪽을 쓴다.
+const STORAGE_KEY = "seller-onboarding-draft";
+
+export type SellerOnboardingDraft = {
+  shopName: string;
+  description: string;
+  shopImageObjectKey: string; //샵 이미지 사진의 S3 객체 키
+  representativeName: string;
+  representativePhone: string;
+  businessNumber: string; //선택값
+  bank: string; // KAKAO_BANK 같은 은행 코드
+  accountNumber: string;
+};
+
+export const EMPTY_DRAFT: SellerOnboardingDraft = {
+  shopName: "",
+  description: "",
+  shopImageObjectKey: "",
+  representativeName: "",
+  representativePhone: "",
+  businessNumber: "",
+  bank: "",
+  accountNumber: "",
+};
+
+export function readSellerDraft(): SellerOnboardingDraft {
+  const raw = sessionStorage.getItem(STORAGE_KEY);
+  if (!raw) return EMPTY_DRAFT;
+
+  try {
+    const stored = JSON.parse(raw) as Partial<SellerOnboardingDraft>;
+    return {
+      shopName: stored.shopName ?? "",
+      description: stored.description ?? "",
+      shopImageObjectKey: stored.shopImageObjectKey ?? "",
+      representativeName: stored.representativeName ?? "",
+      representativePhone: stored.representativePhone ?? "",
+      businessNumber: stored.businessNumber ?? "",
+      bank: stored.bank ?? "",
+      accountNumber: stored.accountNumber ?? "",
+    };
+  } catch {
+    // 사용자가 직접 건드릴 수 있는 값이라 깨진 JSON 을 만나도 빈 값으로 이어간다.
+    return EMPTY_DRAFT;
+  }
+}
+
+export function saveSellerDraft(draft: Partial<SellerOnboardingDraft>) {
+  sessionStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ ...readSellerDraft(), ...draft }),
+  );
+}
+
+/**
+ * info-1 에서 받는 필수값이 모두 채워졌는지.
+ *
+ * info-1 의 통과 조건이자 info-2 의 진입 조건이라, 두 화면이 같은 판정을
+ * 쓰도록 여기에 둔다. 사진은 업로드를 마쳐야 objectKey 가 채워진다.
+ */
+export function hasSellerInfoStep(draft: SellerOnboardingDraft) {
+  return (
+    draft.shopImageObjectKey !== "" &&
+    draft.shopName !== "" &&
+    draft.description.trim() !== ""
+  );
+}
+
+//입점 신청을 마치면 더 쓸 일이 없으므로 초안을 비운다
+export function clearSellerDraft() {
+  sessionStorage.removeItem(STORAGE_KEY);
+}

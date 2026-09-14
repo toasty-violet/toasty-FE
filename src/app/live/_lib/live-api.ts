@@ -3,18 +3,24 @@ import type { ApiSuccess } from "@/types/api";
 import type {
   BroadcastCredential,
   Live,
+  LiveChatToken,
   LiveCreateRequest,
-  LiveCreateResponse,
+  LiveWithProducts,
+  LiveUpdateRequest,
   LivePlayback,
+  LiveProducts,
+  LiveProductUpdateRequest,
+  LiveViewer,
   LiveStreamStatus,
   ProductImageUpload,
   ProductImageUploadFile,
+  SellerLiveTab,
 } from "@/types/live";
 
 export async function createLive(
   request: LiveCreateRequest,
-): Promise<LiveCreateResponse> {
-  const { data } = await apiClient.post<ApiSuccess<LiveCreateResponse>>(
+): Promise<LiveWithProducts> {
+  const { data } = await apiClient.post<ApiSuccess<LiveWithProducts>>(
     "/lives",
     request,
   );
@@ -25,11 +31,19 @@ export async function createLive(
  * 공용 조회라 인증이 필요 없고, 송출정보도 담기지 않는다.
  * 순차 liveId를 시청 URL에 노출하지 않으려고 공개 조회는 publicId만 받는다.
  */
-export async function getLive(publicId: string): Promise<Live> {
-  const { data } = await apiClient.get<ApiSuccess<Live>>(
+export async function getLive(publicId: string): Promise<LiveViewer> {
+  const { data } = await apiClient.get<ApiSuccess<LiveViewer>>(
     `/lives/public/${publicId}`,
   );
   return data.data;
+}
+
+/** 시청자 수는 계속 바뀌어 라이브 정보와 따로 받는다. */
+export async function getViewerCount(publicId: string): Promise<number> {
+  const { data } = await apiClient.get<ApiSuccess<{ viewerCount: number }>>(
+    `/lives/public/${publicId}/viewer-count`,
+  );
+  return data.data.viewerCount;
 }
 
 /** 이전 키가 즉시 무효가 되므로 송출 중에 부르면 방송이 끊긴다. */
@@ -92,4 +106,71 @@ export async function uploadProductImage(uploadUrl: string, file: File) {
   if (!response.ok) {
     throw new Error(`사진을 올리지 못했습니다. (${response.status})`);
   }
+}
+
+/** 셀러 라이브탭 한 화면을 채운다. 방송 중·최신 현황·예정 목록을 함께 준다. */
+export async function getSellerLiveTab(): Promise<SellerLiveTab> {
+  const { data } = await apiClient.get<ApiSuccess<SellerLiveTab>>("/lives/me");
+  return data.data;
+}
+
+/** 셀러가 자기 라이브 하나를 편성 상품까지 가져온다. 수정 화면의 초기값이 된다. */
+export async function getLiveDetail(liveId: number): Promise<LiveWithProducts> {
+  const { data } = await apiClient.get<ApiSuccess<LiveWithProducts>>(
+    `/lives/${liveId}`,
+  );
+  return data.data;
+}
+
+/** 방송 전 라이브의 정보와 편성 상품을 고친다. */
+export async function updateLive(liveId: number, body: LiveUpdateRequest) {
+  await apiClient.patch(`/lives/${liveId}`, body);
+}
+
+/** 방송 전 라이브를 지운다. */
+export async function deleteLive(liveId: number) {
+  await apiClient.delete(`/lives/${liveId}`);
+}
+
+/** 시청 화면이 볼 편성 상품. 인증이 필요 없고 셀러 조회와 같은 형태를 준다. */
+export async function getPublicLiveProducts(
+  publicId: string,
+): Promise<LiveProducts> {
+  const { data } = await apiClient.get<ApiSuccess<LiveProducts>>(
+    `/lives/public/${publicId}/products`,
+  );
+  return data.data;
+}
+
+/** 방송 화면의 전체 상품과 지금 고정된 상품을 함께 가져온다. */
+export async function getLiveProducts(liveId: number): Promise<LiveProducts> {
+  const { data } = await apiClient.get<ApiSuccess<LiveProducts>>(
+    `/lives/${liveId}/products`,
+  );
+  return data.data;
+}
+
+/** 지금 소개할 상품을 바꾼다. */
+export async function pinLiveProduct(liveId: number, productId: number) {
+  await apiClient.patch(`/lives/${liveId}/products/${productId}/pin`);
+}
+
+/** 방송 중에는 가격과 재고만 고칠 수 있다. */
+export async function updateLiveProduct(
+  liveId: number,
+  productId: number,
+  body: LiveProductUpdateRequest,
+) {
+  await apiClient.patch(`/lives/${liveId}/products/${productId}`, body);
+}
+
+/**
+ * 채팅방에 들어갈 토큰을 받는다. 인증이 없어도 부를 수 있고 그때는 읽기만 된다.
+ * 방이 없는 라이브는 404 가 난다. 서버가 끝난 방송의 방을 나중에 회수한다.
+ */
+export async function issueChatToken(publicId: string): Promise<LiveChatToken> {
+  const { data } = await apiClient.post<ApiSuccess<LiveChatToken>>(
+    `/lives/public/${publicId}/chat-token`,
+  );
+  return data.data;
 }

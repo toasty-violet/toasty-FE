@@ -3,6 +3,8 @@ type BottomButtonProps = {
   onClick?: () => void;
   disabled?: boolean;
   type?: "button" | "submit";
+  /** 버튼 위에 덧붙이는 안내 문구. */
+  description?: string;
 };
 
 export function BottomButton({
@@ -10,9 +12,15 @@ export function BottomButton({
   onClick,
   disabled = false,
   type = "button",
+  description,
 }: BottomButtonProps) {
   return (
     <div className="flex h-fit w-full flex-col gap-12 px-20 pt-10 pb-20">
+      {description && (
+        <p className="text-c1-medium text-fg-neutral-primary text-center">
+          {description}
+        </p>
+      )}
       <button
         type={type}
         onClick={onClick}

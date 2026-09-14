@@ -7,7 +7,7 @@ interface UserState {
   clearUser: () => void;
 }
 
-//유저 정보(role, nickname)를 관리한다
+//유저 역할을 관리한다
 export const useUserStore = create<UserState>((set) => ({
   user: null,
   setUser: (user) => set({ user }),

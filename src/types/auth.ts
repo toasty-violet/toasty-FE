@@ -18,3 +18,6 @@ export type RefreshResponse = ApiSuccess<RefreshData>;
 
 // 로그아웃 API 응답
 export type LogoutResponse = ApiSuccess<string>;
+
+// 회원탈퇴 API 응답
+export type DeleteUserResponse = ApiSuccess<string>;

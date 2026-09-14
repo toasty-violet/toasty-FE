@@ -5,8 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNicknameCheck } from "./use-nickname-check";
 
 const fetchNicknameDuplicated = vi.hoisted(() => vi.fn());
+const fetchShopNameDuplicated = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/user", () => ({ fetchNicknameDuplicated }));
+vi.mock("@/lib/user", () => ({
+  fetchNicknameDuplicated,
+  fetchShopNameDuplicated,
+}));
 
 function wrapper({ children }: { children: React.ReactNode }) {
   const client = new QueryClient({
@@ -25,6 +29,7 @@ const passDebounce = () =>
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   fetchNicknameDuplicated.mockReset();
+  fetchShopNameDuplicated.mockReset();
 });
 
 afterEach(() => {
@@ -106,6 +111,49 @@ describe("useNicknameCheck", () => {
     passDebounce();
 
     expect(fetchNicknameDuplicated).not.toHaveBeenCalled();
+  });
+
+  // 구매자 닉네임과 스토어 이름은 서버에서 이름 공간이 갈라져 있다.
+  // 같은 값이라도 물어볼 곳과 띄울 문구가 다르다.
+  it("shopName 은 스토어 이름 쪽에 묻고 스토어 문구를 띄운다", async () => {
+    fetchShopNameDuplicated.mockResolvedValue(true);
+    const { result, rerender } = renderHook(
+      ({ shopName }) => useNicknameCheck(shopName, "shopName"),
+      { wrapper, initialProps: { shopName: "" } },
+    );
+
+    rerender({ shopName: "토스티상회" });
+    passDebounce();
+
+    await waitFor(() => expect(result.current.error).toBe(true));
+    expect(fetchShopNameDuplicated).toHaveBeenCalledWith("토스티상회");
+    expect(fetchNicknameDuplicated).not.toHaveBeenCalled();
+    expect(result.current.errorMessage).toBe(
+      "이미 사용 중인 스토어 이름이에요.",
+    );
+  });
+
+  it("같은 값이라도 이름 공간이 다르면 각각 조회한다", async () => {
+    fetchNicknameDuplicated.mockResolvedValue(true);
+    fetchShopNameDuplicated.mockResolvedValue(false);
+
+    const { result: nicknameResult, rerender: rerenderNickname } = renderHook(
+      ({ value }) => useNicknameCheck(value, "nickname"),
+      { wrapper, initialProps: { value: "" } },
+    );
+    rerenderNickname({ value: "토스티" });
+    passDebounce();
+    await waitFor(() => expect(nicknameResult.current.error).toBe(true));
+
+    const { result: shopResult, rerender: rerenderShop } = renderHook(
+      ({ value }) => useNicknameCheck(value, "shopName"),
+      { wrapper, initialProps: { value: "" } },
+    );
+    rerenderShop({ value: "토스티" });
+    passDebounce();
+
+    // 닉네임이 중복이어도 스토어 이름은 쓸 수 있어야 한다.
+    await waitFor(() => expect(shopResult.current.verified).toBe(true));
   });
 
   it("조회를 마친 뒤 값을 고치면 이전 결과를 지운다", async () => {

@@ -42,7 +42,7 @@ export function Header({
   const RightIcon = rightIconName && RIGHT_ICONS[rightIconName];
 
   return (
-    <header className="bg-bg-layer-default relative h-[5rem] w-full">
+    <header className="bg-bg-layer-default sticky top-0 z-10 h-[5rem] w-full shrink-0">
       {showBack && (
         <button
           type="button"

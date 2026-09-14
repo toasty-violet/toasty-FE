@@ -38,7 +38,7 @@ export function RoleSelectForm() {
   // 각 역할에 맞는 온보딩 화면으로 이동한다.
   const handleSubmit = () => {
     if (role === "SELLER") {
-      router.push("/onboarding/seller");
+      router.push("/onboarding/seller/info-1");
       return;
     }
     if (role === "CUSTOMER") {

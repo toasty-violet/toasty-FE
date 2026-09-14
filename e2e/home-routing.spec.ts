@@ -2,12 +2,12 @@ import { test, expect, type Page } from "@playwright/test";
 
 const API = "http://localhost:8080/api/v1";
 
-// MSW 보다 앞단에서 가로채 시나리오를 고정한다.
+// 네트워크 요청을 가로채 시나리오를 고정한다.
 async function stub(
   page: Page,
   scenario: {
     loggedIn: boolean;
-    // role 키를 아예 내려주지 않는 경우는 me 에 nickname 만 담는다
+    // 역할 미선택 유저는 role 키가 아예 없어 빈 객체가 내려온다
     me?: Record<string, unknown>;
   },
 ) {
@@ -25,13 +25,13 @@ async function stub(
       ),
     }),
   );
-  await page.route(`${API}/users/me`, (route) =>
+  await page.route(`${API}/users/role`, (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
         success: true,
-        data: scenario.me ?? { nickname: "tester" },
+        data: scenario.me ?? {},
       }),
     }),
   );
@@ -42,36 +42,40 @@ async function stub(
 }
 
 test("SELLER 는 홈에서 /shop 으로 이동한다", async ({ page }) => {
-  await stub(page, { loggedIn: true, me: { role: "SELLER", nickname: "t" } });
+  await stub(page, { loggedIn: true, me: { role: "SELLER" } });
   await page.goto("/");
 
   await expect(page).toHaveURL(/\/shop$/);
   await expect(
-    page.getByRole("heading", { name: "상점 페이지 (/shop)" }),
+    page.getByRole("heading", { name: "판매 내역 요약" }),
   ).toBeVisible();
 });
 
 test("role 이 null 이면 홈에서 /onboarding 로 이동한다", async ({ page }) => {
-  await stub(page, { loggedIn: true, me: { role: null, nickname: "t" } });
+  await stub(page, { loggedIn: true, me: { role: null } });
   await page.goto("/");
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
+    page.getByRole("heading", {
+      name: "토스티에서 이용할 역할을 선택해 주세요",
+    }),
   ).toBeVisible();
 });
 
-// 실제 응답은 {"success":true,"data":{"nickname":"user_0a8c9dbad596"}} 처럼 role 키가 아예 없다
+// 실제 응답은 {"success":true,"data":{}} 처럼 role 키가 아예 없다
 test("role 키가 없으면 홈에서 /onboarding 로 이동한다", async ({ page }) => {
   await stub(page, {
     loggedIn: true,
-    me: { nickname: "user_0a8c9dbad596" },
+    me: {},
   });
   await page.goto("/");
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(
-    page.getByRole("heading", { name: "토스티에서 이용할 역할을 선택해 주세요" }),
+    page.getByRole("heading", {
+      name: "토스티에서 이용할 역할을 선택해 주세요",
+    }),
   ).toBeVisible();
 });
 
@@ -88,7 +92,7 @@ async function countNavigations(page: Page, run: () => Promise<void>) {
 }
 
 test("CUSTOMER 는 홈에 머문다", async ({ page }) => {
-  await stub(page, { loggedIn: true, me: { role: "CUSTOMER", nickname: "t" } });
+  await stub(page, { loggedIn: true, me: { role: "CUSTOMER" } });
 
   const urls = await countNavigations(page, () =>
     page.goto("/").then(() => {}),
@@ -110,7 +114,7 @@ test("비로그인은 홈에 머문다", async ({ page }) => {
 });
 
 test("CUSTOMER 가 /shop 에 직접 가면 홈으로 돌아간다", async ({ page }) => {
-  await stub(page, { loggedIn: true, me: { role: "CUSTOMER", nickname: "t" } });
+  await stub(page, { loggedIn: true, me: { role: "CUSTOMER" } });
   await page.goto("/shop");
 
   await expect(page).toHaveURL("http://localhost:3000/");
