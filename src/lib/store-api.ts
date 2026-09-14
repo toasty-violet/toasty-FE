@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiSuccess } from "@/types/api";
-import type { TopStore } from "@/types/store";
+import type { FollowedStore, TopStore } from "@/types/store";
 
 /** 인증이 없어도 부를 수 있고, 그때는 following 이 모두 false 로 온다. */
 export async function getTopStores(): Promise<TopStore[]> {
@@ -14,4 +14,12 @@ export async function followStore(sellerId: number) {
 
 export async function unfollowStore(sellerId: number) {
   await apiClient.delete(`/stores/${sellerId}/follow`);
+}
+
+/** 로그인한 고객이 팔로우한 스토어와 대표 상품들. 최대 3곳이 내려온다. */
+export async function getFollowedStores(): Promise<FollowedStore[]> {
+  const { data } = await apiClient.get<ApiSuccess<FollowedStore[]>>(
+    "/customers/following",
+  );
+  return data.data;
 }
