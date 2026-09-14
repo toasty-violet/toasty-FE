@@ -53,7 +53,10 @@ function Section({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex w-full items-start gap-8">
-      <span className="text-b4-regular w-80 shrink-0" style={{ color: LABEL }}>
+      <span
+        className="text-b4-regular w-[8rem] shrink-0"
+        style={{ color: LABEL }}
+      >
         {label}
       </span>
       <span className="text-b4-regular text-fg-neutral-solid min-w-0 flex-1">
@@ -100,7 +103,7 @@ function Detail({ order }: { order: CustomerOrderDetail }) {
           shopName={order.shopName}
           productName={order.productName}
           quantity={order.quantity}
-          totalAmount={order.totalAmount}
+          totalAmount={order.productPrice}
           imageUrl={order.productImageUrl}
         />
       </Section>
