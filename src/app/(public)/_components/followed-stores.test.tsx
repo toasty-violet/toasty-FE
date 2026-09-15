@@ -75,13 +75,19 @@ describe("FollowedStoreSection", () => {
     ).toBeInTheDocument();
   });
 
-  // 로그인해야 부를 수 있는 목록이라, 비로그인은 요청 없이 문구만 남는다.
-  it("비로그인이면 요청하지 않고 안내 문구를 보여준다", () => {
+  // 비로그인에도 서버가 스토어를 채워 주므로, 요청해서 받은 만큼 그린다.
+  it("비로그인이어도 서버가 채워 준 스토어를 보여준다", async () => {
+    getFollowedStoresMock.mockResolvedValue([followedStore()]);
     renderSection("guest");
 
-    expect(
-      screen.getByText("팔로우하는 스토어가 없습니다."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("데일리 빈티지")).toBeInTheDocument();
+    expect(getFollowedStoresMock).toHaveBeenCalled();
+  });
+
+  // 인증이 확정되기 전에 보내면 팔로우한 스토어 대신 채워 넣은 스토어가 온다.
+  it("인증이 확정되기 전에는 요청하지 않는다", () => {
+    renderSection("loading");
+
     expect(getFollowedStoresMock).not.toHaveBeenCalled();
   });
 

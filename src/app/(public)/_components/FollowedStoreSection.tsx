@@ -15,14 +15,15 @@ const EMPTY_MESSAGE = "팔로우하는 스토어가 없습니다.";
 export function FollowedStoreSection() {
   const authStatus = useAuthStore((state) => state.status);
 
-  // 로그인한 사람만 부를 수 있는 목록이라, 인증이 확정되기 전에는 요청하지 않는다.
+  // 비로그인도 부를 수 있지만, 토큰이 붙기 전에 보내면 팔로우한 스토어 대신
+  // 채워 넣은 스토어가 오므로 인증이 확정될 때까지는 기다린다.
   const { data, isPending, error } = useQuery({
     queryKey: ["stores", "following"],
     queryFn: getFollowedStores,
-    enabled: authStatus === "authed",
+    enabled: authStatus !== "loading",
   });
 
-  if (authStatus === "guest" || error) {
+  if (error) {
     return (
       <p className="text-l5-regular text-fg-neutral-secondary">
         {EMPTY_MESSAGE}

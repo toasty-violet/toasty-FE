@@ -16,7 +16,10 @@ export async function unfollowStore(sellerId: number) {
   await apiClient.delete(`/stores/${sellerId}/follow`);
 }
 
-/** 로그인한 고객이 팔로우한 스토어와 대표 상품들. 최대 3곳이 내려온다. */
+/**
+ * 팔로우한 스토어와 대표 상품들. 최대 3곳이 내려온다.
+ * 인증이 없거나 팔로우가 3곳보다 적으면 서버가 다른 스토어로 3곳을 채워 준다.
+ */
 export async function getFollowedStores(): Promise<FollowedStore[]> {
   const { data } = await apiClient.get<ApiSuccess<FollowedStore[]>>(
     "/customers/following",
