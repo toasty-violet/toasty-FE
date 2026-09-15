@@ -1,5 +1,6 @@
 import { Header } from "@/components/headers/Header";
 import { CustomerNav } from "@/components/navigations/CustomerNav";
+import { BestItemSection } from "./_components/BestItemSection";
 import { FollowedStoreSection } from "./_components/FollowedStoreSection";
 import { HomeRedirect } from "./_components/HomeRedirect";
 import { LiveGuideSection } from "./_components/LiveGuideSection";
@@ -32,6 +33,7 @@ export default function Home() {
           </h2>
           <StoreTop3Section />
         </section>
+        <BestItemSection />
       </main>
       <CustomerNav />
     </div>
