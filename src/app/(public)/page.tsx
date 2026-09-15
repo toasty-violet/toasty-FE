@@ -1,5 +1,6 @@
 import { Header } from "@/components/headers/Header";
 import { CustomerNav } from "@/components/navigations/CustomerNav";
+import { FollowedStoreSection } from "./_components/FollowedStoreSection";
 import { HomeRedirect } from "./_components/HomeRedirect";
 import { LiveGuideSection } from "./_components/LiveGuideSection";
 import { LiveNowSection } from "./_components/LiveNowSection";
@@ -22,6 +23,12 @@ export default function Home() {
             <span className="text-fg-brand">토스티</span> 라이브 가이드
           </h2>
           <LiveGuideSection />
+        </section>
+        <section className="flex w-full flex-col gap-14">
+          <h2 className="text-t3-bold text-fg-neutral-solid w-full">
+            팔로우하는 스토어
+          </h2>
+          <FollowedStoreSection />
         </section>
         <section className="flex w-full flex-col gap-14">
           <h2 className="text-t3-bold text-fg-neutral-solid w-full">
