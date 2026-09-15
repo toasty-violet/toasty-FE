@@ -4,80 +4,24 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { OrderDetail } from "@/types/order";
 
+import {
+  AmountRow,
+  InfoRow,
+  Section,
+  SectionGap,
+  TotalBox,
+  won,
+} from "@/components/sections/InfoSection";
+
 import { getMyOrder } from "../_lib/order-api";
 import { ORDER_STATUS } from "./order-status";
-import { OrderProductRow } from "./OrderProductRow";
-
-// tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
-const GAP = "#f7f8f9"; // bg/neutral-subtle
-const BOX_LINE = "#edeef0"; // stroke/neutral-subtle
-const LABEL = "#5b606b"; // fg/neutral-weak
-const TOTAL = "#2a3038"; // fg/neutral-solid-muted
-
-const won = (amount: number) => `${amount.toLocaleString("ko-KR")}원`;
+import { OrderProductRow } from "@/components/cards/OrderProductRow";
 
 /** 결제일시는 분까지 보여준다. */
 function formatPaidAt(paidAt: string) {
   const date = new Date(paidAt);
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-/** 섹션 사이를 8px 띠로 가른다. */
-function SectionGap() {
-  return (
-    <div aria-hidden className="h-8 w-full" style={{ backgroundColor: GAP }} />
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="bg-bg-layer-default flex w-full flex-col gap-16 p-20">
-      {title && (
-        <h2 className="text-st2-semibold text-fg-neutral-solid w-full">
-          {title}
-        </h2>
-      )}
-      {children}
-    </section>
-  );
-}
-
-/** 라벨을 왼쪽에 고정폭으로 두고 값이 남은 폭을 쓴다. */
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex w-full items-start gap-8">
-      <span
-        className="text-b4-regular w-[8rem] shrink-0"
-        style={{ color: LABEL }}
-      >
-        {label}
-      </span>
-      <span className="text-b4-regular text-fg-neutral-solid min-w-0 flex-1">
-        {value}
-      </span>
-    </div>
-  );
-}
-
-/** 금액은 라벨과 값을 양 끝으로 민다. */
-function AmountRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex w-full items-start justify-between gap-8">
-      <span className="text-b4-regular shrink-0" style={{ color: LABEL }}>
-        {label}
-      </span>
-      <span className="text-b4-regular text-fg-neutral-solid shrink-0">
-        {value}
-      </span>
-    </div>
-  );
 }
 
 /**
@@ -143,31 +87,11 @@ export function OrderDetailView({
       <SectionGap />
 
       <Section title="결제 정보">
-        <div
-          className="rounded-12 flex w-full flex-col gap-16 border p-16"
-          style={{ borderColor: BOX_LINE }}
-        >
-          <div className="flex w-full flex-col gap-12">
-            <AmountRow label="결제일시" value={formatPaidAt(order.paidAt)} />
-            <AmountRow label="상품 금액" value={won(order.productPrice)} />
-            <AmountRow label="배송비" value={won(order.shippingFee)} />
-          </div>
-
-          <div
-            aria-hidden
-            className="h-px w-full"
-            style={{ backgroundColor: BOX_LINE }}
-          />
-
-          <div className="flex w-full items-center justify-between gap-8">
-            <span className="text-l5-medium text-fg-neutral-solid">
-              총 결제금액
-            </span>
-            <span className="text-l1-bold" style={{ color: TOTAL }}>
-              {won(order.totalAmount)}
-            </span>
-          </div>
-        </div>
+        <TotalBox total={order.totalAmount}>
+          <AmountRow label="결제일시" value={formatPaidAt(order.paidAt)} />
+          <AmountRow label="상품 금액" value={won(order.productPrice)} />
+          <AmountRow label="배송비" value={won(order.shippingFee)} />
+        </TotalBox>
       </Section>
     </div>
   );
