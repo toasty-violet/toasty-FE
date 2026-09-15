@@ -183,3 +183,20 @@ export interface LiveChatToken {
   /** 비로그인과 종료된 방송은 읽기만 된다. */
   writable: boolean;
 }
+
+/**
+ * 홈 "지금 뜨는 라이브" 한 장. 시청 화면(LiveViewer)과 달리 liveId 가 없고
+ * 목록에서 바로 팔로우를 누를 수 있어 following 이 붙는다.
+ */
+export interface PublicLive {
+  publicId: string;
+  status: LiveStatus;
+  title: string;
+  scheduledAt: string;
+  playbackUrl: string;
+  /** 셀러가 등록하지 않았으면 빈 문자열로 온다. */
+  thumbnailUrl: string;
+  viewerCount: number;
+  seller: SellerProfile;
+  following: boolean;
+}
