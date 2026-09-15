@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import type { CustomerOrderDetail } from "@/types/order";
+import type { OrderDetail } from "@/types/order";
 
 import { getMyOrder } from "../_lib/order-api";
 import { ORDER_STATUS } from "./order-status";
@@ -53,7 +53,10 @@ function Section({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex w-full items-start gap-8">
-      <span className="text-b4-regular w-80 shrink-0" style={{ color: LABEL }}>
+      <span
+        className="text-b4-regular w-[8rem] shrink-0"
+        style={{ color: LABEL }}
+      >
         {label}
       </span>
       <span className="text-b4-regular text-fg-neutral-solid min-w-0 flex-1">
@@ -77,7 +80,19 @@ function AmountRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Detail({ order }: { order: CustomerOrderDetail }) {
+/**
+ * 주문 상세 본문. 구매자와 셀러가 같은 모양을 쓴다.
+ * 셀러는 배송대기일 때 배송 정보 아래에 운송장 입력(shippingAction)을 붙인다.
+ */
+export function OrderDetailView({
+  order,
+  productLabel,
+  shippingAction,
+}: {
+  order: OrderDetail;
+  productLabel?: string;
+  shippingAction?: React.ReactNode;
+}) {
   // 발송완료가 아니면 서버가 운송장을 주지 않아 그 줄을 두지 않는다.
   const shipped = order.courierName !== null && order.trackingNumber !== null;
 
@@ -97,10 +112,10 @@ function Detail({ order }: { order: CustomerOrderDetail }) {
 
       <Section title="주문 상품">
         <OrderProductRow
-          shopName={order.shopName}
+          label={productLabel}
           productName={order.productName}
           quantity={order.quantity}
-          totalAmount={order.totalAmount}
+          totalAmount={order.productPrice}
           imageUrl={order.productImageUrl}
         />
       </Section>
@@ -122,6 +137,7 @@ function Detail({ order }: { order: CustomerOrderDetail }) {
             />
           )}
         </div>
+        {shippingAction}
       </Section>
 
       <SectionGap />
@@ -179,5 +195,5 @@ export function OrderDetailScreen({ orderId }: { orderId: number }) {
     );
   }
 
-  return <Detail order={order} />;
+  return <OrderDetailView order={order} productLabel={order.shopName} />;
 }

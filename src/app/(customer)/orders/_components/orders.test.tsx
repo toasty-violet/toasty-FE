@@ -221,10 +221,11 @@ describe("OrderDetailScreen", () => {
 
     renderWith(<OrderDetailScreen orderId={1} />);
 
-    expect(await screen.findByText("95,000원")).toBeInTheDocument();
-    expect(screen.getByText("3,000원")).toBeInTheDocument();
-    // 합계는 상품 카드에도 같은 값이 떠서 결제 정보 줄로 좁힌다.
+    expect(await screen.findByText("3,000원")).toBeInTheDocument();
+    // 상품 줄과 상품 금액 줄에 같은 값이 뜬다. 합계는 결제 정보에만 있다.
+    expect(screen.getAllByText("95,000원")).toHaveLength(2);
     const totalRow = screen.getByText("총 결제금액").closest("div")!;
     expect(within(totalRow).getByText("98,000원")).toBeInTheDocument();
+    expect(screen.getAllByText("98,000원")).toHaveLength(1);
   });
 });
