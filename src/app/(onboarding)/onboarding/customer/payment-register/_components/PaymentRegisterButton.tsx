@@ -85,7 +85,11 @@ export function PaymentRegisterButton() {
         loadPoint3Widgets(),
       ]);
 
-      await requestPoint3Payment(widgets, { sessionId, orderName: ORDER_NAME });
+      await requestPoint3Payment(widgets, {
+        sessionId,
+        orderName: ORDER_NAME,
+        returnPath: "/onboarding/customer/payment-register",
+      });
     },
     onError: () => {
       setError("계좌 등록창을 열지 못했어요. 다시 시도해 주세요.");

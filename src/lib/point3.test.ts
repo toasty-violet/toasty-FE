@@ -9,10 +9,10 @@ describe("resolvePoint3FailMessage", () => {
 
   it("세션이 만료·무효면 재시도를 안내한다", () => {
     expect(resolvePoint3FailMessage("SESSION_EXPIRED")).toBe(
-      "계좌 등록 시간이 만료됐어요. 다시 시도해 주세요.",
+      "결제 시간이 만료됐어요. 다시 시도해 주세요.",
     );
     expect(resolvePoint3FailMessage("INVALID_SESSION")).toBe(
-      "계좌 등록 시간이 만료됐어요. 다시 시도해 주세요.",
+      "결제 시간이 만료됐어요. 다시 시도해 주세요.",
     );
   });
 
@@ -24,7 +24,7 @@ describe("resolvePoint3FailMessage", () => {
 
   it("문서에 없는 코드는 일반 실패로 안내한다", () => {
     expect(resolvePoint3FailMessage("SOMETHING_ELSE")).toBe(
-      "계좌 등록에 실패했어요. 다시 시도해 주세요.",
+      "결제에 실패했어요. 다시 시도해 주세요.",
     );
   });
 

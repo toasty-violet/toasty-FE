@@ -18,6 +18,9 @@ import {
   getViewerCount,
 } from "@/app/live/_lib/live-api";
 import { useLiveChat } from "@/app/live/_lib/use-live-chat";
+import { usePurchase } from "@/app/live/_lib/use-purchase";
+import { PaymentConfirmSheet } from "@/components/overlays/PaymentConfirmSheet";
+import { PaymentDoneModal } from "@/components/overlays/PaymentDoneModal";
 import { ApiRequestError } from "@/lib/api-error";
 import { useAuthStore } from "@/store/auth-store";
 import { LIVE_ERROR_CODE } from "@/types/live";
@@ -47,9 +50,12 @@ export function LiveViewer({ publicId }: { publicId: string }) {
   // 비로그인은 구매를 막고 로그인으로 안내한다. 시청 자체는 막지 않는다.
   const authStatus = useAuthStore((state) => state.status);
   const isGuest = authStatus === "guest";
-  // 로그인 여부가 확정되기 전(loading)에 구매를 열면 잠깐 눌리다가 잠긴다.
-  const buyDisabled = authStatus !== "authed";
   const goLogin = () => router.push("/login");
+
+  // 결제창은 이 화면을 떠났다 successUrl 로 돌아온다. 승인은 그때 이어진다.
+  const purchase = usePurchase({ returnPath: `/live/${publicId}` });
+  // 로그인 여부가 확정되기 전(loading)에 구매를 열면 잠깐 눌리다가 잠긴다.
+  const buyDisabled = authStatus !== "authed" || purchase.pending;
 
   const {
     data: live,
@@ -171,12 +177,21 @@ export function LiveViewer({ publicId }: { publicId: string }) {
           <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
             {!chat.unavailable && <LiveChatOverlay messages={chat.messages} />}
 
+            {purchase.message && (
+              <p
+                role="alert"
+                className="text-l5-medium text-fg-neutral-inverted text-center"
+              >
+                {purchase.message}
+              </p>
+            )}
+
             <ViewerProductBar
               pinned={pinned}
               totalCount={list.length}
               buyDisabled={buyDisabled}
               onOpenAllProducts={() => setProductsOpen(true)}
-              onBuy={() => {}}
+              onBuy={() => pinned && purchase.buy(pinned)}
             />
 
             {chat.unavailable ? (
@@ -200,8 +215,24 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         pinnedProductId={products?.currentPinnedProductId ?? null}
         buyDisabled={buyDisabled}
         onClose={() => setProductsOpen(false)}
-        onBuy={() => {}}
+        onBuy={(product) => {
+          // 확인 시트가 상품 시트 위로 겹치지 않게 먼저 닫는다.
+          setProductsOpen(false);
+          purchase.buy(product);
+        }}
       />
+
+      {purchase.confirming && (
+        <PaymentConfirmSheet
+          open
+          price={purchase.confirming.price}
+          pending={purchase.pending}
+          onClose={purchase.closeConfirm}
+          onConfirm={purchase.confirmBuy}
+        />
+      )}
+
+      <PaymentDoneModal open={purchase.done} onClose={purchase.closeDone} />
     </div>
   );
 }
