@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/headers/Header";
 
 import { SellerProfileSection } from "./_components/SellerProfileSection";
+import { StoreProductsSection } from "./_components/StoreProductsSection";
 
 export default async function SellerShopPage({
   params,
@@ -21,6 +22,7 @@ export default async function SellerShopPage({
       <Header rightIconName="search" rightLabel="검색" />
       <main className="flex flex-1 flex-col gap-36 px-20 pb-56">
         <SellerProfileSection sellerId={parsedSellerId} />
+        <StoreProductsSection sellerId={parsedSellerId} />
       </main>
     </div>
   );
