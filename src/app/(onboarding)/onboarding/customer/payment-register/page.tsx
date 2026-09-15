@@ -6,9 +6,8 @@ const STEPS = [
   { title: "본인인증", description: "휴대폰 번호로 확인해요" },
   { title: "계좌 등록", description: "본인 명의 계좌만 등록할 수 있어요" },
   {
-    title: "100원 결제 인증",
-    badge: "즉시 환불",
-    description: "계좌 확인용이라, 인증 즉시 돌려드려요",
+    title: "100원 계좌 인증",
+    description: "100원 결제 화면이 표시되지만, 실제로 결제되지는 않아요",
   },
 ];
 
@@ -36,16 +35,9 @@ export default function OnboardingCustomerPaymentRegisterPage() {
               </span>
 
               <div className="flex min-w-0 flex-1 flex-col gap-4">
-                <div className="flex items-center gap-6">
-                  <h2 className="text-st1-semibold text-fg-neutral-strong">
-                    {step.title}
-                  </h2>
-                  {step.badge && (
-                    <span className="text-l7-semibold bg-bg-brand-weak text-fg-brand-contrast rounded-full px-8 py-6">
-                      {step.badge}
-                    </span>
-                  )}
-                </div>
+                <h2 className="text-st1-semibold text-fg-neutral-strong">
+                  {step.title}
+                </h2>
                 <p className="text-b3-medium text-fg-neutral-secondary">
                   {step.description}
                 </p>

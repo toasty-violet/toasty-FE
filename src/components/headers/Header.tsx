@@ -20,9 +20,9 @@ const RIGHT_ICONS = {
 type HeaderProps = {
   title?: string;
   showBack?: boolean;
-  /** 우측 아이콘. rightHref와 함께 지정해야 렌더링됩니다. */
+  /** 우측 아이콘. */
   rightIconName?: keyof typeof RIGHT_ICONS;
-  /** 우측 아이콘을 눌렀을 때 이동할 경로. */
+  /** 우측 아이콘을 눌렀을 때 이동할 경로. 없으면 비활성 상태로 그린다. */
   rightHref?: string;
   /** 우측 버튼의 접근성 레이블. */
   rightLabel?: string;
@@ -60,15 +60,26 @@ export function Header({
         </h1>
       )}
 
-      {RightIcon && rightHref && (
-        <Link
-          href={rightHref}
-          aria-label={rightLabel}
-          className="absolute top-1/2 right-20 -translate-y-1/2"
-        >
-          <RightIcon className="size-24" />
-        </Link>
-      )}
+      {RightIcon &&
+        (rightHref ? (
+          <Link
+            href={rightHref}
+            aria-label={rightLabel}
+            className="absolute top-1/2 right-20 -translate-y-1/2"
+          >
+            <RightIcon className="size-24" />
+          </Link>
+        ) : (
+          // 갈 곳이 없으면 자리는 지키되 누를 수 없게 둔다.
+          <button
+            type="button"
+            disabled
+            aria-label={rightLabel}
+            className="absolute top-1/2 right-20 -translate-y-1/2 opacity-40"
+          >
+            <RightIcon className="size-24" />
+          </button>
+        ))}
     </header>
   );
 }

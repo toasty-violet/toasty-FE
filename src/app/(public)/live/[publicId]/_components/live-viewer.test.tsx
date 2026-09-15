@@ -11,7 +11,9 @@ import { LIVE_ERROR_CODE } from "@/types/live";
 import { LiveViewer } from "./LiveViewer";
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), back: vi.fn(), replace: vi.fn() }),
+  // 구매 흐름이 결제창 복귀 쿼리를 읽는다. 기본은 복귀하지 않은 상태다.
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // IVS 플레이어는 wasm 을 받아와 jsdom 에서 돌지 않는다.
