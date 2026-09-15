@@ -61,6 +61,15 @@ export const PRODUCT_ERROR_CODE = {
   LAST_IN_LIVE: "PRODUCT_LAST_IN_LIVE",
 } as const;
 
+/** 홈 베스트 아이템 카드 한 장. 사진이나 스토어를 못 찾으면 null 로 온다. */
+export interface BestProduct {
+  productId: number;
+  shopName: string | null;
+  name: string;
+  price: number;
+  imageUrl: string | null;
+}
+
 export interface ProductImageUploadFile {
   contentType: string;
   contentLength: number;
