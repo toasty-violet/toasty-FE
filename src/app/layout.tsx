@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { APP_FRAME_ID } from "@/components/overlays/app-frame";
+import { StatusBarColor } from "@/components/StatusBarColor";
 import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import "./globals.css";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col items-center justify-center">
+        <StatusBarColor />
         {/*
           바깥 래퍼는 스크롤하지 않는 앱 프레임이다.
           바텀시트 같은 오버레이가 화면 전체가 아니라 이 프레임만 덮도록,
