@@ -15,7 +15,7 @@ export function BottomButton({
   description,
 }: BottomButtonProps) {
   return (
-    <div className="flex h-fit w-full flex-col gap-12 px-20 pt-10 pb-20">
+    <div className="flex h-fit w-full flex-col gap-12 px-20 pt-10 pb-[calc(2rem+env(safe-area-inset-bottom))]">
       {description && (
         <p className="text-c1-medium text-fg-neutral-primary text-center">
           {description}
