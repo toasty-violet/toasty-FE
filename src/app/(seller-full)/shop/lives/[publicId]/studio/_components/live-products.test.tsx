@@ -60,8 +60,8 @@ describe("LiveProductBar", () => {
     expect(screen.getByText("판매완료")).toBeInTheDocument();
   });
 
-  // 재고가 0이어도 서버는 상태를 되돌리지 않는다.
-  it("재고가 0이어도 판매중이면 판매중으로 둔다", () => {
+  // 서버는 다 팔려도 편성 상태를 되돌리지 않지만, 셀러에게는 판매가 끝난 것이다.
+  it("재고가 0이면 판매완료로 적는다", () => {
     render(
       <LiveProductBar
         pinned={product({ productId: 1, stockQuantity: 0, status: "ACTIVE" })}
@@ -73,7 +73,7 @@ describe("LiveProductBar", () => {
       />,
     );
 
-    expect(screen.getByText("판매중")).toBeInTheDocument();
+    expect(screen.getByText("판매완료")).toBeInTheDocument();
     expect(screen.getByText("재고 0개")).toBeInTheDocument();
   });
 

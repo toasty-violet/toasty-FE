@@ -56,6 +56,7 @@ const product: ProductDetail = {
   description: "부드러운 소재",
   imageUrls: ["https://example.com/1.png"],
   otherProducts: [],
+  shippingFee: { baseShippingFee: 3000, freeShippingThreshold: 0 },
 };
 
 const seller: SellerProfile = {
@@ -113,7 +114,7 @@ describe("PaymentScreen", () => {
     expect(await screen.findByText("아이보리 골지 가디건")).toBeInTheDocument();
     expect(await screen.findByText("토스티샵")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "29,000원 결제하기" }),
+      screen.getByRole("button", { name: "32,000원 결제하기" }),
     ).toBeEnabled();
   });
 
@@ -121,7 +122,7 @@ describe("PaymentScreen", () => {
     renderScreen();
 
     await userEvent.click(
-      await screen.findByRole("button", { name: "29,000원 결제하기" }),
+      await screen.findByRole("button", { name: "32,000원 결제하기" }),
     );
 
     await waitFor(() =>

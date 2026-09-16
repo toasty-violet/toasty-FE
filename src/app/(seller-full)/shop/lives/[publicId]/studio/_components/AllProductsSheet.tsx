@@ -8,7 +8,7 @@ import EditIcon from "@/assets/Edit.svg";
 import PinIcon from "@/assets/Pin.svg";
 import type { LiveProduct } from "@/types/live";
 
-import { SALE_STATUS } from "./sale-status";
+import { saleStatusOf } from "./sale-status";
 
 const CIRCLE = "flex size-36 items-center justify-center rounded-full";
 
@@ -63,7 +63,7 @@ function ProductRow({
   onEdit: () => void;
   onPin: () => void;
 }) {
-  const sale = SALE_STATUS[product.status];
+  const sale = saleStatusOf(product);
 
   return (
     <li className="flex w-full items-start gap-8">

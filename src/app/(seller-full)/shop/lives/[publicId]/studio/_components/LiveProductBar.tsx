@@ -8,7 +8,7 @@ import EditIcon from "@/assets/Edit.svg";
 import PinIcon from "@/assets/Pin.svg";
 import type { LiveProduct } from "@/types/live";
 
-import { SALE_STATUS } from "./sale-status";
+import { saleStatusOf } from "./sale-status";
 
 // tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
 const OVERLAY_INVERSE_SUBTLE = "#ffffff1f"; // bg/overlay-inverse-subtle
@@ -47,8 +47,8 @@ function ActionButton({
 }
 
 /** 카드 오른쪽에 붙는 판매 상태 배지. */
-function SaleBadge({ status }: { status: LiveProduct["status"] }) {
-  const sale = SALE_STATUS[status];
+function SaleBadge({ product }: { product: LiveProduct }) {
+  const sale = saleStatusOf(product);
   return (
     <span
       className={`rounded-6 text-l7-semibold flex shrink-0 self-start px-5 pt-4 pb-5 ${sale.className}`}
@@ -79,7 +79,7 @@ export function LiveProductBar({
       <div className="flex w-full items-end gap-8">
         <PinnedProductCard
           product={pinned}
-          trailing={pinned && <SaleBadge status={pinned.status} />}
+          trailing={pinned && <SaleBadge product={pinned} />}
         />
 
         <AllProductsButton

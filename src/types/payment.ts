@@ -7,6 +7,8 @@ export type PayerIdSessionResponse = ApiSuccess<{ sessionId: string }>;
 export interface OrderCreateRequest {
   productId: number;
   quantity: number;
+  /** 라이브를 보다 샀으면 그 라이브. 셀러 라이브탭의 방송별 판매 집계에 쓰인다. */
+  liveId?: number;
 }
 
 /** 주문과 함께 결제 세션이 발급된다. sessionId 로 결제창을 띄운다. */
