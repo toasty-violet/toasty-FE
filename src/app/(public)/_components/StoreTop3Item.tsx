@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import DefaultImage from "@/assets/DefaultImage.svg";
 import { Button } from "@/components/buttons/Button";
 import { formatThousand } from "@/lib/format";
+import { isRenderableImageSrc } from "@/lib/upload";
 import type { TopStore } from "@/types/store";
 
 type StoreTop3ItemProps = {
@@ -20,14 +22,15 @@ export function StoreTop3Item({ store, onToggleFollow }: StoreTop3ItemProps) {
         href={`/shop/${store.sellerId}`}
         className="flex min-w-0 flex-1 items-center gap-12"
       >
-        <div className="border-stroke-neutral-weak bg-bg-neutral-weak size-48 shrink-0 overflow-hidden rounded-full border">
+        <div className="border-stroke-neutral-weak bg-bg-neutral-weak relative size-48 shrink-0 overflow-hidden rounded-full border">
           {/* 사진을 등록하지 않은 스토어는 기본 이미지로 채운다. */}
-          {store.shopImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+          {isRenderableImageSrc(store.shopImageUrl) ? (
+            <Image
               src={store.shopImageUrl}
               alt=""
-              className="size-full object-cover"
+              fill
+              sizes="48px"
+              className="object-cover"
             />
           ) : (
             <DefaultImage className="size-full" />
