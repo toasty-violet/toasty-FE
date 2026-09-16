@@ -4,8 +4,9 @@ import DefaultImage from "@/assets/DefaultImage.svg";
 import { formatThousand } from "@/lib/format";
 
 /**
- * 2열 그리드에 놓는 상품 한 장. 카드 전체가 상품 상세로 가는 링크다.
+ * 그리드에 놓는 상품 한 장. 카드 전체가 상품 상세로 가는 링크다.
  * 홈 베스트 아이템은 맨 윗줄에 스토어 이름(label)을 얹고, 스토어 화면은 얹지 않는다.
+ * 사진은 2열이면 세로로 길고(4:5), 3열이면 정사각(square)이다.
  */
 export function ProductGridCard({
   productId,
@@ -13,12 +14,14 @@ export function ProductGridCard({
   price,
   imageUrl,
   label,
+  aspect = "portrait",
 }: {
   productId: number;
   name: string;
   price: number;
   imageUrl: string | null;
   label?: string | null;
+  aspect?: "portrait" | "square";
 }) {
   return (
     <li>
@@ -26,7 +29,11 @@ export function ProductGridCard({
         href={`/products/${productId}`}
         className="flex w-full flex-col gap-12"
       >
-        <div className="rounded-8 bg-bg-neutral-weak aspect-[4/5] w-full overflow-hidden">
+        <div
+          className={`rounded-8 bg-bg-neutral-weak w-full overflow-hidden ${
+            aspect === "square" ? "aspect-square" : "aspect-[4/5]"
+          }`}
+        >
           {/* 사진을 등록하지 않은 상품은 기본 이미지로 채운다. */}
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
