@@ -80,11 +80,6 @@ export function LiveViewer({ publicId }: { publicId: string }) {
     purchase.buy(product);
   };
 
-  // 결제창은 이 화면을 떠났다 successUrl 로 돌아온다. 승인은 그때 이어진다.
-  const purchase = usePurchase({ returnPath: `/live/${publicId}` });
-  // 비로그인도 눌러야 안내가 뜬다. 로그인 여부가 확정되기 전에만 잠근다.
-  const buyDisabled = authStatus === "loading" || purchase.pending;
-
   const {
     data: live,
     isPending,
@@ -93,6 +88,15 @@ export function LiveViewer({ publicId }: { publicId: string }) {
     queryKey: ["live", publicId],
     queryFn: () => getLive(publicId),
   });
+
+  // 결제창은 이 화면을 떠났다 successUrl 로 돌아온다. 승인은 그때 이어진다.
+  // 라이브를 보다 산 것이라 방송별 판매 집계에 쓰이도록 liveId 를 함께 보낸다.
+  const purchase = usePurchase({
+    returnPath: `/live/${publicId}`,
+    liveId: live?.liveId,
+  });
+  // 비로그인도 눌러야 안내가 뜬다. 로그인 여부가 확정되기 전에만 잠근다.
+  const buyDisabled = authStatus === "loading" || purchase.pending;
 
   const { data: playback } = useQuery({
     queryKey: ["live-playback", publicId],
