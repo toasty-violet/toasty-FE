@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { APP_FRAME_ID } from "@/components/overlays/app-frame";
 import { StatusBarColor } from "@/components/StatusBarColor";
@@ -12,6 +12,12 @@ const pretendard = localFont({
   weight: "45 920",
   display: "swap",
 });
+
+/**
+ * iOS 는 글자가 16px 보다 작은 입력칸에 커서를 두면 화면을 확대한다.
+ * 채팅처럼 작은 글씨 입력칸이 있어, 확대 배율을 묶어 화면이 튀지 않게 한다.
+ */
+export const viewport: Viewport = { maximumScale: 1 };
 
 export const metadata: Metadata = {
   title: "Toasty",
