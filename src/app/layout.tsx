@@ -15,6 +15,11 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   title: "Toasty",
   description: "Toasty",
+  // 홈 화면에 추가해 열면 주소창 없이 뜬다. iOS 는 manifest 를 보지 않아 따로 적는다.
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "토스티" },
+  icons: { apple: "/apple-touch-icon.png" },
+  // iOS 16.3 이하는 manifest 의 display 를 보지 않아 이 메타로만 전체 화면이 된다.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
