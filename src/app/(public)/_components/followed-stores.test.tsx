@@ -101,6 +101,6 @@ describe("FollowedStoreSection", () => {
     const productLink = screen.getByRole("link", {
       name: /아이보리 골지 가디건/,
     });
-    expect(productLink).toHaveAttribute("href", "/shop/7/11");
+    expect(productLink).toHaveAttribute("href", "/products/11");
   });
 });

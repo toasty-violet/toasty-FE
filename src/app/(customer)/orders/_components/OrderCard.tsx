@@ -6,7 +6,7 @@ import RightSmallTightIcon from "@/assets/RightSmallTight.svg";
 import type { CustomerOrder } from "@/types/order";
 
 import { ORDER_STATUS, formatPaidDate } from "./order-status";
-import { OrderProductRow } from "./OrderProductRow";
+import { OrderProductRow } from "@/components/cards/OrderProductRow";
 
 // tokens.json 이 낡아 CSS 변수로 못 쓰는 색이다. Figma 실제 값을 직접 적는다.
 const TRACKING = "#2a3038"; // fg/neutral-solid-muted

@@ -1,5 +1,6 @@
 import { Header } from "@/components/headers/Header";
 import { CustomerNav } from "@/components/navigations/CustomerNav";
+import { BestItemSection } from "./_components/BestItemSection";
 import { FollowedStoreSection } from "./_components/FollowedStoreSection";
 import { HomeRedirect } from "./_components/HomeRedirect";
 import { LiveGuideSection } from "./_components/LiveGuideSection";
@@ -10,12 +11,8 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
       <HomeRedirect />
-      <Header
-        showBack={false}
-        rightIconName="search"
-        rightHref="/search"
-        rightLabel="검색"
-      />
+      {/* 검색은 아직 열지 않아 아이콘만 비활성으로 둔다. */}
+      <Header showBack={false} rightIconName="search" rightLabel="검색" />
       <main className="flex flex-1 flex-col gap-36 px-20 pb-56">
         <LiveNowSection />
         <section className="flex w-full flex-col gap-14">
@@ -36,6 +33,7 @@ export default function Home() {
           </h2>
           <StoreTop3Section />
         </section>
+        <BestItemSection />
       </main>
       <CustomerNav />
     </div>

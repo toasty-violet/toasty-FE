@@ -23,3 +23,14 @@ export interface FollowedStore {
   shopImageUrl: string;
   products: FollowedStoreProduct[];
 }
+
+/** 손님이 보는 스토어 상세. 비로그인이면 following 이 false 로 온다. */
+export interface SellerProfile {
+  sellerId: number;
+  shopImageUrl: string | null;
+  shopName: string;
+  followerCount: number;
+  productCount: number;
+  description: string;
+  following: boolean;
+}

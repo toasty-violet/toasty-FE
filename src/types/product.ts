@@ -61,6 +61,43 @@ export const PRODUCT_ERROR_CODE = {
   LAST_IN_LIVE: "PRODUCT_LAST_IN_LIVE",
 } as const;
 
+/** 손님이 보는 스토어 화면의 상품 한 장. */
+export interface StoreProduct {
+  productId: number;
+  name: string;
+  price: number;
+  imageUrl: string | null;
+}
+
+export interface StoreProductsPage {
+  items: StoreProduct[];
+  /** 이어 받을 때 그대로 넘긴다. 더 없으면 null. */
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+/** 손님이 보는 상품 상세. 스토어 정보는 sellerId 로 따로 부른다. */
+export interface ProductDetail {
+  productId: number;
+  sellerId: number;
+  name: string;
+  price: number;
+  description: string;
+  /** 노출 순서대로. 첫 장이 대표 사진. */
+  imageUrls: string[];
+  /** 같은 스토어의 다른 상품. 이 상품은 빠져 있고 최대 3개가 온다. */
+  otherProducts: StoreProduct[];
+}
+
+/** 홈 베스트 아이템 카드 한 장. 사진이나 스토어를 못 찾으면 null 로 온다. */
+export interface BestProduct {
+  productId: number;
+  shopName: string | null;
+  name: string;
+  price: number;
+  imageUrl: string | null;
+}
+
 export interface ProductImageUploadFile {
   contentType: string;
   contentLength: number;

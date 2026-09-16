@@ -7,7 +7,7 @@ import {
   ORDER_STATUS,
   formatPaidDate,
 } from "@/app/(customer)/orders/_components/order-status";
-import { OrderProductRow } from "@/app/(customer)/orders/_components/OrderProductRow";
+import { OrderProductRow } from "@/components/cards/OrderProductRow";
 import type { SellerOrder } from "@/types/order";
 
 import { WaybillForm } from "./WaybillForm";

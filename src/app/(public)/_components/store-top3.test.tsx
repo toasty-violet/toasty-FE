@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -157,5 +157,48 @@ describe("StoreTop3Section", () => {
 
     expect(await screen.findByRole("button", { name: "팔로우" })).toBeVisible();
     expect(screen.getByText("팔로워 1,240 · 상품 98")).toBeInTheDocument();
+  });
+
+  // /stores/top 은 인증 없이도 200 으로 오므로 부팅 중 조회는 following 이 모두 false 다.
+  // 인증이 확정된 뒤 다시 조회하지 않으면 로그인한 사람에게도 "팔로우" 로 남는다.
+  it("부팅이 끝나 로그인이 확정되면 목록을 다시 조회한다", async () => {
+    getTopStoresMock
+      .mockResolvedValueOnce([store({ following: false })])
+      .mockResolvedValueOnce([store({ following: true })]);
+    renderSection("loading");
+
+    expect(await screen.findByRole("button", { name: "팔로우" })).toBeVisible();
+
+    act(() => {
+      useAuthStore.setState({
+        status: "authed",
+        accessToken: "token",
+        isLoggedIn: true,
+      });
+    });
+
+    expect(await screen.findByRole("button", { name: "팔로잉" })).toBeVisible();
+    expect(getTopStoresMock).toHaveBeenCalledTimes(2);
+  });
+
+  // 로그아웃 후 이전 사람의 팔로우 상태가 캐시에 남으면 안 된다.
+  it("로그아웃이 확정되면 목록을 다시 조회한다", async () => {
+    getTopStoresMock
+      .mockResolvedValueOnce([store({ following: true })])
+      .mockResolvedValueOnce([store({ following: false })]);
+    renderSection("authed");
+
+    expect(await screen.findByRole("button", { name: "팔로잉" })).toBeVisible();
+
+    act(() => {
+      useAuthStore.setState({
+        status: "guest",
+        accessToken: null,
+        isLoggedIn: false,
+      });
+    });
+
+    expect(await screen.findByRole("button", { name: "팔로우" })).toBeVisible();
+    expect(getTopStoresMock).toHaveBeenCalledTimes(2);
   });
 });

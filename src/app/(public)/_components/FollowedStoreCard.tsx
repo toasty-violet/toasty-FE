@@ -38,7 +38,7 @@ export function FollowedStoreCard({ store }: FollowedStoreCardProps) {
         {store.products.map((product) => (
           <li key={product.productId}>
             <Link
-              href={`/shop/${store.sellerId}/${product.productId}`}
+              href={`/products/${product.productId}`}
               className="flex w-full flex-col gap-12"
             >
               <div className="rounded-8 bg-bg-neutral-weak aspect-square w-full overflow-hidden">
