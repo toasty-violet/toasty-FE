@@ -331,7 +331,7 @@ export function BroadcastPanel({
         </div>
 
         {status === "live" && (
-          <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+          <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
             {!chat.unavailable && <LiveChatOverlay messages={chat.messages} />}
 
             <LiveProductBar
