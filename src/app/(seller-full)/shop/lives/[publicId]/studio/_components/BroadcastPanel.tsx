@@ -270,9 +270,9 @@ export function BroadcastPanel({
       {/* 카메라 화면이 배경이고, 상단 바와 하단 영역이 그 위에 얹힌다. */}
       <canvas
         ref={canvasRef}
-        // 꽉 채우면 화면이 9:16 보다 길쭉한 만큼 좌우를 또 잘라내, 시청자가 보는 것보다
-        // 확대되어 보인다. 나가는 화면 그대로 보도록 안에 맞춘다.
-        className="absolute inset-0 size-full object-contain"
+        // 안에 맞추면 화면이 9:16 보다 길쭉한 만큼 위아래가 검게 남아, 화면을 채운다.
+        // 그만큼 셀러 미리보기는 시청자가 보는 것보다 좌우가 조금 더 잘린다.
+        className="absolute inset-0 size-full object-cover"
       />
 
       <div className="relative flex flex-1 flex-col">
