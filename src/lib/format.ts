@@ -13,3 +13,16 @@ export function formatCountOrDash(value: number | null | undefined, unit = "") {
 
   return `${isEmpty ? "-" : formatThousand(value)}${unit}`;
 }
+
+/**
+ * 설정한 금액을 적는다. 0 원은 무료로 정해 둔 값이라 그대로 적고,
+ * 못 받아온 것(null)만 "-" 로 바꾼다.
+ */
+export function formatAmountOrDash(
+  value: number | null | undefined,
+  unit = "",
+) {
+  const isEmpty = value === null || value === undefined;
+
+  return `${isEmpty ? "-" : formatThousand(value)}${unit}`;
+}

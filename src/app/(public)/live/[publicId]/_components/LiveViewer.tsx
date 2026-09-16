@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import AlertRoundIcon from "@/assets/AlertRound.svg";
 import CloseIcon from "@/assets/Close.svg";
 import SoundOffIcon from "@/assets/SoundOff.svg";
+import SoundOnIcon from "@/assets/SoundOn.svg";
 import { Button } from "@/components/buttons/Button";
 import { LiveChatInput } from "@/app/live/_components/LiveChatInput";
 import { LiveChatOverlay } from "@/app/live/_components/LiveChatOverlay";
@@ -24,7 +25,7 @@ import { PaymentConfirmSheet } from "@/components/overlays/PaymentConfirmSheet";
 import { PaymentDoneModal } from "@/components/overlays/PaymentDoneModal";
 import { ApiRequestError } from "@/lib/api-error";
 import { useAuthStore } from "@/store/auth-store";
-import { LIVE_ERROR_CODE } from "@/types/live";
+import { LIVE_ERROR_CODE, type LiveProduct } from "@/types/live";
 
 import { LivePlayer } from "./LivePlayer";
 import { ViewerProductBar } from "./ViewerProductBar";
@@ -32,16 +33,19 @@ import { ViewerProductsSheet } from "./ViewerProductsSheet";
 
 const POLL_MS = 4000;
 
-/** 채팅은 비로그인도 할 수 있고 구매만 막힌다. 눌러 바로 로그인으로 간다. */
-function GuestNotice({ onClick }: { onClick: () => void }) {
+// 안내가 스스로 사라지는 시간.
+const GUEST_TOAST_MS = 3000;
+
+/** 비로그인이 구매를 누른 그때만 뜬다. 눌러 바로 로그인으로 간다. */
+function GuestToast({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex w-fit items-center gap-8 rounded-full px-16 py-8"
+      className="bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted absolute inset-x-0 top-1/2 mx-auto flex w-fit -translate-y-1/2 items-center gap-8 rounded-full px-16 py-8"
     >
       <AlertRoundIcon className="size-18 shrink-0 [&_path]:fill-current" />
-      로그인하면 구매할 수 있어요.
+      로그인 후 상품 구매가 가능해요.
     </button>
   );
 }
@@ -58,10 +62,28 @@ export function LiveViewer({ publicId }: { publicId: string }) {
   const isGuest = authStatus === "guest";
   const goLogin = () => router.push("/login");
 
+  // 안내는 구매를 눌렀을 때만 띄운다. 계속 떠 있으면 채팅을 가린다.
+  const [guestToast, setGuestToast] = useState(false);
+  useEffect(() => {
+    if (!guestToast) return;
+
+    const hide = window.setTimeout(() => setGuestToast(false), GUEST_TOAST_MS);
+    return () => window.clearTimeout(hide);
+  }, [guestToast]);
+
+  /** 비로그인이면 사지 못하므로 안내만 띄운다. */
+  const buy = (product: LiveProduct) => {
+    if (isGuest) {
+      setGuestToast(true);
+      return;
+    }
+    purchase.buy(product);
+  };
+
   // 결제창은 이 화면을 떠났다 successUrl 로 돌아온다. 승인은 그때 이어진다.
   const purchase = usePurchase({ returnPath: `/live/${publicId}` });
-  // 로그인 여부가 확정되기 전(loading)에 구매를 열면 잠깐 눌리다가 잠긴다.
-  const buyDisabled = authStatus !== "authed" || purchase.pending;
+  // 비로그인도 눌러야 안내가 뜬다. 로그인 여부가 확정되기 전에만 잠근다.
+  const buyDisabled = authStatus === "loading" || purchase.pending;
 
   const {
     data: live,
@@ -153,11 +175,14 @@ export function LiveViewer({ publicId }: { publicId: string }) {
               <button
                 type="button"
                 aria-label={muted ? "소리 켜기" : "소리 끄기"}
-                aria-pressed={muted}
                 onClick={() => setMuted((on) => !on)}
-                className={`text-fg-neutral-inverted shrink-0 ${muted ? "" : "opacity-50"}`}
+                className="text-fg-neutral-inverted shrink-0"
               >
-                <SoundOffIcon className="size-24 [&_path]:fill-current" />
+                {muted ? (
+                  <SoundOffIcon className="size-24 [&_path]:fill-current" />
+                ) : (
+                  <SoundOnIcon className="size-24 [&_path]:fill-current" />
+                )}
               </button>
               <button
                 type="button"
@@ -203,20 +228,28 @@ export function LiveViewer({ publicId }: { publicId: string }) {
               </p>
             )}
 
-            {/* 구매만 막히므로 안내는 상품줄 위에 둔다. 채팅 입력줄은 가리지 않는다. */}
-            {isGuest && <GuestNotice onClick={goLogin} />}
-
             <ViewerProductBar
               pinned={pinned}
               totalCount={list.length}
               buyDisabled={buyDisabled}
               onOpenAllProducts={() => setProductsOpen(true)}
-              onBuy={() => pinned && purchase.buy(pinned)}
+              onBuy={() => pinned && buy(pinned)}
             />
 
             {/* 채팅방이 없는 라이브는 붙을 곳이 없어 입력줄을 두지 않는다. */}
             {!chat.unavailable && (
-              <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
+              // 안내는 입력줄 위에 얹혀 자리를 차지하지 않는다.
+              <div className="relative w-full">
+                <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
+                {guestToast && <GuestToast onClick={goLogin} />}
+              </div>
+            )}
+
+            {/* 입력줄이 없으면 안내만 제 줄로 띄운다. */}
+            {chat.unavailable && guestToast && (
+              <div className="relative h-[4.4rem] w-full">
+                <GuestToast onClick={goLogin} />
+              </div>
             )}
           </div>
         )}
@@ -231,7 +264,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         onBuy={(product) => {
           // 확인 시트가 상품 시트 위로 겹치지 않게 먼저 닫는다.
           setProductsOpen(false);
-          purchase.buy(product);
+          buy(product);
         }}
       />
 

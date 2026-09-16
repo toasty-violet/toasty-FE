@@ -102,29 +102,31 @@ describe("LiveViewer 구매 잠금", () => {
     expect(
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeDisabled();
-    // 아직 비로그인이 확정된 게 아니라 로그인 안내는 띄우지 않는다.
-    expect(screen.queryByText("로그인하면 구매할 수 있어요.")).toBeNull();
   });
 
-  it("비로그인이 확정되면 구매를 잠그고 로그인으로 안내한다", async () => {
+  // 안내가 계속 떠 있으면 채팅을 가린다. 누른 그때만 띄운다.
+  it("비로그인은 구매를 눌러야 안내가 뜬다", async () => {
     renderViewer("guest");
 
+    const buy = await screen.findByRole("button", { name: "구매하기" });
+    expect(buy).toBeEnabled();
+    expect(screen.queryByText("로그인 후 상품 구매가 가능해요.")).toBeNull();
+
+    await userEvent.click(buy);
+
     expect(
-      await screen.findByRole("button", { name: "구매하기" }),
-    ).toBeDisabled();
-    expect(
-      screen.getByText("로그인하면 구매할 수 있어요."),
+      screen.getByText("로그인 후 상품 구매가 가능해요."),
     ).toBeInTheDocument();
   });
 
-  // 채팅이 왜 막혔는지 알려 주고, 그 자리에서 바로 로그인으로 보낸다.
-  it("비로그인 안내를 누르면 로그인으로 보낸다", async () => {
+  it("안내를 누르면 로그인으로 보낸다", async () => {
     renderViewer("guest");
 
     await userEvent.click(
-      await screen.findByRole("button", {
-        name: /로그인하면 구매할 수 있어요/,
-      }),
+      await screen.findByRole("button", { name: "구매하기" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /로그인 후 상품 구매가 가능해요/ }),
     );
 
     expect(pushMock).toHaveBeenCalledWith("/login");
@@ -199,18 +201,19 @@ describe("LiveViewer 채팅방이 없을 때", () => {
     );
   });
 
-  // 입력줄이 사라져도 구매 안내는 남아야 한다.
-  it("비로그인 안내는 그대로 보여준다", async () => {
+  // 겹칠 입력줄이 없어도 안내는 제 자리로 떠야 한다.
+  it("입력줄이 없어도 구매 안내는 뜬다", async () => {
     noRoom();
     renderViewer("guest");
 
-    // 화면이 그려진 뒤에 봐야 한다. 아직 불러오는 중이면 무엇도 없어 그냥 통과한다.
-    await screen.findByRole("button", { name: "구매하기" });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "구매하기" }),
+    );
     await waitFor(() =>
       expect(screen.queryByRole("textbox", { name: "채팅 입력" })).toBeNull(),
     );
     expect(
-      screen.getByText("로그인하면 구매할 수 있어요."),
+      screen.getByText("로그인 후 상품 구매가 가능해요."),
     ).toBeInTheDocument();
   });
 });

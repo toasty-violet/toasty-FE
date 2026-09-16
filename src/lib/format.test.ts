@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { formatCountOrDash, formatThousand } from "./format";
+import {
+  formatAmountOrDash,
+  formatCountOrDash,
+  formatThousand,
+} from "./format";
 
 describe("formatThousand", () => {
   it("1,000 단위마다 쉼표를 붙인다", () => {
@@ -36,5 +40,21 @@ describe("formatCountOrDash", () => {
 
   it("단위가 없으면 - 만 적는다", () => {
     expect(formatCountOrDash(0)).toBe("-");
+  });
+});
+
+describe("formatAmountOrDash", () => {
+  // 무료배송으로 정해 둔 0 원을 "-" 로 적으면 설정하지 않은 것처럼 보인다.
+  it("0 원도 그대로 적는다", () => {
+    expect(formatAmountOrDash(0, "원")).toBe("0원");
+  });
+
+  it("값이 있으면 쉼표와 단위를 붙인다", () => {
+    expect(formatAmountOrDash(3000, "원")).toBe("3,000원");
+  });
+
+  it("못 받아온 값만 - 로 바꾼다", () => {
+    expect(formatAmountOrDash(null, "원")).toBe("-원");
+    expect(formatAmountOrDash(undefined, "원")).toBe("-원");
   });
 });

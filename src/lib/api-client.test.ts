@@ -55,7 +55,11 @@ async function loadClient() {
 function unauthorized(url: string, tokenUsed?: string) {
   return {
     response: { status: 401 },
-    config: { url, headers: {} as Record<string, string>, _tokenUsed: tokenUsed },
+    config: {
+      url,
+      headers: {} as Record<string, string>,
+      _tokenUsed: tokenUsed,
+    },
   };
 }
 
@@ -105,7 +109,9 @@ describe("토큰 재발급 직렬화", () => {
     await onRejected(unauthorized("/late", "old"));
 
     expect(postMock).not.toHaveBeenCalled();
-    expect(apiGetMock.mock.calls[0][0].headers.Authorization).toBe("Bearer new");
+    expect(apiGetMock.mock.calls[0][0].headers.Authorization).toBe(
+      "Bearer new",
+    );
   });
 
   it("재발급 실패 시 로그아웃 리다이렉트는 한 번만 실행된다", async () => {
@@ -158,5 +164,40 @@ describe("토큰 재발급 직렬화", () => {
     });
     await expect(requestRefresh()).resolves.toBe("second");
     expect(postMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+// 탭마다 메모리가 달라 앞의 Promise 공유로는 서로를 막지 못한다.
+// 서버는 쓴 토큰이 또 오면 유출로 보고 모든 기기를 로그아웃시키므로 한 번에 하나만 보내야 한다.
+describe("탭 간 재발급 직렬화", () => {
+  afterEach(() => {
+    Reflect.deleteProperty(navigator, "locks");
+  });
+
+  it("브라우저 잠금을 거쳐 재발급한다", async () => {
+    const held: string[] = [];
+    Object.defineProperty(navigator, "locks", {
+      configurable: true,
+      value: {
+        request: async (name: string, run: () => Promise<string>) => {
+          held.push(name);
+          return run();
+        },
+      },
+    });
+
+    const { requestRefresh } = await loadClient();
+    postMock.mockResolvedValue({ data: { data: { accessToken: "new" } } });
+
+    await expect(requestRefresh()).resolves.toBe("new");
+    expect(held).toEqual(["toasty-refresh"]);
+  });
+
+  it("잠금을 지원하지 않으면 그대로 재발급한다", async () => {
+    const { requestRefresh } = await loadClient();
+    postMock.mockResolvedValue({ data: { data: { accessToken: "new" } } });
+
+    await expect(requestRefresh()).resolves.toBe("new");
+    expect(postMock).toHaveBeenCalledWith("/refresh");
   });
 });
