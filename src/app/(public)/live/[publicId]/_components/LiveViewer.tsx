@@ -31,14 +31,23 @@ import { ViewerProductsSheet } from "./ViewerProductsSheet";
 
 const POLL_MS = 4000;
 
-function GuestNotice({ className = "" }: { className?: string }) {
+/** 비로그인은 채팅을 읽기만 할 수 있고 살 수도 없다. 눌러 바로 로그인으로 간다. */
+function GuestNotice({
+  className = "",
+  onClick,
+}: {
+  className?: string;
+  onClick: () => void;
+}) {
   return (
-    <p
+    <button
+      type="button"
+      onClick={onClick}
       className={`bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex w-fit items-center gap-8 rounded-full px-16 py-8 ${className}`}
     >
       <AlertRoundIcon className="size-18 shrink-0 [&_path]:fill-current" />
-      로그인 후 상품 구매가 가능해요.
-    </p>
+      로그인하면 채팅과 구매를 할 수 있어요.
+    </button>
   );
 }
 
@@ -195,13 +204,16 @@ export function LiveViewer({ publicId }: { publicId: string }) {
             />
 
             {chat.unavailable ? (
-              isGuest && <GuestNotice />
+              isGuest && <GuestNotice onClick={goLogin} />
             ) : (
               // 안내는 입력줄 위에 얹혀 자리를 차지하지 않는다.
               <div className="relative w-full">
                 <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
                 {isGuest && (
-                  <GuestNotice className="absolute inset-x-0 top-1/2 -translate-y-1/2" />
+                  <GuestNotice
+                    className="absolute inset-x-0 top-1/2 -translate-y-1/2"
+                    onClick={goLogin}
+                  />
                 )}
               </div>
             )}

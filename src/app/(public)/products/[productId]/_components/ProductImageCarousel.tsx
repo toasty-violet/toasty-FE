@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 import DefaultImage from "@/assets/DefaultImage.svg";
 
@@ -30,10 +31,17 @@ export function ProductImageCarousel({ imageUrls }: { imageUrls: string[] }) {
         }}
         className="scrollbar-hidden flex size-full snap-x snap-mandatory overflow-x-auto"
       >
-        {imageUrls.map((imageUrl) => (
-          <li key={imageUrl} className="size-full shrink-0 snap-start">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imageUrl} alt="" className="size-full object-cover" />
+        {imageUrls.map((imageUrl, index) => (
+          <li key={imageUrl} className="relative size-full shrink-0 snap-start">
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              // 첫 장은 화면을 열자마자 보이는 자리라 먼저 받는다.
+              priority={index === 0}
+              className="object-cover"
+            />
           </li>
         ))}
       </ul>

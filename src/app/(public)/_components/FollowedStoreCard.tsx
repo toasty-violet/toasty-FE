@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import DefaultImage from "@/assets/DefaultImage.svg";
-import { formatThousand } from "@/lib/format";
+import { ProductGridCard } from "@/components/cards/ProductGridCard";
+import { isRenderableImageSrc } from "@/lib/upload";
 import type { FollowedStore } from "@/types/store";
 
 type FollowedStoreCardProps = {
@@ -16,13 +18,14 @@ export function FollowedStoreCard({ store }: FollowedStoreCardProps) {
         href={`/shop/${store.sellerId}`}
         className="flex w-full items-center gap-8"
       >
-        <div className="border-stroke-neutral-weak bg-bg-neutral-weak size-[3rem] shrink-0 overflow-hidden rounded-full border">
-          {store.shopImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+        <div className="border-stroke-neutral-weak bg-bg-neutral-weak relative size-[3rem] shrink-0 overflow-hidden rounded-full border">
+          {isRenderableImageSrc(store.shopImageUrl) ? (
+            <Image
               src={store.shopImageUrl}
               alt=""
-              className="size-full object-cover"
+              fill
+              sizes="30px"
+              className="object-cover"
             />
           ) : (
             <DefaultImage className="size-full" />
@@ -36,34 +39,14 @@ export function FollowedStoreCard({ store }: FollowedStoreCardProps) {
       {/* 상품은 최대 3개가 한 줄에 들어간다. 적게 와도 칸 너비는 3분할로 고정한다. */}
       <ul className="grid w-full grid-cols-3 gap-12">
         {store.products.map((product) => (
-          <li key={product.productId}>
-            <Link
-              href={`/products/${product.productId}`}
-              className="flex w-full flex-col gap-12"
-            >
-              <div className="rounded-8 bg-bg-neutral-weak aspect-square w-full overflow-hidden">
-                {/* 사진을 등록하지 않은 상품은 기본 이미지로 채운다. */}
-                {product.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={product.imageUrl}
-                    alt=""
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  <DefaultImage className="size-full" />
-                )}
-              </div>
-              <div className="flex w-full flex-col gap-8 px-2">
-                <p className="text-l5-regular text-fg-neutral-solid w-full truncate">
-                  {product.name}
-                </p>
-                <p className="text-l5-semibold text-fg-neutral-solid w-full truncate">
-                  {formatThousand(product.price)}원
-                </p>
-              </div>
-            </Link>
-          </li>
+          <ProductGridCard
+            key={product.productId}
+            productId={product.productId}
+            name={product.name}
+            price={product.price}
+            imageUrl={product.imageUrl}
+            aspect="square"
+          />
         ))}
       </ul>
     </li>

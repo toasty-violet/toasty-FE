@@ -61,7 +61,6 @@ export function StoreProfileCard({
               alt=""
               fill
               sizes="48px"
-              unoptimized
               className="object-cover"
             />
           ) : (

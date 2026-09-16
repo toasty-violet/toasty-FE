@@ -34,7 +34,6 @@ export function LiveHeader({
               alt=""
               fill
               sizes="32px"
-              unoptimized
               className="object-cover"
             />
           )}

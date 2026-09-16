@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import DefaultImage from "@/assets/DefaultImage.svg";
 import { formatThousand } from "@/lib/format";
+import { isRenderableImageSrc } from "@/lib/upload";
 import type { PublicLive } from "@/types/live";
 
 import { formatLiveStartAt } from "./live-now-format";
@@ -100,16 +102,17 @@ function ReadyThumbnail({ live, onToggleFollow }: LiveNowCardProps) {
 
 /** 카드 바닥에 깔리는 사진. 없으면 기본 이미지로 채운다. */
 function CardImage({ src }: { src: string }) {
-  if (!src) {
+  if (!isRenderableImageSrc(src)) {
     return <DefaultImage className="absolute inset-0 size-full" />;
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src={src}
       alt=""
-      className="absolute inset-0 size-full object-cover"
+      fill
+      sizes="228px"
+      className="object-cover"
       draggable={false}
     />
   );
@@ -118,14 +121,15 @@ function CardImage({ src }: { src: string }) {
 function ProfileImage({ src, className }: { src: string; className: string }) {
   return (
     <div
-      className={`border-stroke-neutral-weak bg-bg-neutral-weak shrink-0 overflow-hidden rounded-full border ${className}`}
+      className={`border-stroke-neutral-weak bg-bg-neutral-weak relative shrink-0 overflow-hidden rounded-full border ${className}`}
     >
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+      {isRenderableImageSrc(src) ? (
+        <Image
           src={src}
           alt=""
-          className="size-full object-cover"
+          fill
+          sizes="72px"
+          className="object-cover"
           draggable={false}
         />
       ) : (
