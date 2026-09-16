@@ -28,7 +28,6 @@ import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
-import { fitStreamResolution } from "./stream-resolution";
 import { LiveNotice } from "@/app/live/_components/LiveNotice";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
@@ -102,8 +101,10 @@ export function BroadcastPanel({
 
       // 카메라와 마이크는 따로 요청한다. SDK가 각각을 별도 입력으로 받는다.
       // 얻는 즉시 streams 에 넣어야 중간에 정리가 지나가도 트랙을 놓치지 않는다.
+      // 비율까지 정해 요청하면 브라우저가 센서를 먼저 잘라 맞춰 화면이 더 확대된다.
+      // 카메라가 보는 그대로 받고, 세로 화면에 맞추는 일은 SDK 한 번으로 끝낸다.
       const videoStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 720 }, height: { ideal: 1280 } },
+        video: { height: { ideal: 1280 } },
       });
       streams.push(videoStream);
       const audioStream = await navigator.mediaDevices.getUserMedia({
@@ -116,14 +117,11 @@ export function BroadcastPanel({
         return;
       }
 
-      // 요청한 720×1280 을 주지 않는 카메라도 있어, 실제로 받은 비율을 그대로 따른다.
-      const { width = 720, height = 1280 } = videoStream
-        .getVideoTracks()[0]
-        .getSettings();
-
       client = IVSBroadcastClient.create({
+        // 시청 화면이 세로라 송출도 9:16 으로 내보낸다.
+        // 카메라(보통 4:3)와 비율이 달라 SDK 가 좌우를 잘라 채운다.
         streamConfig: {
-          maxResolution: fitStreamResolution(width, height),
+          maxResolution: { width: 720, height: 1280 },
           maxFramerate: 30,
           maxBitrate: 2500,
         },
@@ -272,7 +270,9 @@ export function BroadcastPanel({
       {/* 카메라 화면이 배경이고, 상단 바와 하단 영역이 그 위에 얹힌다. */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 size-full object-cover"
+        // 꽉 채우면 화면이 9:16 보다 길쭉한 만큼 좌우를 또 잘라내, 시청자가 보는 것보다
+        // 확대되어 보인다. 나가는 화면 그대로 보도록 안에 맞춘다.
+        className="absolute inset-0 size-full object-contain"
       />
 
       <div className="relative flex flex-1 flex-col">
