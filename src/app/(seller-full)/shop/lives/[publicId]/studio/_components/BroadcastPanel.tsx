@@ -29,6 +29,7 @@ import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
+import { STREAM_CANVAS, coverCameraOnCanvas } from "./stream-resolution";
 import { LiveNotice } from "@/app/live/_components/LiveNotice";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
@@ -130,11 +131,14 @@ export function BroadcastPanel({
         return;
       }
 
+      const { width = 720, height = 1280 } = videoStream
+        .getVideoTracks()[0]
+        .getSettings();
+
       client = IVSBroadcastClient.create({
         // 시청 화면이 세로라 송출도 9:16 으로 내보낸다.
-        // 카메라(보통 4:3)와 비율이 달라 SDK 가 좌우를 잘라 채운다.
         streamConfig: {
-          maxResolution: { width: 720, height: 1280 },
+          maxResolution: { ...STREAM_CANVAS },
           maxFramerate: 30,
           maxBitrate: 2500,
         },
@@ -143,7 +147,11 @@ export function BroadcastPanel({
       if (canvasRef.current) {
         client.attachPreview(canvasRef.current);
       }
-      await client.addVideoInputDevice(videoStream, "camera", { index: 0 });
+      // 자리를 정해 주지 않으면 SDK 가 카메라를 안에 맞춰 위아래를 검게 둔다.
+      await client.addVideoInputDevice(videoStream, "camera", {
+        index: 0,
+        ...coverCameraOnCanvas(width, height),
+      });
       await client.addAudioInputDevice(audioStream, "mic");
 
       client.emitter.on(
@@ -196,9 +204,15 @@ export function BroadcastPanel({
         cameraConstraints(next),
       );
       const previous = cameraStreamRef.current;
+      const { width = 720, height = 1280 } = stream
+        .getVideoTracks()[0]
+        .getSettings();
 
       client.removeVideoInputDevice("camera");
-      await client.addVideoInputDevice(stream, "camera", { index: 0 });
+      await client.addVideoInputDevice(stream, "camera", {
+        index: 0,
+        ...coverCameraOnCanvas(width, height),
+      });
 
       previous?.getTracks().forEach((track) => track.stop());
       cameraStreamRef.current = stream;
