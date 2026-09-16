@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import AlertRoundIcon from "@/assets/AlertRound.svg";
 import CloseIcon from "@/assets/Close.svg";
+import SoundOffIcon from "@/assets/SoundOff.svg";
 import { Button } from "@/components/buttons/Button";
 import { LiveChatInput } from "@/app/live/_components/LiveChatInput";
 import { LiveChatOverlay } from "@/app/live/_components/LiveChatOverlay";
@@ -148,6 +149,16 @@ export function LiveViewer({ publicId }: { publicId: string }) {
           action={
             <div className="flex shrink-0 items-center gap-12">
               {isGuest && <Button label="로그인" size="xs" onClick={goLogin} />}
+              {/* 소리는 음소거로 시작한다. 켜는 것은 사용자가 눌러야 브라우저가 허락한다. */}
+              <button
+                type="button"
+                aria-label={muted ? "소리 켜기" : "소리 끄기"}
+                aria-pressed={muted}
+                onClick={() => setMuted((on) => !on)}
+                className={`text-fg-neutral-inverted shrink-0 ${muted ? "" : "opacity-50"}`}
+              >
+                <SoundOffIcon className="size-24 [&_path]:fill-current" />
+              </button>
               <button
                 type="button"
                 aria-label="닫기"
@@ -190,17 +201,6 @@ export function LiveViewer({ publicId }: { publicId: string }) {
               >
                 {purchase.message}
               </p>
-            )}
-
-            {/* 음소거로 시작하므로, 켤 때까지 켜는 자리를 띄워 둔다. */}
-            {muted && (
-              <button
-                type="button"
-                onClick={() => setMuted(false)}
-                className="bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex w-fit items-center gap-8 rounded-full px-16 py-8"
-              >
-                소리 켜기
-              </button>
             )}
 
             {/* 구매만 막히므로 안내는 상품줄 위에 둔다. 채팅 입력줄은 가리지 않는다. */}

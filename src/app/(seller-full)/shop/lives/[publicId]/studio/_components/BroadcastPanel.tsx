@@ -12,6 +12,7 @@ import {
   reissueBroadcastCredential,
   updateLiveProduct,
 } from "@/app/live/_lib/live-api";
+import CameraSwitchIcon from "@/assets/CameraSwitch.svg";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import { useLiveChat } from "@/app/live/_lib/use-live-chat";
 import type {
@@ -331,14 +332,18 @@ export function BroadcastPanel({
           }
           action={
             <div className="flex shrink-0 items-center gap-8">
-              {/* 디자인이 나오면 모양을 맞춘다. */}
               <button
                 type="button"
+                aria-label={
+                  facing === "user"
+                    ? "후면 카메라로 바꾸기"
+                    : "전면 카메라로 바꾸기"
+                }
                 onClick={() => void switchCamera()}
                 disabled={switching}
-                className="rounded-8 text-l5-semibold bg-bg-overlay-muted text-fg-neutral-inverted flex h-32 shrink-0 items-center justify-center px-12 disabled:opacity-60"
+                className="text-fg-neutral-inverted shrink-0 disabled:opacity-60"
               >
-                {facing === "user" ? "후면" : "전면"}
+                <CameraSwitchIcon className="size-24 [&_path]:fill-current" />
               </button>
               <button
                 type="button"
