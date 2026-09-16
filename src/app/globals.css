@@ -32,19 +32,9 @@ body {
   font-family: var(--font-sans);
 }
 
-/* 바탕이 흰색이 아닌 화면에서는 상태바 자리도 그 색으로 맞춘다. */
-body[data-status-bar="dark"] {
-  background: #000000;
-}
-
-body[data-status-bar="brand"] {
-  background: var(--color-bg-brand-solid);
-}
-
 /* 앱 프레임을 가운데 두는 데스크톱에서만 바깥을 어둡게 둔다. */
 @media (min-width: 40rem) {
-  body,
-  body[data-status-bar] {
+  body {
     background: var(--background);
   }
 }
