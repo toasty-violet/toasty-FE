@@ -194,8 +194,11 @@ export interface PublicLive {
   title: string;
   scheduledAt: string;
   playbackUrl: string;
-  /** 셀러가 등록하지 않았으면 빈 문자열로 온다. */
-  thumbnailUrl: string;
+  /**
+   * 방송 중 화면에서 서버가 만들어 둔 썸네일.
+   * 방송을 막 시작해 아직 찍히기 전이면 비어 있다.
+   */
+  thumbnailUrl: string | null;
   viewerCount: number;
   seller: SellerProfile;
   following: boolean;

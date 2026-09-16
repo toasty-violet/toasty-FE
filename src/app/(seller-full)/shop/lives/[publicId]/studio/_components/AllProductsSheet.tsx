@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC, SVGProps } from "react";
+import { Fragment, type FC, type SVGProps } from "react";
 
 import { ProductSheet } from "@/app/live/_components/ProductSheet";
 import { ProductSummary } from "@/app/live/_components/ProductSummary";
@@ -112,14 +112,18 @@ export function AllProductsSheet({
 }) {
   return (
     <ProductSheet open={open} isEmpty={products.length === 0} onClose={onClose}>
-      {products.map((product) => (
-        <ProductRow
-          key={product.productId}
-          product={product}
-          isPinned={product.productId === pinnedProductId}
-          onEdit={() => onEdit(product)}
-          onPin={() => onPin(product)}
-        />
+      {products.map((product, index) => (
+        <Fragment key={product.productId}>
+          {index > 0 && (
+            <li className="bg-stroke-neutral-weak h-px w-full" aria-hidden />
+          )}
+          <ProductRow
+            product={product}
+            isPinned={product.productId === pinnedProductId}
+            onEdit={() => onEdit(product)}
+            onPin={() => onPin(product)}
+          />
+        </Fragment>
       ))}
     </ProductSheet>
   );

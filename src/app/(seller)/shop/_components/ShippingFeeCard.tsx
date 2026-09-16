@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { formatCountOrDash } from "@/lib/format";
+import { formatAmountOrDash } from "@/lib/format";
 import { fetchSellerShop } from "@/lib/user";
 
 export function ShippingFeeCard() {
@@ -19,15 +19,15 @@ export function ShippingFeeCard() {
   const rows = [
     {
       label: "기본 배송비",
-      text: formatCountOrDash(shippingFee?.baseShippingFee, "원"),
+      text: formatAmountOrDash(shippingFee?.baseShippingFee, "원"),
     },
     {
       label: "무료배송 기준 금액",
-      text: formatCountOrDash(shippingFee?.freeShippingThreshold, "원"),
+      text: formatAmountOrDash(shippingFee?.freeShippingThreshold, "원"),
     },
     {
       label: "도서산간 배송비",
-      text: formatCountOrDash(shippingFee?.remoteAreaShippingFee, "원"),
+      text: formatAmountOrDash(shippingFee?.remoteAreaShippingFee, "원"),
     },
   ];
 

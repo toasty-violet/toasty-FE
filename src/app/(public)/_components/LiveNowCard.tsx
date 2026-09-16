@@ -101,7 +101,7 @@ function ReadyThumbnail({ live, onToggleFollow }: LiveNowCardProps) {
 }
 
 /** 카드 바닥에 깔리는 사진. 없으면 기본 이미지로 채운다. */
-function CardImage({ src }: { src: string }) {
+function CardImage({ src }: { src: string | null }) {
   if (!isRenderableImageSrc(src)) {
     return <DefaultImage className="absolute inset-0 size-full" />;
   }
