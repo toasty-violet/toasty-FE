@@ -42,47 +42,44 @@ export function Header({
   const RightIcon = rightIconName && RIGHT_ICONS[rightIconName];
 
   return (
-    // 홈 화면에 추가해 열면 화면이 상태바 밑까지 깔린다. 그만큼 위를 비워 둔다.
-    <header className="bg-bg-layer-default sticky top-0 z-10 w-full shrink-0 pt-[env(safe-area-inset-top)]">
-      <div className="relative h-[5rem] w-full">
-        {showBack && (
+    <header className="bg-bg-layer-default sticky top-0 z-10 h-[5rem] w-full shrink-0">
+      {showBack && (
+        <button
+          type="button"
+          onClick={() => (onBack ? onBack() : router.back())}
+          aria-label="뒤로 가기"
+          className="absolute top-1/2 left-20 -translate-y-1/2"
+        >
+          <BackIcon className="size-24" />
+        </button>
+      )}
+
+      {title && (
+        <h1 className="text-st1-semibold text-fg-neutral-solid absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap">
+          {title}
+        </h1>
+      )}
+
+      {RightIcon &&
+        (rightHref ? (
+          <Link
+            href={rightHref}
+            aria-label={rightLabel}
+            className="absolute top-1/2 right-20 -translate-y-1/2"
+          >
+            <RightIcon className="size-24" />
+          </Link>
+        ) : (
+          // 갈 곳이 없으면 자리는 지키되 누를 수 없게 둔다.
           <button
             type="button"
-            onClick={() => (onBack ? onBack() : router.back())}
-            aria-label="뒤로 가기"
-            className="absolute top-1/2 left-20 -translate-y-1/2"
+            disabled
+            aria-label={rightLabel}
+            className="absolute top-1/2 right-20 -translate-y-1/2 opacity-40"
           >
-            <BackIcon className="size-24" />
+            <RightIcon className="size-24" />
           </button>
-        )}
-
-        {title && (
-          <h1 className="text-st1-semibold text-fg-neutral-solid absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap">
-            {title}
-          </h1>
-        )}
-
-        {RightIcon &&
-          (rightHref ? (
-            <Link
-              href={rightHref}
-              aria-label={rightLabel}
-              className="absolute top-1/2 right-20 -translate-y-1/2"
-            >
-              <RightIcon className="size-24" />
-            </Link>
-          ) : (
-            // 갈 곳이 없으면 자리는 지키되 누를 수 없게 둔다.
-            <button
-              type="button"
-              disabled
-              aria-label={rightLabel}
-              className="absolute top-1/2 right-20 -translate-y-1/2 opacity-40"
-            >
-              <RightIcon className="size-24" />
-            </button>
-          ))}
-      </div>
+        ))}
     </header>
   );
 }

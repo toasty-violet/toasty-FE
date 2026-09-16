@@ -174,7 +174,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
 
         {/* 방송 중이 아니면 살 수 없으므로 상품 영역을 두지 않는다. */}
         {broadcasting && (
-          <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+          <div className="flex w-full flex-col gap-12 bg-gradient-to-b from-transparent to-[#1a1c2099] to-40% px-20 pt-48 pb-20">
             {!chat.unavailable && <LiveChatOverlay messages={chat.messages} />}
 
             {purchase.message && (
