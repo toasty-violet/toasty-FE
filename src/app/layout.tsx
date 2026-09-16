@@ -49,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           id={APP_FRAME_ID}
           className="relative mx-auto h-dvh w-full overflow-hidden bg-white sm:h-[84.4rem] sm:max-w-[39rem] sm:rounded-[0.5rem]"
         >
-          <div className="scrollbar-hidden flex size-full flex-col overflow-y-auto">
+          <div className="scrollbar-hidden flex size-full flex-col overflow-y-auto overscroll-contain">
             <QueryProvider>
               <AuthProvider>{children}</AuthProvider>
             </QueryProvider>

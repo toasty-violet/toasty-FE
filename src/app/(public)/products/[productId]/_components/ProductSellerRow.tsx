@@ -93,7 +93,6 @@ export function ProductSellerRow({ sellerId }: { sellerId: number }) {
               alt=""
               fill
               sizes="32px"
-              unoptimized
               className="object-cover"
             />
           ) : (

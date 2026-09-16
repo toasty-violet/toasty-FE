@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { APP_FRAME_ID } from "@/components/overlays/app-frame";
@@ -10,8 +11,10 @@ import { LIVE_ERROR_CODE } from "@/types/live";
 
 import { LiveViewer } from "./LiveViewer";
 
+const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), back: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: pushMock, back: vi.fn(), replace: vi.fn() }),
   // 구매 흐름이 결제창 복귀 쿼리를 읽는다. 기본은 복귀하지 않은 상태다.
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -76,6 +79,7 @@ function renderViewer(status: AuthStatus) {
 }
 
 beforeEach(() => {
+  pushMock.mockReset();
   issueChatToken.mockResolvedValue({
     token: "t",
     expiresAt: "2026-09-11T01:00:00Z",
@@ -95,7 +99,9 @@ describe("LiveViewer 구매 잠금", () => {
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeDisabled();
     // 아직 비로그인이 확정된 게 아니라 로그인 안내는 띄우지 않는다.
-    expect(screen.queryByText("로그인 후 상품 구매가 가능해요.")).toBeNull();
+    expect(
+      screen.queryByText("로그인하면 채팅과 구매를 할 수 있어요."),
+    ).toBeNull();
   });
 
   it("비로그인이 확정되면 구매를 잠그고 로그인으로 안내한다", async () => {
@@ -105,8 +111,21 @@ describe("LiveViewer 구매 잠금", () => {
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeDisabled();
     expect(
-      screen.getByText("로그인 후 상품 구매가 가능해요."),
+      screen.getByText("로그인하면 채팅과 구매를 할 수 있어요."),
     ).toBeInTheDocument();
+  });
+
+  // 채팅이 왜 막혔는지 알려 주고, 그 자리에서 바로 로그인으로 보낸다.
+  it("비로그인 안내를 누르면 로그인으로 보낸다", async () => {
+    renderViewer("guest");
+
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: /로그인하면 채팅과 구매를 할 수 있어요/,
+      }),
+    );
+
+    expect(pushMock).toHaveBeenCalledWith("/login");
   });
 
   it("로그인했으면 구매를 연다", async () => {
@@ -171,8 +190,8 @@ describe("LiveViewer 채팅방이 없을 때", () => {
       expect(screen.queryByRole("textbox", { name: "채팅 입력" })).toBeNull(),
     );
     // 겹칠 입력줄이 없으니 제 줄로 나와야 한다. 겹친 채로 두면 화면에서 사라진다.
-    expect(screen.getByText("로그인 후 상품 구매가 가능해요.")).not.toHaveClass(
-      "absolute",
-    );
+    expect(
+      screen.getByText("로그인하면 채팅과 구매를 할 수 있어요."),
+    ).not.toHaveClass("absolute");
   });
 });

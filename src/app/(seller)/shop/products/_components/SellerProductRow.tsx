@@ -28,7 +28,6 @@ export function SellerProductRow({
           alt=""
           fill
           sizes="68px"
-          unoptimized
           className="object-cover"
         />
       </span>

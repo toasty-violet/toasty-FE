@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import DefaultImage from "@/assets/DefaultImage.svg";
 import { formatThousand } from "@/lib/format";
+import { isRenderableImageSrc } from "@/lib/upload";
 
 /**
  * 그리드에 놓는 상품 한 장. 카드 전체가 상품 상세로 가는 링크다.
@@ -30,14 +32,20 @@ export function ProductGridCard({
         className="flex w-full flex-col gap-12"
       >
         <div
-          className={`rounded-8 bg-bg-neutral-weak w-full overflow-hidden ${
+          className={`rounded-8 bg-bg-neutral-weak relative w-full overflow-hidden ${
             aspect === "square" ? "aspect-square" : "aspect-[4/5]"
           }`}
         >
           {/* 사진을 등록하지 않은 상품은 기본 이미지로 채운다. */}
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="" className="size-full object-cover" />
+          {isRenderableImageSrc(imageUrl) ? (
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              // 2열이면 화면 절반, 3열이면 3분의 1 자리를 차지한다.
+              sizes={aspect === "square" ? "33vw" : "50vw"}
+              className="object-cover"
+            />
           ) : (
             <DefaultImage className="size-full" />
           )}

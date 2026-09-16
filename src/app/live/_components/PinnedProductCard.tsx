@@ -33,7 +33,6 @@ export function PinnedProductCard({
           alt=""
           fill
           sizes="48px"
-          unoptimized
           className="object-cover"
         />
       </span>

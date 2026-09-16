@@ -54,7 +54,7 @@ export function BottomSheet({
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(event) => event.stopPropagation()}
-        className="bg-bg-layer-default rounded-t-20 scrollbar-hidden relative flex max-h-[min(68rem,100%)] w-full flex-col items-center gap-24 overflow-y-auto px-20 pt-32 pb-20"
+        className="bg-bg-layer-default rounded-t-20 scrollbar-hidden relative flex max-h-[min(68rem,100%)] w-full flex-col items-center gap-24 overflow-y-auto overscroll-contain px-20 pt-32 pb-20"
       >
         <span className="bg-fg-neutral-disabled absolute top-8 h-4 w-[4.4rem] rounded-full" />
 
