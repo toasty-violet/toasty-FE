@@ -28,6 +28,7 @@ import { ConfirmModal } from "@/components/overlays/ConfirmModal";
 import { AllProductsSheet } from "./AllProductsSheet";
 import { LiveProductBar } from "./LiveProductBar";
 import { ProductEditSheet } from "./ProductEditSheet";
+import { fitStreamResolution } from "./stream-resolution";
 import { LiveNotice } from "@/app/live/_components/LiveNotice";
 
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
@@ -115,10 +116,14 @@ export function BroadcastPanel({
         return;
       }
 
+      // 요청한 720×1280 을 주지 않는 카메라도 있어, 실제로 받은 비율을 그대로 따른다.
+      const { width = 720, height = 1280 } = videoStream
+        .getVideoTracks()[0]
+        .getSettings();
+
       client = IVSBroadcastClient.create({
-        // 카메라가 720×1280 으로 받으니 줄이지 않고 보낸다. BASIC 채널은 1080p·3.5Mbps 까지 받는다.
         streamConfig: {
-          maxResolution: { width: 720, height: 1280 },
+          maxResolution: fitStreamResolution(width, height),
           maxFramerate: 30,
           maxBitrate: 2500,
         },
