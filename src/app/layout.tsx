@@ -1,6 +1,7 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { APP_FRAME_ID } from "@/components/overlays/app-frame";
+import { StatusBarColor } from "@/components/StatusBarColor";
 import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import "./globals.css";
@@ -12,19 +13,11 @@ const pretendard = localFont({
   display: "swap",
 });
 
-/** 상태바·홈 인디케이터 밑까지 화면이 깔린다. 그 자리는 각 화면이 safe-area 로 비워 둔다. */
-export const viewport: Viewport = { viewportFit: "cover" };
-
 export const metadata: Metadata = {
   title: "Toasty",
   description: "Toasty",
   // 홈 화면에 추가해 열면 주소창 없이 뜬다. iOS 는 manifest 를 보지 않아 따로 적는다.
-  // black-translucent 라야 상태바 자리에 body 의 검은 배경이 비치지 않는다.
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "토스티",
-  },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "토스티" },
   icons: { apple: "/apple-touch-icon.png" },
   // iOS 16.3 이하는 manifest 의 display 를 보지 않아 이 메타로만 전체 화면이 된다.
   other: { "apple-mobile-web-app-capable": "yes" },
@@ -34,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col items-center justify-center">
+        <StatusBarColor />
         {/*
           바깥 래퍼는 스크롤하지 않는 앱 프레임이다.
           바텀시트 같은 오버레이가 화면 전체가 아니라 이 프레임만 덮도록,
