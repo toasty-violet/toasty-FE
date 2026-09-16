@@ -25,8 +25,17 @@ type Product = { productId: number; name: string; price: number };
  *
  * 확인 시트로 금액을 알린 뒤 주문을 만들어 결제 세션을 받고 결제창을 띄운다.
  * 결제창은 returnPath 로 돌아오므로 그때 쿼리를 보고 승인 요청을 이어 보낸다.
+ *
+ * onConfirmed 를 넘기면 승인을 마쳤을 때 done 대신 그것을 부른다.
+ * 결제 화면처럼 완료 창이 아니라 다른 화면으로 넘어가는 경우에 쓴다.
  */
-export function usePurchase({ returnPath }: { returnPath: string }) {
+export function usePurchase({
+  returnPath,
+  onConfirmed,
+}: {
+  returnPath: string;
+  onConfirmed?: () => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
@@ -43,6 +52,10 @@ export function usePurchase({ returnPath }: { returnPath: string }) {
     mutationFn: confirmOrderPayment,
     onSuccess: () => {
       clearPendingOrderId();
+      if (onConfirmed) {
+        onConfirmed();
+        return;
+      }
       setDone(true);
     },
     onError: () => {
@@ -119,6 +132,11 @@ export function usePurchase({ returnPath }: { returnPath: string }) {
     buy: (product: Product) => {
       setError("");
       setConfirming(product);
+    },
+    /** 확인 시트 없이 바로 결제창까지 간다. 화면 자체가 이미 확인 단계인 경우에 쓴다. */
+    buyNow: (product: Product) => {
+      setError("");
+      checkout.mutate(product);
     },
   };
 }
