@@ -76,6 +76,13 @@ export interface StoreProductsPage {
   hasNext: boolean;
 }
 
+/** 결제 화면에 띄울 이 스토어의 배송비. */
+export interface StoreShippingFee {
+  baseShippingFee: number;
+  /** 이 금액 이상 사면 배송비를 받지 않는다. 0 이면 무료배송 기준이 없다. */
+  freeShippingThreshold: number;
+}
+
 /** 손님이 보는 상품 상세. 스토어 정보는 sellerId 로 따로 부른다. */
 export interface ProductDetail {
   productId: number;
@@ -87,6 +94,19 @@ export interface ProductDetail {
   imageUrls: string[];
   /** 같은 스토어의 다른 상품. 이 상품은 빠져 있고 최대 3개가 온다. */
   otherProducts: StoreProduct[];
+  shippingFee: StoreShippingFee;
+}
+
+/**
+ * 이 상품만 살 때 붙는 배송비.
+ * 실제 청구 금액은 서버가 주문할 때 다시 계산한다.
+ */
+export function shippingFeeFor(product: ProductDetail) {
+  const { baseShippingFee, freeShippingThreshold } = product.shippingFee;
+  const free =
+    freeShippingThreshold > 0 && product.price >= freeShippingThreshold;
+
+  return free ? 0 : baseShippingFee;
 }
 
 /** 홈 베스트 아이템 카드 한 장. 사진이나 스토어를 못 찾으면 null 로 온다. */

@@ -45,6 +45,7 @@ function product(overrides: Partial<ProductDetail> = {}): ProductDetail {
         imageUrl: "https://example.com/3.png",
       },
     ],
+    shippingFee: { baseShippingFee: 3000, freeShippingThreshold: 0 },
     ...overrides,
   };
 }

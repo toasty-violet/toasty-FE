@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
+import { ApiRequestError } from "@/lib/api-error";
 import { confirmOrderPayment, createOrder } from "@/lib/payment";
 import {
   loadPoint3Widgets,
@@ -20,6 +21,17 @@ import {
 /** 결제 확인 시트와 주문 생성에 필요한 최소 정보. */
 type Product = { productId: number; name: string; price: number };
 
+// 승인 결과를 확인하지 못한 경우. 결제가 실패한 것은 아니다.
+const UNCONFIRMED_STATUS = 503;
+const CONFIRM_RETRIES = 2;
+const CONFIRM_RETRY_MS = 2000;
+
+function isUnconfirmed(error: unknown) {
+  return (
+    error instanceof ApiRequestError && error.status === UNCONFIRMED_STATUS
+  );
+}
+
 /**
  * 상품 하나를 사는 흐름 전체.
  *
@@ -31,9 +43,12 @@ type Product = { productId: number; name: string; price: number };
  */
 export function usePurchase({
   returnPath,
+  liveId,
   onConfirmed,
 }: {
   returnPath: string;
+  /** 라이브를 보다 산 경우에만. 셀러 라이브탭의 방송별 판매 집계에 쓰인다. */
+  liveId?: number;
   onConfirmed?: () => void;
 }) {
   const router = useRouter();
@@ -50,6 +65,10 @@ export function usePurchase({
 
   const confirm = useMutation({
     mutationFn: confirmOrderPayment,
+    // 503 은 결제가 실패한 것이 아니라 서버가 결과를 확인하지 못한 것이라 다시 물어본다.
+    retry: (failureCount, error) =>
+      failureCount < CONFIRM_RETRIES && isUnconfirmed(error),
+    retryDelay: CONFIRM_RETRY_MS,
     onSuccess: () => {
       clearPendingOrderId();
       if (onConfirmed) {
@@ -58,9 +77,13 @@ export function usePurchase({
       }
       setDone(true);
     },
-    onError: () => {
+    onError: (error) => {
       clearPendingOrderId();
-      setError("결제 승인에 실패했어요. 주문내역에서 확인해 주세요.");
+      setError(
+        isUnconfirmed(error)
+          ? "결제 결과를 확인하는 중이에요. 주문내역에서 확인해 주세요."
+          : "결제 승인에 실패했어요. 주문내역에서 확인해 주세요.",
+      );
     },
     // 성공이든 실패든 쿼리를 털어야 새로고침에 같은 승인이 다시 돌지 않는다.
     onSettled: () => router.replace(returnPath),
@@ -96,7 +119,7 @@ export function usePurchase({
       quantity?: number;
     }) => {
       // payerId 가 주문 응답에 실려 오므로 위젯은 주문을 받은 뒤에 띄운다.
-      const order = await createOrder({ productId, quantity });
+      const order = await createOrder({ productId, quantity, liveId });
       const widgets = await loadPoint3Widgets(order.payerId);
 
       // 결제창으로 나가기 전에 남겨야 복귀 후 승인할 수 있다.

@@ -17,11 +17,9 @@ import {
 import { usePurchase } from "@/app/live/_lib/use-purchase";
 import { formatAddress } from "@/lib/address";
 import { getProduct } from "@/lib/product-api";
+import { shippingFeeFor } from "@/types/product";
 import { getSellerProfile } from "@/lib/store-api";
 import { fetchCustomerProfile } from "@/lib/user";
-
-// 배송비는 아직 스토어별로 받아오지 않아 0원으로 둔다. 실제 청구 금액은 서버가 정한다.
-const SHIPPING_FEE = 0;
 
 /** 받는사람·연락처·배송지 세 줄 자리를 잡아 둔다. 배송지는 두 줄까지 자주 찬다. */
 function ShippingSkeleton() {
@@ -97,7 +95,9 @@ export function PaymentScreen({ productId }: { productId: number }) {
     );
   }, [confirmed, product, isProductError, router]);
 
-  const totalAmount = (product?.price ?? 0) + SHIPPING_FEE;
+  // 스토어가 정한 배송비. 무료배송 기준을 넘으면 0 원이다.
+  const shippingFee = product ? shippingFeeFor(product) : 0;
+  const totalAmount = (product?.price ?? 0) + shippingFee;
 
   return (
     <>
@@ -149,7 +149,7 @@ export function PaymentScreen({ productId }: { productId: number }) {
         <Section title="결제 금액">
           <TotalBox total={totalAmount}>
             <AmountRow label="상품 금액" value={won(product?.price ?? 0)} />
-            <AmountRow label="배송비" value={won(SHIPPING_FEE)} />
+            <AmountRow label="배송비" value={won(shippingFee)} />
           </TotalBox>
         </Section>
       </div>

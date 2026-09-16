@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiRequestError } from "@/lib/api-error";
+
 import { loadPendingOrderId, savePendingOrderId } from "./pending-order";
 import { usePurchase } from "./use-purchase";
 
@@ -203,4 +205,60 @@ describe("결제창에서 돌아오면", () => {
     );
     expect(confirmOrderPayment).not.toHaveBeenCalled();
   });
+});
+
+// 라이브를 보다 산 주문은 그 방송의 판매 집계에 들어가야 한다.
+describe("라이브에서 사면", () => {
+  it("주문에 liveId 를 함께 보낸다", async () => {
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    });
+    const { result } = renderHook(
+      () => usePurchase({ returnPath: RETURN_PATH, liveId: 12 }),
+      {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        ),
+      },
+    );
+
+    act(() => result.current.buy(PRODUCT));
+    act(() => result.current.confirmBuy());
+
+    await waitFor(() =>
+      expect(createOrder).toHaveBeenCalledWith({
+        productId: 3,
+        quantity: 1,
+        liveId: 12,
+      }),
+    );
+  });
+});
+
+// 503 은 승인이 실패한 것이 아니라 서버가 결과를 확인하지 못한 것이다.
+describe("승인 결과를 확인하지 못하면", () => {
+  it("다시 물어보고, 그래도 모르면 확인 중이라고 알린다", async () => {
+    savePendingOrderId(7);
+    searchParams.current = new URLSearchParams("orderId=ps_1");
+    confirmOrderPayment.mockRejectedValue(
+      new ApiRequestError("PAYMENT_UNCONFIRMED", "확인 불가", 503),
+    );
+
+    const { result } = render();
+
+    await waitFor(
+      () => expect(confirmOrderPayment.mock.calls.length).toBeGreaterThan(1),
+      { timeout: 10000 },
+    );
+    await waitFor(
+      () =>
+        expect(result.current.message).toBe(
+          "결제 결과를 확인하는 중이에요. 주문내역에서 확인해 주세요.",
+        ),
+      { timeout: 10000 },
+    );
+  }, 15000);
 });
