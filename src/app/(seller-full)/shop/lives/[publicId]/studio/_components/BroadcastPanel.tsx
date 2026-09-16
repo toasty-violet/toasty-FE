@@ -12,6 +12,7 @@ import {
   reissueBroadcastCredential,
   updateLiveProduct,
 } from "@/app/live/_lib/live-api";
+import CameraSwitchIcon from "@/assets/CameraSwitch.svg";
 import { describeLiveError } from "@/app/live/_lib/live-error";
 import { useLiveChat } from "@/app/live/_lib/use-live-chat";
 import type {
@@ -33,6 +34,15 @@ import { LiveNotice } from "@/app/live/_components/LiveNotice";
 // 체크 시트에서 확인받고 들어오므로 준비와 연결은 지나가는 단계다.
 type Status = "preparing" | "starting" | "live" | "ended" | "unavailable";
 
+/** user 가 앞, environment 가 뒤 카메라다. */
+type CameraFacing = "user" | "environment";
+
+// 비율을 정해 요청하면 브라우저가 센서를 잘라 맞춰 화면이 확대된다.
+// 카메라가 보는 그대로 받고, 세로 화면에 맞추는 일은 SDK 한 번으로 끝낸다.
+const cameraConstraints = (facing: CameraFacing) => ({
+  video: { height: { ideal: 1280 }, facingMode: { ideal: facing } },
+});
+
 const STREAM_STATUS_POLL_MS = 4000;
 
 export function BroadcastPanel({
@@ -44,6 +54,10 @@ export function BroadcastPanel({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clientRef = useRef<AmazonIVSBroadcastClient | null>(null);
+  // 카메라를 바꿀 때 쓰던 것을 끄려면 지금 무엇이 물려 있는지 들고 있어야 한다.
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const [facing, setFacing] = useState<CameraFacing>("user");
+  const [switching, setSwitching] = useState(false);
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<Status>("preparing");
   const [allProductsOpen, setAllProductsOpen] = useState(false);
@@ -101,12 +115,11 @@ export function BroadcastPanel({
 
       // 카메라와 마이크는 따로 요청한다. SDK가 각각을 별도 입력으로 받는다.
       // 얻는 즉시 streams 에 넣어야 중간에 정리가 지나가도 트랙을 놓치지 않는다.
-      // 비율까지 정해 요청하면 브라우저가 센서를 먼저 잘라 맞춰 화면이 더 확대된다.
-      // 카메라가 보는 그대로 받고, 세로 화면에 맞추는 일은 SDK 한 번으로 끝낸다.
-      const videoStream = await navigator.mediaDevices.getUserMedia({
-        video: { height: { ideal: 1280 } },
-      });
+      const videoStream = await navigator.mediaDevices.getUserMedia(
+        cameraConstraints("user"),
+      );
       streams.push(videoStream);
+      cameraStreamRef.current = videoStream;
       const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
@@ -161,11 +174,41 @@ export function BroadcastPanel({
     return () => {
       cancelled = true;
       clientRef.current = null;
+      // 바꾼 뒤의 카메라는 streams 에 없으므로 따로 끈다.
+      cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+      cameraStreamRef.current = null;
       client?.detachPreview();
       client?.delete();
       releaseStreams();
     };
   }, [live.liveId]);
+
+  /** 방송을 끊지 않고 앞뒤 카메라를 바꾼다. 쓰던 카메라는 바꾼 뒤에 끈다. */
+  const switchCamera = async () => {
+    const client = clientRef.current;
+    if (!client || switching) return;
+
+    const next: CameraFacing = facing === "user" ? "environment" : "user";
+    setSwitching(true);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(
+        cameraConstraints(next),
+      );
+      const previous = cameraStreamRef.current;
+
+      client.removeVideoInputDevice("camera");
+      await client.addVideoInputDevice(stream, "camera", { index: 0 });
+
+      previous?.getTracks().forEach((track) => track.stop());
+      cameraStreamRef.current = stream;
+      setFacing(next);
+    } catch {
+      setMessage("카메라를 바꾸지 못했습니다.");
+    } finally {
+      setSwitching(false);
+    }
+  };
 
   const { data: streamStatus } = useQuery({
     queryKey: ["live-stream-status", live.liveId],
@@ -288,17 +331,32 @@ export function BroadcastPanel({
             </>
           }
           action={
-            <button
-              type="button"
-              onClick={() => {
-                endMutation.reset();
-                setAskingEnd(true);
-              }}
-              disabled={endMutation.isPending}
-              className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted flex h-32 shrink-0 items-center justify-center px-12 disabled:opacity-60"
-            >
-              {endMutation.isPending ? "종료 중…" : "방송종료"}
-            </button>
+            <div className="flex shrink-0 items-center gap-8">
+              <button
+                type="button"
+                aria-label={
+                  facing === "user"
+                    ? "후면 카메라로 바꾸기"
+                    : "전면 카메라로 바꾸기"
+                }
+                onClick={() => void switchCamera()}
+                disabled={switching}
+                className="text-fg-neutral-inverted shrink-0 disabled:opacity-60"
+              >
+                <CameraSwitchIcon className="size-24 [&_path]:fill-current" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  endMutation.reset();
+                  setAskingEnd(true);
+                }}
+                disabled={endMutation.isPending}
+                className="rounded-8 text-l5-semibold bg-bg-neutral-solid text-fg-neutral-inverted flex h-32 shrink-0 items-center justify-center px-12 disabled:opacity-60"
+              >
+                {endMutation.isPending ? "종료 중…" : "방송종료"}
+              </button>
+            </div>
           }
         />
 

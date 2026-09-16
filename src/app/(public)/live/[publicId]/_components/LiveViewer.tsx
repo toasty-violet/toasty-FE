@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import AlertRoundIcon from "@/assets/AlertRound.svg";
 import CloseIcon from "@/assets/Close.svg";
+import SoundOffIcon from "@/assets/SoundOff.svg";
 import { Button } from "@/components/buttons/Button";
 import { LiveChatInput } from "@/app/live/_components/LiveChatInput";
 import { LiveChatOverlay } from "@/app/live/_components/LiveChatOverlay";
@@ -31,22 +32,16 @@ import { ViewerProductsSheet } from "./ViewerProductsSheet";
 
 const POLL_MS = 4000;
 
-/** 비로그인은 채팅을 읽기만 할 수 있고 살 수도 없다. 눌러 바로 로그인으로 간다. */
-function GuestNotice({
-  className = "",
-  onClick,
-}: {
-  className?: string;
-  onClick: () => void;
-}) {
+/** 채팅은 비로그인도 할 수 있고 구매만 막힌다. 눌러 바로 로그인으로 간다. */
+function GuestNotice({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex w-fit items-center gap-8 rounded-full px-16 py-8 ${className}`}
+      className="bg-bg-neutral-solid text-l5-medium text-fg-neutral-inverted mx-auto flex w-fit items-center gap-8 rounded-full px-16 py-8"
     >
       <AlertRoundIcon className="size-18 shrink-0 [&_path]:fill-current" />
-      로그인하면 채팅과 구매를 할 수 있어요.
+      로그인하면 구매할 수 있어요.
     </button>
   );
 }
@@ -54,6 +49,8 @@ function GuestNotice({
 export function LiveViewer({ publicId }: { publicId: string }) {
   const router = useRouter();
   const [playbackError, setPlaybackError] = useState<string | null>(null);
+  // 소리가 있는 자동재생은 브라우저가 막는다. 음소거로 시작하고 눌러서 켠다.
+  const [muted, setMuted] = useState(true);
   const [productsOpen, setProductsOpen] = useState(false);
 
   // 비로그인은 구매를 막고 로그인으로 안내한다. 시청 자체는 막지 않는다.
@@ -128,6 +125,7 @@ export function LiveViewer({ publicId }: { publicId: string }) {
         <div className="absolute inset-0">
           <LivePlayer
             playbackUrl={playback.playbackUrl}
+            muted={muted}
             onPlaybackError={setPlaybackError}
           />
         </div>
@@ -151,6 +149,16 @@ export function LiveViewer({ publicId }: { publicId: string }) {
           action={
             <div className="flex shrink-0 items-center gap-12">
               {isGuest && <Button label="로그인" size="xs" onClick={goLogin} />}
+              {/* 소리는 음소거로 시작한다. 켜는 것은 사용자가 눌러야 브라우저가 허락한다. */}
+              <button
+                type="button"
+                aria-label={muted ? "소리 켜기" : "소리 끄기"}
+                aria-pressed={muted}
+                onClick={() => setMuted((on) => !on)}
+                className={`text-fg-neutral-inverted shrink-0 ${muted ? "" : "opacity-50"}`}
+              >
+                <SoundOffIcon className="size-24 [&_path]:fill-current" />
+              </button>
               <button
                 type="button"
                 aria-label="닫기"
@@ -195,6 +203,9 @@ export function LiveViewer({ publicId }: { publicId: string }) {
               </p>
             )}
 
+            {/* 구매만 막히므로 안내는 상품줄 위에 둔다. 채팅 입력줄은 가리지 않는다. */}
+            {isGuest && <GuestNotice onClick={goLogin} />}
+
             <ViewerProductBar
               pinned={pinned}
               totalCount={list.length}
@@ -203,19 +214,9 @@ export function LiveViewer({ publicId }: { publicId: string }) {
               onBuy={() => pinned && purchase.buy(pinned)}
             />
 
-            {chat.unavailable ? (
-              isGuest && <GuestNotice onClick={goLogin} />
-            ) : (
-              // 안내는 입력줄 위에 얹혀 자리를 차지하지 않는다.
-              <div className="relative w-full">
-                <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
-                {isGuest && (
-                  <GuestNotice
-                    className="absolute inset-x-0 top-1/2 -translate-y-1/2"
-                    onClick={goLogin}
-                  />
-                )}
-              </div>
+            {/* 채팅방이 없는 라이브는 붙을 곳이 없어 입력줄을 두지 않는다. */}
+            {!chat.unavailable && (
+              <LiveChatInput disabled={!chat.writable} onSend={chat.send} />
             )}
           </div>
         )}

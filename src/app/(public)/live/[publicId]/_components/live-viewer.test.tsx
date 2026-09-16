@@ -19,8 +19,12 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// IVS 플레이어는 wasm 을 받아와 jsdom 에서 돌지 않는다.
-vi.mock("./LivePlayer", () => ({ LivePlayer: () => null }));
+// IVS 플레이어는 wasm 을 받아와 jsdom 에서 돌지 않는다. 음소거 여부만 드러낸다.
+vi.mock("./LivePlayer", () => ({
+  LivePlayer: ({ muted }: { muted: boolean }) => (
+    <div data-testid="player" data-muted={muted} />
+  ),
+}));
 
 // 채팅은 웹소켓을 열어 jsdom 에서 붙지 않는다. 방을 흉내만 낸다.
 vi.mock("amazon-ivs-chat-messaging", () => ({
@@ -99,9 +103,7 @@ describe("LiveViewer 구매 잠금", () => {
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeDisabled();
     // 아직 비로그인이 확정된 게 아니라 로그인 안내는 띄우지 않는다.
-    expect(
-      screen.queryByText("로그인하면 채팅과 구매를 할 수 있어요."),
-    ).toBeNull();
+    expect(screen.queryByText("로그인하면 구매할 수 있어요.")).toBeNull();
   });
 
   it("비로그인이 확정되면 구매를 잠그고 로그인으로 안내한다", async () => {
@@ -111,7 +113,7 @@ describe("LiveViewer 구매 잠금", () => {
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeDisabled();
     expect(
-      screen.getByText("로그인하면 채팅과 구매를 할 수 있어요."),
+      screen.getByText("로그인하면 구매할 수 있어요."),
     ).toBeInTheDocument();
   });
 
@@ -121,7 +123,7 @@ describe("LiveViewer 구매 잠금", () => {
 
     await userEvent.click(
       await screen.findByRole("button", {
-        name: /로그인하면 채팅과 구매를 할 수 있어요/,
+        name: /로그인하면 구매할 수 있어요/,
       }),
     );
 
@@ -134,6 +136,24 @@ describe("LiveViewer 구매 잠금", () => {
     expect(
       await screen.findByRole("button", { name: "구매하기" }),
     ).toBeEnabled();
+  });
+});
+
+// 소리가 있는 자동재생은 브라우저가 막아 음소거로 시작한다.
+describe("LiveViewer 소리", () => {
+  it("음소거로 시작하고, 소리 켜기를 누르면 켠다", async () => {
+    renderViewer("authed");
+
+    expect(await screen.findByTestId("player")).toHaveAttribute(
+      "data-muted",
+      "true",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "소리 켜기" }));
+
+    expect(screen.getByTestId("player")).toHaveAttribute("data-muted", "false");
+    // 켠 뒤에는 누를 자리를 남겨 두지 않는다.
+    expect(screen.queryByRole("button", { name: "소리 켜기" })).toBeNull();
   });
 });
 
@@ -189,9 +209,8 @@ describe("LiveViewer 채팅방이 없을 때", () => {
     await waitFor(() =>
       expect(screen.queryByRole("textbox", { name: "채팅 입력" })).toBeNull(),
     );
-    // 겹칠 입력줄이 없으니 제 줄로 나와야 한다. 겹친 채로 두면 화면에서 사라진다.
     expect(
-      screen.getByText("로그인하면 채팅과 구매를 할 수 있어요."),
-    ).not.toHaveClass("absolute");
+      screen.getByText("로그인하면 구매할 수 있어요."),
+    ).toBeInTheDocument();
   });
 });
