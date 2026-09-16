@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -13,21 +14,14 @@ import {
   TotalBox,
   won,
 } from "@/components/sections/InfoSection";
+import { usePurchase } from "@/app/live/_lib/use-purchase";
 import { formatAddress } from "@/lib/address";
+import { getProduct } from "@/lib/product-api";
+import { getSellerProfile } from "@/lib/store-api";
 import { fetchCustomerProfile } from "@/lib/user";
 
-// 배송비는 아직 스토어별로 받아오지 않아 0원으로 둔다.
+// 배송비는 아직 스토어별로 받아오지 않아 0원으로 둔다. 실제 청구 금액은 서버가 정한다.
 const SHIPPING_FEE = 0;
-
-/** 결제 화면에 필요한 상품 값. 상품 상세 API 가 붙으면 그대로 넘겨 받는다. */
-export type PaymentProduct = {
-  productId: number;
-  name: string;
-  price: number;
-  imageUrl: string;
-  sellerId: number;
-  shopName: string;
-};
 
 /** 받는사람·연락처·배송지 세 줄 자리를 잡아 둔다. 배송지는 두 줄까지 자주 찬다. */
 function ShippingSkeleton() {
@@ -47,7 +41,20 @@ function ShippingSkeleton() {
   );
 }
 
-export function PaymentScreen({ product }: { product: PaymentProduct }) {
+/** 상품 한 줄 자리를 잡아 둔다. 사진과 두 줄짜리 글이 들어간다. */
+function ProductSkeleton() {
+  return (
+    <div aria-hidden className="flex w-full items-center gap-12">
+      <div className="rounded-8 bg-bg-neutral-weak size-64 shrink-0 animate-pulse" />
+      <div className="flex min-w-0 flex-1 flex-col gap-10">
+        <div className="bg-bg-neutral-weak rounded-4 h-11 w-2/5 animate-pulse" />
+        <div className="bg-bg-neutral-weak rounded-4 h-12 w-3/5 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
+export function PaymentScreen({ productId }: { productId: number }) {
   const router = useRouter();
   const {
     data: profile,
@@ -58,7 +65,39 @@ export function PaymentScreen({ product }: { product: PaymentProduct }) {
     queryFn: fetchCustomerProfile,
   });
 
-  const totalAmount = product.price + SHIPPING_FEE;
+  const { data: product, isError: isProductError } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => getProduct(productId),
+  });
+
+  // 스토어 이름은 상품 응답에 없어 따로 부른다. 상품을 받아야 셀러를 알 수 있다.
+  const { data: seller } = useQuery({
+    queryKey: ["seller-profile", product?.sellerId],
+    queryFn: () => getSellerProfile(product!.sellerId),
+    enabled: product !== undefined,
+  });
+
+  // 승인까지 끝나야 주문이 선다. 그 뒤에야 완료 화면으로 넘긴다.
+  const [confirmed, setConfirmed] = useState(false);
+  const purchase = usePurchase({
+    returnPath: `/products/payments?productId=${productId}`,
+    onConfirmed: () => setConfirmed(true),
+  });
+
+  // 결제창에서 돌아오면 상품을 다시 받는 중이라, 승인이 상품보다 먼저 끝날 수 있다.
+  // 완료 화면은 쇼핑 계속하기로 돌아갈 스토어가 필요해 상품을 받은 뒤에 넘긴다.
+  useEffect(() => {
+    if (!confirmed) return;
+    if (!product && !isProductError) return;
+
+    router.replace(
+      product
+        ? `/products/payments/complete?sellerId=${product.sellerId}`
+        : "/products/payments/complete",
+    );
+  }, [confirmed, product, isProductError, router]);
+
+  const totalAmount = (product?.price ?? 0) + SHIPPING_FEE;
 
   return (
     <>
@@ -92,32 +131,41 @@ export function PaymentScreen({ product }: { product: PaymentProduct }) {
         <SectionGap />
 
         <Section title="주문 상품">
-          <OrderProductRow
-            label={product.shopName}
-            productName={product.name}
-            quantity={1}
-            totalAmount={product.price}
-            imageUrl={product.imageUrl}
-          />
+          {product ? (
+            <OrderProductRow
+              label={seller?.shopName}
+              productName={product.name}
+              quantity={1}
+              totalAmount={product.price}
+              imageUrl={product.imageUrls[0] ?? ""}
+            />
+          ) : (
+            <ProductSkeleton />
+          )}
         </Section>
 
         <SectionGap />
 
         <Section title="결제 금액">
           <TotalBox total={totalAmount}>
-            <AmountRow label="상품 금액" value={won(product.price)} />
+            <AmountRow label="상품 금액" value={won(product?.price ?? 0)} />
             <AmountRow label="배송비" value={won(SHIPPING_FEE)} />
           </TotalBox>
         </Section>
       </div>
 
-      {/* 결제 연동 전이라 결제창 없이 완료 화면으로만 넘긴다. */}
+      {/* 누르면 주문이 만들어지고 결제창이 열린다. 돌아오면 승인까지 이어서 보낸다. */}
       <BottomButton
         label={`${won(totalAmount)} 결제하기`}
+        description={purchase.message}
+        disabled={!product || purchase.pending}
         onClick={() =>
-          router.push(
-            `/products/payments/complete?sellerId=${product.sellerId}`,
-          )
+          product &&
+          purchase.buyNow({
+            productId: product.productId,
+            name: product.name,
+            price: product.price,
+          })
         }
       />
     </>
