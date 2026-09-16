@@ -53,26 +53,42 @@ function forceLogout() {
   window.location.assign("/login");
 }
 
+const REFRESH_LOCK = "toasty-refresh";
+
+/**
+ * 탭 하나씩만 재발급하게 잠근다.
+ *
+ * 서버는 리프레시 토큰을 한 번 쓰면 버리고, 쓴 토큰이 또 오면 유출로 보아 모든 기기를
+ * 로그아웃시킨다. 탭마다 메모리가 달라 아래 refreshPromise 로는 서로를 막지 못하므로,
+ * 같은 쿠키를 동시에 보내지 않도록 브라우저가 공유하는 잠금을 쓴다.
+ * 뒤에 들어온 탭은 앞 탭이 받아 둔 새 쿠키로 부르게 된다.
+ */
+async function refreshExclusively(run: () => Promise<string>): Promise<string> {
+  // 잠금을 지원하지 않는 브라우저에서는 지금까지처럼 바로 부른다.
+  if (!navigator.locks) return run();
+
+  return navigator.locks.request(REFRESH_LOCK, run);
+}
+
 let refreshPromise: Promise<string> | null = null;
 
 // 동시에 들어온 401이 /refresh를 중복 호출하지 않도록 하나의 Promise를 공유한다
 export function requestRefresh() {
   if (!refreshPromise) {
-    const pending: Promise<string> = refreshClient
-      .post<RefreshResponse>("/refresh")
-      .then(({ data }) => {
+    const pending: Promise<string> = refreshExclusively(() =>
+      refreshClient.post<RefreshResponse>("/refresh").then(({ data }) => {
         const { accessToken } = data.data;
         // 대기 중인 요청이 깨어나기 전에 갱신해야 한다
         useAuthStore.getState().setAccessToken(accessToken);
         return accessToken;
-      })
-      .finally(() => {
-        // 성공이든 실패든 해제해야 다음 만료 때 다시 재발급할 수 있다.
-        // 이 사이 새 요청이 다음 Promise를 걸어뒀다면 그건 건드리지 않는다
-        if (refreshPromise === pending) {
-          refreshPromise = null;
-        }
-      });
+      }),
+    ).finally(() => {
+      // 성공이든 실패든 해제해야 다음 만료 때 다시 재발급할 수 있다.
+      // 이 사이 새 요청이 다음 Promise를 걸어뒀다면 그건 건드리지 않는다
+      if (refreshPromise === pending) {
+        refreshPromise = null;
+      }
+    });
     refreshPromise = pending;
   }
   return refreshPromise;

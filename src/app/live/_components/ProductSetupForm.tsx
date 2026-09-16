@@ -1,5 +1,7 @@
 "use client";
 
+import { Fragment } from "react";
+
 import { Input } from "@/components/inputs/Input";
 import { BottomButton } from "@/components/buttons/BottomButton";
 import CloseSmallIcon from "@/assets/Close Small.svg";
@@ -136,14 +138,24 @@ export function ProductSetupForm({
 
         <div className="flex flex-col gap-28 px-20 pt-16 pb-20">
           {products.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onChange={(next) =>
-                onChange(products.map((it, i) => (i === index ? next : it)))
-              }
-              onRemove={() => onChange(products.filter((_, i) => i !== index))}
-            />
+            <Fragment key={product.id}>
+              {/* 상품이 여럿이면 어디까지가 한 상품인지 선으로 가른다. */}
+              {index > 0 && (
+                <div
+                  className="bg-stroke-neutral-weak h-px w-full"
+                  aria-hidden
+                />
+              )}
+              <ProductCard
+                product={product}
+                onChange={(next) =>
+                  onChange(products.map((it, i) => (i === index ? next : it)))
+                }
+                onRemove={() =>
+                  onChange(products.filter((_, i) => i !== index))
+                }
+              />
+            </Fragment>
           ))}
 
           {/* 공통 Button 이 아이콘을 받지 않아 이 화면에 따로 뒀다. */}

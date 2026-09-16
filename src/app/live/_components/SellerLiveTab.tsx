@@ -6,7 +6,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { deleteLive, getSellerLiveTab } from "@/app/live/_lib/live-api";
 import { describeLiveError } from "@/app/live/_lib/live-error";
+import LinkIcon from "@/assets/Link.svg";
 import { ConfirmModal } from "@/components/overlays/ConfirmModal";
+import { Toast } from "@/components/overlays/Toast";
 import type { SellerScheduledLive } from "@/types/live";
 
 import { LiveNowCard } from "./LiveNowCard";
@@ -23,16 +25,24 @@ export function SellerLiveTab() {
   const [managing, setManaging] = useState<SellerScheduledLive | null>(null);
   const [deleting, setDeleting] = useState<SellerScheduledLive | null>(null);
   const [starting, setStarting] = useState<SellerScheduledLive | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { data, isPending, error } = useQuery({
     queryKey: ["seller-live-tab"],
     queryFn: getSellerLiveTab,
   });
 
-  const copyLink = (publicId: string) => {
-    void navigator.clipboard?.writeText(
-      `${window.location.origin}/live/${publicId}`,
-    );
+  // 복사는 화면이 그대로라 티가 나지 않으므로 잠깐 알린다.
+  const copyLink = async (publicId: string) => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/live/${publicId}`,
+      );
+      setCopied(true);
+    } catch {
+      // 클립보드는 HTTPS·사용자 제스처가 있어야 쓸 수 있어, 막힌 환경에서는 조용히 실패한다.
+      setCopied(false);
+    }
   };
 
   const goStudio = (live: SellerScheduledLive) =>
@@ -79,7 +89,7 @@ export function SellerLiveTab() {
               <LiveNowCard
                 live={broadcasting}
                 onWatch={() => router.push(`/live/${broadcasting.publicId}`)}
-                onCopyLink={() => copyLink(broadcasting.publicId)}
+                onCopyLink={() => void copyLink(broadcasting.publicId)}
                 onEdit={() => goEdit(broadcasting.publicId)}
               />
             )}
@@ -90,13 +100,18 @@ export function SellerLiveTab() {
             <UpcomingLiveSection
               lives={data.scheduled}
               onCreate={() => router.push("/shop/lives/new")}
-              onCopyLink={(live) => copyLink(live.publicId)}
+              onCopyLink={(live) => void copyLink(live.publicId)}
               onStart={setStarting}
               onMore={setManaging}
             />
           </>
         )}
       </div>
+
+      <Toast open={copied} onClose={() => setCopied(false)}>
+        <LinkIcon className="size-18 shrink-0 [&_path]:fill-current" />
+        링크를 복사했어요
+      </Toast>
 
       <StartLiveSheet
         open={starting !== null}

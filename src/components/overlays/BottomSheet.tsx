@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useId, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { APP_FRAME_ID } from "./app-frame";
+
+// 이만큼 아래로 끌고 놓으면 닫는다.
+const CLOSE_DISTANCE_PX = 80;
 
 type BottomSheetProps = {
   open: boolean;
@@ -27,6 +30,9 @@ export function BottomSheet({
   children,
 }: BottomSheetProps) {
   const titleId = useId();
+  // 아래로 끈 거리. 놓았을 때 이만큼 넘었으면 닫는다.
+  const [dragged, setDragged] = useState(0);
+  const dragFrom = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -38,6 +44,30 @@ export function BottomSheet({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
+
+  const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragFrom.current = event.clientY;
+  };
+
+  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragFrom.current === null) return;
+    // 위로 끄는 것은 따라가지 않는다. 시트는 아래로만 닫힌다.
+    setDragged(Math.max(0, event.clientY - dragFrom.current));
+  };
+
+  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    dragFrom.current = null;
+
+    if (dragged >= CLOSE_DISTANCE_PX) {
+      onClose();
+    }
+    // 덜 끌었으면 제자리로 돌아간다. 닫힐 때도 다음에 열릴 자리를 되돌려 둔다.
+    setDragged(0);
+  };
 
   // open 은 사용자가 눌러야 켜지므로, 이 시점의 프레임은 이미 그려져 있다.
   const frame = open ? document.getElementById(APP_FRAME_ID) : null;
@@ -54,9 +84,20 @@ export function BottomSheet({
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(event) => event.stopPropagation()}
+        style={{ transform: `translateY(${dragged}px)` }}
         className="bg-bg-layer-default rounded-t-20 scrollbar-hidden relative flex max-h-[min(68rem,100%)] w-full flex-col items-center gap-24 overflow-y-auto overscroll-contain px-20 pt-32 pb-20"
       >
-        <span className="bg-fg-neutral-disabled absolute top-8 h-4 w-[4.4rem] rounded-full" />
+        {/* 손잡이가 있는 윗부분을 아래로 끌면 닫힌다. */}
+        <div
+          aria-hidden
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          className="absolute inset-x-0 top-0 z-10 flex h-32 touch-none justify-center pt-8"
+        >
+          <span className="bg-fg-neutral-disabled h-4 w-[4.4rem] rounded-full" />
+        </div>
 
         <h2
           id={titleId}
